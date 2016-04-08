@@ -7,10 +7,23 @@ module Model = struct
         Num of int
       | Arrow of t * t 
       | Hole 
+  end
+
+  module HExp = struct
+    type t = 
+      | Asc of t * HType.t 
+      | Var of string
+      | Lam of t * t
+      | Ap of t * t 
+      | NumLit of int
+      | Plus of t * t
+      | EmptyHole 
+      | InProgressHole of t
 
   end
 
-  let empty = (HType.Arrow ((HType.Hole),(HType.Arrow ((HType.Num 1),(HType.Num 2)))))   
+  (* let empty = (HType.Arrow ((HType.Hole),(HType.Arrow ((HType.Num 1),(HType.Num 2)))))    *)
+  let empty = HExp.Lam ((HExp.Var "x"),HExp.EmptyHole)
 end
 
 type rs = Model.HType.t React.signal
@@ -37,15 +50,26 @@ module View = struct
   open Action
   open Tyxml_js
   open Model.HType
+  open Model.HExp
 
-  let rec stringFromView (htype : Model.HType.t ) : string = match htype with
+  let rec stringFromHType (htype : Model.HType.t ) : string = match htype with
     | Num n -> string_of_int n
-    | Arrow (fst,snd) -> "(" ^ stringFromView (fst) ^ "->" ^ stringFromView (snd) ^ ")"
+    | Arrow (fst,snd) -> "(" ^ stringFromHType (fst) ^ "->" ^ stringFromHType (snd) ^ ")"
     | Hole -> "H" 
+
+  let rec stringFromHExp (hexp : Model.HExp.t ) : string = match hexp with
+    | Asc (hexp,htype) -> (stringFromHExp hexp) ^ ":" ^ (stringFromHType htype)
+    | Var str -> str
+    | Lam (var,exp) -> "λ" ^ (stringFromHExp var) ^ "." ^ (stringFromHExp exp)
+    | Ap (e1, e2) -> (stringFromHExp e1) ^ "(" ^ (stringFromHExp e2) ^ ")"
+    | NumLit num -> string_of_int num
+    | Plus (n1,n2) -> (stringFromHExp n1) ^"+"^ (stringFromHExp n2)
+    | EmptyHole ->  "{}" 
+    | InProgressHole hc -> "{" ^ (stringFromHExp hc) ^ "}"
 
   let viewNum (rs, rf) =
     let num = React.S.value rs in
-    Html5.(p [pcdata (stringFromView num)]) 
+    Html5.(p [pcdata (stringFromHExp num)]) 
 
   let view (rs, rf) =
     let num = viewNum (rs, rf) in 
