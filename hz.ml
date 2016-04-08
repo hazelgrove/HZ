@@ -5,11 +5,12 @@ module Model = struct
   module HType = struct 
     type t = 
         Num of int
-      | Arrow of t * t
+      | Arrow of t * t 
+      | Hole 
 
   end
 
-  let empty = (HType.Num 5)
+  let empty = (HType.Arrow ((HType.Hole),(HType.Arrow ((HType.Num 1),(HType.Num 2)))))   
 end
 
 type rs = Model.HType.t React.signal
@@ -24,7 +25,6 @@ module Controller = struct
   open Action
 
   let update a ((rs, rf) : rp) =
-    (*     let a = React.S.value rs in *)
     let m =
       (Model.HType.Num 2)
     in
@@ -38,13 +38,14 @@ module View = struct
   open Tyxml_js
   open Model.HType
 
-  let rec intFromView (htype : Model.HType.t ) : string = match htype with
+  let rec stringFromView (htype : Model.HType.t ) : string = match htype with
     | Num n -> string_of_int n
-    | Arrow (fst,snd) -> intFromView (fst) ^ "->" ^ intFromView (fst)
+    | Arrow (fst,snd) -> "(" ^ stringFromView (fst) ^ "->" ^ stringFromView (snd) ^ ")"
+    | Hole -> "H" 
 
   let viewNum (rs, rf) =
     let num = React.S.value rs in
-    Html5.(p [pcdata (intFromView num)]) 
+    Html5.(p [pcdata (stringFromView num)]) 
 
   let view (rs, rf) =
     let num = viewNum (rs, rf) in 
