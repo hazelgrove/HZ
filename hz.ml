@@ -3,7 +3,10 @@ open Lwt.Infix
 module Model = struct
 
   module HType = struct 
-    type t = Num of int
+    type t = 
+        Num of int
+      | Arrow of t * t
+
   end
 
   let empty = (HType.Num 5)
@@ -21,7 +24,7 @@ module Controller = struct
   open Action
 
   let update a ((rs, rf) : rp) =
-    let a = React.S.value rs in
+    (*     let a = React.S.value rs in *)
     let m =
       (Model.HType.Num 2)
     in
@@ -33,16 +36,15 @@ module View = struct
 
   open Action
   open Tyxml_js
+  open Model.HType
 
-  let intFromView (num : Model.HType.t ) : string = 
-    let (Model.HType.Num n) = num in 
-    string_of_int n
+  let rec intFromView (htype : Model.HType.t ) : string = match htype with
+    | Num n -> string_of_int n
+    | Arrow (fst,snd) -> intFromView (fst) ^ "->" ^ intFromView (fst)
 
   let viewNum (rs, rf) =
     let num = React.S.value rs in
     Html5.(p [pcdata (intFromView num)]) 
-
-
 
   let view (rs, rf) =
     let num = viewNum (rs, rf) in 
@@ -52,11 +54,8 @@ module View = struct
           p [
             pcdata "HZ model"
           ] ;
-          p [
-            pcdata "The sums and the chart will be automatically updated."
-          ] ; 
         ] ;
-        div ~a:[a_class ["graph"]]  [ num ]
+        div ~a:[a_class ["Model"]]  [ num ]
       ]
     ) 
 
