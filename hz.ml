@@ -19,11 +19,26 @@ module Model = struct
       | Plus of t * t
       | EmptyHole 
       | InProgressHole of t
-
   end
 
+  module ZType = struct
+    type t = 
+      | Selected of HType.t
+      | First of HType.t
+      | Secont of HType.t
+  end
+
+  module ZExp = struct
+    type t = 
+      | Selected of HType.t
+      | First of HType.t
+      | Second of HType.t
+  end
+
+
+  open HExp
   (* let empty = (HType.Arrow ((HType.Hole),(HType.Arrow ((HType.Num 1),(HType.Num 2)))))    *)
-  let empty = HExp.Lam ((HExp.Var "x"),HExp.EmptyHole)
+  let empty = Lam ((Var "x"),InProgressHole (Plus (NumLit 1, NumLit 3)))
 end
 
 type rs = Model.HType.t React.signal
@@ -31,6 +46,18 @@ type rf = ?step:React.step -> Model.HType.t -> unit
 type rp = rs * rf
 
 module Action = struct
+  type direction =  
+      FirstChile 
+    | Parent 
+    | NextSib 
+    | PrevSib
+
+  type t =
+      Move of direction
+    | Del 
+    | Construct of Model.HExp.t
+    | Finish
+
 end
 
 module Controller = struct
