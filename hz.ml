@@ -13,26 +13,32 @@ module Model = struct
     type t = 
       | Asc of t * HType.t 
       | Var of string
-      | Lam of t * t
+      | Lam of string * t
       | Ap of t * t 
       | NumLit of int
       | Plus of t * t
       | EmptyHole 
-      | InProgressHole of t
+      | NonEmptyHole of t
   end
 
   module ZType = struct
     type t = 
-      | Selected of HType.t
-      | First of HType.t
-      | Secont of HType.t
+      | FocusedT of HType.t
+      | FirstArrow of t * HType.t
+      | SecondArrow of t * HType.t
   end
 
   module ZExp = struct
     type t = 
-      | Selected of HType.t
-      | First of HType.t
-      | Second of HType.t
+      | FocusedE of HExp.t
+      | LeftAsc of t * HType.t
+      | RightAsc of HType.t * t 
+      | LamZ of string * t
+      | LeftAp of t * HExp.t
+      | RightAp of HExp.t * t 
+      | LeftPlus of t * HExp.t
+      | RightPlus of HExp.t * t
+      | NonEmptyHoleZ of t
   end
 
 
@@ -41,21 +47,32 @@ module Model = struct
   let empty = Lam ((Var "x"),InProgressHole (Plus (NumLit 1, NumLit 3)))
 end
 
-type rs = Model.HType.t React.signal
+type rs = Model.ZExp.t React.signal
 type rf = ?step:React.step -> Model.HType.t -> unit
 type rp = rs * rf
 
 module Action = struct
   type direction =  
-      FirstChile 
+      FirstChild 
     | Parent 
     | NextSib 
     | PrevSib
 
+  type shape = 
+    | SArrow
+    | SNum
+    | SAsc
+    | SVar of string
+    | SLam of string
+    | SAp 
+    | SArg
+    | SNumlit of int
+    | SPlus
+
   type t =
       Move of direction
     | Del 
-    | Construct of Model.HExp.t
+    | Construct of shape
     | Finish
 
 end
@@ -65,8 +82,12 @@ module Controller = struct
   open Action
 
   let update a ((rs, rf) : rp) =
-    let m =
-      (Model.HType.Num 2)
+    let m = React.S.value r in
+    let m = 
+      match a with Action.Del ->
+      match m with 
+      | EmptyHole -> 
+        (* (Model.HType.Num 2) *)
     in
     rf m
 
