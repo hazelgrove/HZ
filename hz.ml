@@ -25,7 +25,7 @@ module Model = struct
     type t = 
       | FocusedT of HType.t
       | FirstArrow of t * HType.t
-      | SecondArrow of t * HType.t
+      | SecondArrow of HType.t * t 
   end
 
   module ZExp = struct
@@ -102,6 +102,7 @@ module View = struct
   open Model.HType
   open Model.HExp
   open Model.ZExp
+  open Model.ZType
 
   let rec stringFromHType (htype : Model.HType.t ) : string = match htype with
     | Num n -> string_of_int n
@@ -118,16 +119,21 @@ module View = struct
     | EmptyHole ->  "{}" 
     | NonEmptyHole hc -> "{" ^ (stringFromHExp hc) ^ "}"
 
+  let rec stringFromZType (ztype : Model.ZType.t ) : string = match ztype with
+    | FocusedT htype -> ">" ^ stringFromHType htype ^ "<"
+    | FirstArrow  (ztype, htype) -> stringFromZType ztype  ^ "->" ^ stringFromHType htype
+    | SecondArrow (htype, ztype) -> stringFromHType htype ^ "->" ^ stringFromZType ztype
+
   let rec stringFromZExp (zexp : Model.ZExp.t ) : string = match zexp with
-    | FocusedE hexp -> "FocusedE"
-    | LeftAsc (e, asc) -> "LeftAsc"
-    | RightAsc (e, asc) -> "RightAsc"
-    | LamZ (var,exp) -> "LamZ"
-    | LeftAp (e1,e2) -> "LeftAp"
-    | RightAp (e1,e2) -> "RightAp"
-    | LeftPlus (num1,num2) -> "leftPlus"
-    | RightPlus (num1,num2) -> "rightPlus"
-    | NonEmptyHoleZ e -> "nonEmptyHole"
+    | FocusedE hexp -> ">" ^ stringFromHExp hexp ^ "<"
+    | LeftAsc (e, asc) -> stringFromZExp e ^ stringFromHType asc 
+    | RightAsc (e, asc) -> stringFromHType e ^ stringFromZExp asc
+    | LamZ (var,exp) -> stringFromZExp exp
+    | LeftAp (e1,e2) -> stringFromZExp e1 ^ stringFromHExp e2
+    | RightAp (e1,e2) -> stringFromHExp e1 ^ stringFromZExp e2
+    | LeftPlus (num1,num2) -> stringFromZExp num1 ^ stringFromHExp num2
+    | RightPlus (num1,num2) -> stringFromHExp num1 ^ stringFromZExp num2
+    | NonEmptyHoleZ e -> "{" ^ stringFromZExp e ^ "}"
 
   let viewNum (rs, rf) =
     let num = React.S.value rs in
