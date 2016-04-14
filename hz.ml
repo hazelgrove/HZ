@@ -46,7 +46,7 @@ module Model = struct
   open ZExp
   (* let empty = (HType.Arrow ((HType.Hole),(HType.Arrow ((HType.Num 1),(HType.Num 2)))))    *)
   (* let empty = Lam ((Var "x"),InProgressHole (Plus (NumLit 1, NumLit 3))) *)
-  let empty = FocusedE (Var "a")
+  let empty = RightPlus ((NumLit 1), (FocusedE (NumLit 2)))
 end
 
 type rs = Model.ZExp.t React.signal
@@ -84,12 +84,12 @@ module Controller = struct
   open Action
 
   let update a ((rs, rf) : rp) =
-    (* let m = React.S.value rs in *)
+    let m = React.S.value rs in 
     let m = 
-      (* match a with Action.Del ->
-         match m with 
-         | FocusedE _->  *)
-      (Model.ZExp.FocusedE (Model.HExp.Var "b"))
+      match a with 
+      | Del -> (Model.ZExp.FocusedE (Model.HExp.Var "b"))
+      | Finish -> (Model.ZExp.FocusedE (Model.HExp.Var "b"))
+      | _ -> (Model.ZExp.FocusedE (Model.HExp.Var "c"))
     in
     rf m
 
@@ -131,16 +131,27 @@ module View = struct
     | LamZ (var,exp) -> stringFromZExp exp
     | LeftAp (e1,e2) -> stringFromZExp e1 ^ stringFromHExp e2
     | RightAp (e1,e2) -> stringFromHExp e1 ^ stringFromZExp e2
-    | LeftPlus (num1,num2) -> stringFromZExp num1 ^ stringFromHExp num2
-    | RightPlus (num1,num2) -> stringFromHExp num1 ^ stringFromZExp num2
+    | LeftPlus (num1,num2) -> stringFromZExp num1 ^ "+" ^ stringFromHExp num2
+    | RightPlus (num1,num2) -> stringFromHExp num1  ^ "+" ^ stringFromZExp num2
     | NonEmptyHoleZ e -> "{" ^ stringFromZExp e ^ "}"
 
   let viewNum (rs, rf) =
     let num = React.S.value rs in
     Html5.(p [pcdata (stringFromZExp num)]) 
 
+  let viewActions (rs, rf) =
+    let onClick evt =
+      Controller.update (Del) (rs, rf) ;
+      true
+    in
+    (* Html5.(p [pcdata (stringFromZExp num)])  *)
+    Html5.(div ~a:[a_onclick onClick] [pcdata "del"] )
+
+
+
   let view (rs, rf) =
     let num = viewNum (rs, rf) in 
+    let actions = viewActions (rs, rf) in 
     Html5.(
       div [
         div ~a:[a_class ["comments"]] [
@@ -148,7 +159,8 @@ module View = struct
             pcdata "HZ model"
           ] ;
         ] ;
-        div ~a:[a_class ["Model"]]  [ num ]
+        div ~a:[a_class ["Model"]]  [ num ] ;
+        div ~a:[a_class ["Actions"]]  [ actions ]
       ]
     ) 
 
