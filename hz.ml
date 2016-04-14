@@ -84,12 +84,12 @@ module Controller = struct
   open Action
 
   let update a ((rs, rf) : rp) =
-    let m = React.S.value rs in
+    (* let m = React.S.value rs in *)
     let m = 
       (* match a with Action.Del ->
          match m with 
          | FocusedE _->  *)
-      (Model.ZExp.FocusedE (Var "b"))
+      (Model.ZExp.FocusedE (Model.HExp.Var "b"))
     in
     rf m
 
@@ -101,6 +101,7 @@ module View = struct
   open Tyxml_js
   open Model.HType
   open Model.HExp
+  open Model.ZExp
 
   let rec stringFromHType (htype : Model.HType.t ) : string = match htype with
     | Num n -> string_of_int n
@@ -117,18 +118,16 @@ module View = struct
     | EmptyHole ->  "{}" 
     | NonEmptyHole hc -> "{" ^ (stringFromHExp hc) ^ "}"
 
-  let rec stringFromZExp (hexp : Model.ZExp.t ) : string = 
-    "String ZExp"
-  (*   match zexp with
-       | Asc (hexp,htype) -> (stringFromHExp hexp) ^ ":" ^ (stringFromHType htype)
-       | Var str -> str
-       | Lam (var,exp) -> "λ" ^  var ^ "." ^ (stringFromHExp exp)
-       | Ap (e1, e2) -> (stringFromHExp e1) ^ "(" ^ (stringFromHExp e2) ^ ")"
-       | NumLit num -> string_of_int num
-       | Plus (n1,n2) -> (stringFromHExp n1) ^"+"^ (stringFromHExp n2)
-       | EmptyHole ->  "{}" 
-       | NonEmptyHole hc -> "{" ^ (stringFromHExp hc) ^ "}"  *)
-
+  let rec stringFromZExp (zexp : Model.ZExp.t ) : string = match zexp with
+    | FocusedE hexp -> "FocusedE"
+    | LeftAsc (e, asc) -> "LeftAsc"
+    | RightAsc (e, asc) -> "RightAsc"
+    | LamZ (var,exp) -> "LamZ"
+    | LeftAp (e1,e2) -> "LeftAp"
+    | RightAp (e1,e2) -> "RightAp"
+    | LeftPlus (num1,num2) -> "leftPlus"
+    | RightPlus (num1,num2) -> "rightPlus"
+    | NonEmptyHoleZ e -> "nonEmptyHole"
 
   let viewNum (rs, rf) =
     let num = React.S.value rs in
