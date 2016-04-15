@@ -46,7 +46,7 @@ module Model = struct
   open ZExp
   (* let empty = (HType.Arrow ((HType.Hole),(HType.Arrow ((HType.Num 1),(HType.Num 2)))))    *)
   (* let empty = Lam ((Var "x"),InProgressHole (Plus (NumLit 1, NumLit 3))) *)
-  let empty = RightPlus ((NumLit 1), (FocusedE (NumLit 2)))
+  let empty = RightPlus ((NumLit 999), (FocusedE (NumLit 2)))
 end
 
 type rs = Model.ZExp.t React.signal
@@ -135,22 +135,26 @@ module View = struct
     | RightPlus (num1,num2) -> stringFromHExp num1  ^ "+" ^ stringFromZExp num2
     | NonEmptyHoleZ e -> "{" ^ stringFromZExp e ^ "}"
 
-  let viewNum (rs, rf) =
-    let num = React.S.value rs in
-    Html5.(p [pcdata (stringFromZExp num)]) 
+
+  let viewSignal (rs, rf) = (React.S.map stringFromZExp rs)
+
+
+  let viewModel (rs, rf) =
+    (*  let num = React.S.value rs in *)
+    R.Html5.(pcdata (viewSignal (rs,rf))) 
 
   let viewActions (rs, rf) =
     let onClick evt =
-      Controller.update (Del) (rs, rf) ;
+      Controller.update (Action.Finish) (rs, rf) ;
       true
     in
     (* Html5.(p [pcdata (stringFromZExp num)])  *)
-    Html5.(div ~a:[a_onclick onClick] [pcdata "del"] )
+    Html5.(button ~a:[a_onclick onClick] [pcdata "del"] )
 
 
 
   let view (rs, rf) =
-    let num = viewNum (rs, rf) in 
+    let model = viewModel (rs, rf) in 
     let actions = viewActions (rs, rf) in 
     Html5.(
       div [
@@ -159,7 +163,7 @@ module View = struct
             pcdata "HZ model"
           ] ;
         ] ;
-        div ~a:[a_class ["Model"]]  [ num ] ;
+        div ~a:[a_class ["Model"]]  [ model ] ;
         div ~a:[a_class ["Actions"]]  [ actions ]
       ]
     ) 
