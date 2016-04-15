@@ -20,6 +20,13 @@ module Model = struct
       | Plus of t * t
       | EmptyHole 
       | NonEmptyHole of t
+
+  let rec performSyn hexp : HType.t = 
+    raise NotImplemented
+
+  and performAna hexp htype: boolean =
+    raise NotImplemented 
+    (* Raise Expection if not well typed *)
   end
 
   module ZType = struct
@@ -114,19 +121,10 @@ module Controller = struct
   open Model.HExp
   open Model
 
-  (*   let perform a m = match a with 
-       | Move dir -> RightPlus ((NumLit 99), (FocusedE (NumLit 22)))
-       | Del -> RightPlus ((NumLit 99), (FocusedE (NumLit 22)))
-       | _ -> (Model.ZExp.FocusedE (Model.HExp.Var "c"))
-       in *)
-
   exception Exception
   let update a ((rs, rf) : rp) =
     let mOld = React.S.value rs in
     let m = (performSyn mOld a) in
-    (* let m = (Model.ZExp.FocusedE (Model.HExp.Var "c")) in *)
-    (*         let mOld = React.S.value rs in 
-               m = perform a mOld *)
     rf m
 
 end
