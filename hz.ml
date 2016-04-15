@@ -1,10 +1,11 @@
 open Lwt.Infix
+exception NotImplemented
 
 module Model = struct
 
   module HType = struct 
     type t = 
-        Num of int
+        Num
       | Arrow of t * t 
       | Hole 
   end
@@ -44,16 +45,19 @@ module Model = struct
 
   open HExp
   open ZExp
+  open HType
   (* let empty = (HType.Arrow ((HType.Hole),(HType.Arrow ((HType.Num 1),(HType.Num 2)))))    *)
   (* let empty = Lam ((Var "x"),InProgressHole (Plus (NumLit 1, NumLit 3))) *)
-  let empty = RightPlus ((NumLit 999), (FocusedE (NumLit 2)))
+  let empty = (FocusedE (NumLit 2)),(Num)
 end
 
-type rs = Model.ZExp.t React.signal
-type rf = ?step:React.step -> Model.ZExp.t -> unit
+type model = Model.ZExp.t * Model.HType.t
+type rs = model React.signal
+type rf = ?step:React.step -> model -> unit
 type rp = rs * rf
 
 module Action = struct
+  open Model
   type direction =  
       FirstChild 
     | Parent 
@@ -77,20 +81,52 @@ module Action = struct
     | Construct of shape
     | Finish
 
+  (* | FocusedE of HExp.t
+        | LeftAsc of t * HType.t
+        | RightAsc of HType.t * t 
+        | LamZ of string * t
+        | LeftAp of t * HExp.t
+        | RightAp of HExp.t * t 
+        | LeftPlus of t * HExp.t
+        | RightPlus of HExp.t * t
+        | NonEmptyHoleZ of t *)
+  let rec performSyn ((zexp,htype): model) a : ZExp.t * HType.t = 
+    match zexp with 
+    | ZExp.FocusedE hexp -> 
+      begin
+        match a with 
+        | Del -> ZExp.FocusedE HExp.EmptyHole, HType.Hole
+        | _ -> raise NotImplemented 
+      end
+    | _ -> raise NotImplemented
+
+  and performAna zexp htype a : ZExp.t =
+    raise NotImplemented 
+
+
+
 end
 
 module Controller = struct
 
   open Action
+  open Model.ZExp
+  open Model.HExp
+  open Model
 
+  (*   let perform a m = match a with 
+       | Move dir -> RightPlus ((NumLit 99), (FocusedE (NumLit 22)))
+       | Del -> RightPlus ((NumLit 99), (FocusedE (NumLit 22)))
+       | _ -> (Model.ZExp.FocusedE (Model.HExp.Var "c"))
+       in *)
+
+  exception Exception
   let update a ((rs, rf) : rp) =
-    let m = React.S.value rs in 
-    let m = 
-      match a with 
-      | Del -> (Model.ZExp.FocusedE (Model.HExp.Var "b"))
-      | Finish -> (Model.ZExp.FocusedE (Model.HExp.Var "b"))
-      | _ -> (Model.ZExp.FocusedE (Model.HExp.Var "c"))
-    in
+    let mOld = React.S.value rs in
+    let m = (performSyn mOld a) in
+    (* let m = (Model.ZExp.FocusedE (Model.HExp.Var "c")) in *)
+    (*         let mOld = React.S.value rs in 
+               m = perform a mOld *)
     rf m
 
 end
@@ -105,7 +141,7 @@ module View = struct
   open Model.ZType
 
   let rec stringFromHType (htype : Model.HType.t ) : string = match htype with
-    | Num n -> string_of_int n
+    | Num -> "num"
     | Arrow (fst,snd) -> "(" ^ stringFromHType (fst) ^ "->" ^ stringFromHType (snd) ^ ")"
     | Hole -> "H" 
 
@@ -135,9 +171,7 @@ module View = struct
     | RightPlus (num1,num2) -> stringFromHExp num1  ^ "+" ^ stringFromZExp num2
     | NonEmptyHoleZ e -> "{" ^ stringFromZExp e ^ "}"
 
-
-  let viewSignal (rs, rf) = (React.S.map stringFromZExp rs)
-
+  let viewSignal (rs, rf) = (React.S.map (fun ((zexp,htype) :model) -> stringFromZExp zexp) rs)
 
   let viewModel (rs, rf) =
     (*  let num = React.S.value rs in *)
@@ -145,7 +179,7 @@ module View = struct
 
   let viewActions (rs, rf) =
     let onClick evt =
-      Controller.update (Action.Finish) (rs, rf) ;
+      Controller.update (Action.Del) (rs, rf) ;
       true
     in
     (* Html5.(p [pcdata (stringFromZExp num)])  *)
