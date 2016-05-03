@@ -21,11 +21,11 @@ module Model = struct
       | EmptyHole 
       | NonEmptyHole of t
 
-  let rec performSyn hexp : HType.t = 
-    raise NotImplemented
+    (* let rec performSyn hexp : HType.t = 
+       raise NotImplemented
 
-  and performAna hexp htype: boolean =
-    raise NotImplemented 
+       and performAna hexp htype: boolean =
+       raise NotImplemented  *)
     (* Raise Expection if not well typed *)
   end
 
@@ -55,7 +55,7 @@ module Model = struct
   open HType
   (* let empty = (HType.Arrow ((HType.Hole),(HType.Arrow ((HType.Num 1),(HType.Num 2)))))    *)
   (* let empty = Lam ((Var "x"),InProgressHole (Plus (NumLit 1, NumLit 3))) *)
-  let empty = (FocusedE (NumLit 2)),(Num)
+  let empty = (FocusedE (Plus (NumLit 1, NumLit 3))),(Num)
 end
 
 type model = Model.ZExp.t * Model.HType.t
