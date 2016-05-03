@@ -88,23 +88,27 @@ module Action = struct
     | Construct of shape
     | Finish
 
-  (* | FocusedE of HExp.t
-        | LeftAsc of t * HType.t
-        | RightAsc of HType.t * t 
-        | LamZ of string * t
-        | LeftAp of t * HExp.t
-        | RightAp of HExp.t * t 
-        | LeftPlus of t * HExp.t
-        | RightPlus of HExp.t * t
-        | NonEmptyHoleZ of t *)
   let rec performSyn ((zexp,htype): model) a : ZExp.t * HType.t = 
     match zexp with 
     | ZExp.FocusedE hexp -> 
       begin
         match a with 
         | Del -> ZExp.FocusedE HExp.EmptyHole, HType.Hole
+        | Move dir -> 
+          begin
+            match dir with 
+            | FirstChild -> begin
+                match hexp with
+                | Model.HExp.Plus (n1,n2) -> (LeftPlus (FocusedE (n1), n2)), HType.Num
+                | _ -> raise NotImplemented
+              end
+            | Parent -> raise NotImplemented 
+            | NextSib -> raise NotImplemented 
+            | PrevSib -> raise NotImplemented 
+          end
         | _ -> raise NotImplemented 
       end
+    | LeftPlus (focus,hexp) ->  performSyn (focus,htype) a
     | _ -> raise NotImplemented
 
   and performAna zexp htype a : ZExp.t =
@@ -176,18 +180,27 @@ module View = struct
     R.Html5.(pcdata (viewSignal (rs,rf))) 
 
   let viewActions (rs, rf) =
-    let onClick evt =
+    let onClickDel evt =
       Controller.update (Action.Del) (rs, rf) ;
       true
     in
     (* Html5.(p [pcdata (stringFromZExp num)])  *)
-    Html5.(button ~a:[a_onclick onClick] [pcdata "del"] )
+    Html5.(button ~a:[a_onclick onClickDel] [pcdata "del"] )
+
+  let moveActions (rs, rf) =
+    let onClickMove evt =
+      Controller.update (Action.Move FirstChild) (rs, rf) ;
+      true
+    in
+    (* Html5.(p [pcdata (stringFromZExp num)])  *)
+    Html5.(button ~a:[a_onclick onClickMove] [pcdata "move"] )
 
 
 
   let view (rs, rf) =
     let model = viewModel (rs, rf) in 
     let actions = viewActions (rs, rf) in 
+    let mActions = moveActions (rs, rf) in 
     Html5.(
       div [
         div ~a:[a_class ["comments"]] [
@@ -196,7 +209,8 @@ module View = struct
           ] ;
         ] ;
         div ~a:[a_class ["Model"]]  [ model ] ;
-        div ~a:[a_class ["Actions"]]  [ actions ]
+        div ~a:[a_class ["Actions"]]  [ actions ];
+        div ~a:[a_class ["MoveActions"]]  [ mActions ]
       ]
     ) 
 
