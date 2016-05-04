@@ -115,6 +115,11 @@ module Action = struct
               end
             | PrevSib -> raise NotImplemented
           end
+        | Construct shape -> begin (* (ZExp.FocusedE (NumLit 999)), HType.Num  *)
+            match shape with 
+            | SPlus -> ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,(HExp.EmptyHole))),HType.Num
+            | _ -> raise NotImplemented 
+          end
         | _ -> raise NotImplemented 
       end
     | ZExp.LeftPlus (selected,hexp) ->  (* (ZExp.FocusedE (NumLit 811)), HType.Num  *)(* performSyn (focus,htype) a *)
@@ -143,6 +148,11 @@ module Action = struct
                 | ZExp.FocusedE _ -> raise NotImplemented
               end
             | _ ->  raise NotImplemented
+          end
+        | Construct shape -> begin (* (ZExp.FocusedE (NumLit 999)), HType.Num  *)
+            match shape with 
+            | SPlus -> ZExp.LeftPlus (ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,(HExp.EmptyHole))),hexp),HType.Num
+            | _ -> raise NotImplemented 
           end
         | _ -> raise NotImplemented 
       end
@@ -270,12 +280,27 @@ module View = struct
       ]
       )
 
+  let addActions (rs, rf) =
+    let onClickAddPlus evt =
+      Controller.update (Action.Construct SPlus) (rs, rf) ;
+      true
+    in
+    Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
+        ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
+          li [
+            button ~a:[a_onclick onClickAddPlus] [pcdata "Add Plus"] 
+          ];
+        ]
+      ]
+      )
+
 
 
   let view (rs, rf) =
     let model = viewModel (rs, rf) in 
     let actions = viewActions (rs, rf) in 
     let mActions = moveActions (rs, rf) in
+    let aActions = addActions (rs, rf) in
     (* let actionsRP = moveActionsRP (rs, rf) in  *)
     Html5.(
       div [
@@ -286,7 +311,8 @@ module View = struct
         ] ;
         div ~a:[a_class ["Model"]]  [ model ] ;
         div ~a:[a_class ["Actions"]]  [ actions ];
-        div ~a:[a_class ["ActionsLeftPlus"]]  [ mActions ]
+        div ~a:[a_class ["ActionsLeftPlus"]]  [ mActions ];
+        div ~a:[a_class ["ActionsAdd"]]  [ aActions ]
         (* div ~a:[a_class ["ActionsRightPlus"]]  [ actionsRP ] *)
       ]
     ) 
