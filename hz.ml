@@ -105,21 +105,22 @@ module Action = struct
               end
             | Parent -> begin
                 match zexp with
-                | ZExp.LeftPlus _ -> (ZExp.FocusedE (NumLit 888)), HType.Num
-                | ZExp.FocusedE _ -> (ZExp.FocusedE (NumLit 999)), HType.Num
+                | ZExp.LeftPlus _ -> raise NotImplemented
+                | ZExp.FocusedE _ -> raise NotImplemented
               end
             | NextSib -> begin
                 match zexp with
-                | ZExp.LeftPlus _ -> (ZExp.FocusedE (NumLit 811)), HType.Num
-                | ZExp.FocusedE _ -> (ZExp.FocusedE (NumLit 911)), HType.Num
+                | ZExp.LeftPlus _ -> raise NotImplemented
+                | ZExp.FocusedE _ -> raise NotImplemented
               end
-            | PrevSib -> (ZExp.FocusedE (NumLit 666)), HType.Num
+            | PrevSib -> raise NotImplemented
           end
         | _ -> raise NotImplemented 
       end
     | ZExp.LeftPlus (selected,hexp) ->  (* (ZExp.FocusedE (NumLit 811)), HType.Num  *)(* performSyn (focus,htype) a *)
       begin
         match a with 
+        | Del ->  (ZExp.LeftPlus  (ZExp.FocusedE HExp.EmptyHole,(hexp))), HType.Num  (* ZExp.FocusedE HExp.EmptyHole, HType.Hole  *)
         | Move dir -> 
           begin
             match dir with 
@@ -130,7 +131,7 @@ module Action = struct
                     match z1 with 
                     | ZExp.FocusedE h -> (ZExp.FocusedE (HExp.Plus (h,h1))), HType.Num
                   end
-                | ZExp.FocusedE _ -> (ZExp.FocusedE (NumLit 777)), HType.Num
+                | ZExp.FocusedE _ -> raise NotImplemented
               end
             | NextSib -> begin
                 match zexp with
@@ -139,26 +140,20 @@ module Action = struct
                     match z1 with 
                     | ZExp.FocusedE h -> (ZExp.RightPlus (h,(ZExp.FocusedE h1))), HType.Num (* (ZExp.FocusedE (HExp.Plus (h,h1))), HType.Num *)
                   end
-                | ZExp.FocusedE _ -> (ZExp.FocusedE (NumLit 777)), HType.Num
+                | ZExp.FocusedE _ -> raise NotImplemented
               end
-            | _ ->  (ZExp.FocusedE (NumLit 999)), HType.Num
+            | _ ->  raise NotImplemented
           end
         | _ -> raise NotImplemented 
       end
     | ZExp.RightPlus (hexp,selected) -> begin
         match a with
+        | Del ->  (ZExp.RightPlus (hexp, ZExp.FocusedE HExp.EmptyHole)), HType.Num 
         | Move dir -> begin
             match dir with 
             | Parent -> begin 
                 match selected with 
                 | ZExp.FocusedE f -> (ZExp.FocusedE (HExp.Plus (hexp,f))), HType.Num
-
-                (* match selected with
-                   | ZExp.LeftPlus (h1,z1) -> begin
-                    match z1 with
-                    | ZExp.FocusedE h -> (ZExp.FocusedE (HExp.Plus (h1,h))), HType.Num
-                   end
-                *)
               end
           end
       end 
