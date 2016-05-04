@@ -55,7 +55,8 @@ module Model = struct
   open HType
   (* let empty = (HType.Arrow ((HType.Hole),(HType.Arrow ((HType.Num 1),(HType.Num 2)))))    *)
   (* let empty = Lam ((Var "x"),InProgressHole (Plus (NumLit 1, NumLit 3))) *)
-  let empty = (FocusedE (Plus (NumLit 1, NumLit 3))),(Num)
+  (* let empty = (FocusedE (Plus (NumLit 1, NumLit 3))),(Num) *)
+  let empty = (ZExp.LeftPlus ((ZExp.FocusedE (NumLit 8)), (NumLit 7))), HType.Num
 end
 
 type model = Model.ZExp.t * Model.HType.t
@@ -93,22 +94,74 @@ module Action = struct
     | ZExp.FocusedE hexp -> 
       begin
         match a with 
-        | Del -> ZExp.FocusedE HExp.EmptyHole, HType.Hole
+        | Del ->  ZExp.FocusedE HExp.EmptyHole, HType.Hole 
         | Move dir -> 
           begin
             match dir with 
             | FirstChild -> begin
                 match hexp with
-                | Model.HExp.Plus (n1,n2) -> (LeftPlus (FocusedE (n1), n2)), HType.Num
+                | Model.HExp.Plus (n1,n2) -> (ZExp.LeftPlus ((ZExp.FocusedE n1), n2)), HType.Num 
                 | _ -> raise NotImplemented
               end
-            | Parent -> raise NotImplemented 
-            | NextSib -> raise NotImplemented 
-            | PrevSib -> raise NotImplemented 
+            | Parent -> begin
+                match zexp with
+                | ZExp.LeftPlus _ -> (ZExp.FocusedE (NumLit 888)), HType.Num
+                | ZExp.FocusedE _ -> (ZExp.FocusedE (NumLit 999)), HType.Num
+              end
+            | NextSib -> begin
+                match zexp with
+                | ZExp.LeftPlus _ -> (ZExp.FocusedE (NumLit 811)), HType.Num
+                | ZExp.FocusedE _ -> (ZExp.FocusedE (NumLit 911)), HType.Num
+              end
+            | PrevSib -> (ZExp.FocusedE (NumLit 666)), HType.Num
           end
         | _ -> raise NotImplemented 
       end
-    | LeftPlus (focus,hexp) ->  performSyn (focus,htype) a
+    | ZExp.LeftPlus (selected,hexp) ->  (* (ZExp.FocusedE (NumLit 811)), HType.Num  *)(* performSyn (focus,htype) a *)
+      begin
+        match a with 
+        | Move dir -> 
+          begin
+            match dir with 
+            | Parent -> begin
+                match zexp with
+                | ZExp.LeftPlus (z1,h1) -> (* (ZExp.FocusedE (NumLit 888)), HType.Num *)
+                  begin 
+                    match z1 with 
+                    | ZExp.FocusedE h -> (ZExp.FocusedE (HExp.Plus (h,h1))), HType.Num
+                  end
+                | ZExp.FocusedE _ -> (ZExp.FocusedE (NumLit 777)), HType.Num
+              end
+            | NextSib -> begin
+                match zexp with
+                | ZExp.LeftPlus (z1,h1) -> (* (ZExp.FocusedE (NumLit 888)), HType.Num *)
+                  begin 
+                    match z1 with 
+                    | ZExp.FocusedE h -> (ZExp.RightPlus (h,(ZExp.FocusedE h1))), HType.Num (* (ZExp.FocusedE (HExp.Plus (h,h1))), HType.Num *)
+                  end
+                | ZExp.FocusedE _ -> (ZExp.FocusedE (NumLit 777)), HType.Num
+              end
+            | _ ->  (ZExp.FocusedE (NumLit 999)), HType.Num
+          end
+        | _ -> raise NotImplemented 
+      end
+    | ZExp.RightPlus (hexp,selected) -> begin
+        match a with
+        | Move dir -> begin
+            match dir with 
+            | Parent -> begin 
+                match selected with 
+                | ZExp.FocusedE f -> (ZExp.FocusedE (HExp.Plus (hexp,f))), HType.Num
+
+                (* match selected with
+                   | ZExp.LeftPlus (h1,z1) -> begin
+                    match z1 with
+                    | ZExp.FocusedE h -> (ZExp.FocusedE (HExp.Plus (h1,h))), HType.Num
+                   end
+                *)
+              end
+          end
+      end 
     | _ -> raise NotImplemented
 
   and performAna zexp htype a : ZExp.t =
@@ -187,20 +240,48 @@ module View = struct
     (* Html5.(p [pcdata (stringFromZExp num)])  *)
     Html5.(button ~a:[a_onclick onClickDel] [pcdata "del"] )
 
+  (*   let moveActions (rs, rf) =
+       let onClickMove evt =
+        Controller.update (Action.Move FirstChild) (rs, rf) ;
+        true
+       in
+       (* Html5.(p [pcdata (stringFromZExp num)])  *)
+       Html5.(button ~a:[a_onclick onClickMove] [pcdata "move"] ) *)
   let moveActions (rs, rf) =
-    let onClickMove evt =
+    let onClickMoveLC evt =
       Controller.update (Action.Move FirstChild) (rs, rf) ;
       true
     in
-    (* Html5.(p [pcdata (stringFromZExp num)])  *)
-    Html5.(button ~a:[a_onclick onClickMove] [pcdata "move"] )
+    let onClickMoveP evt =
+      Controller.update (Action.Move Parent) (rs, rf) ;
+      true
+    in
+    let onClickMoveNS evt =
+      Controller.update (Action.Move NextSib) (rs, rf) ;
+      true
+    in
+    Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
+        ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
+          li [
+            button ~a:[a_onclick onClickMoveLC] [pcdata "move left child"] 
+          ];
+          li [
+            button ~a:[a_onclick onClickMoveP] [pcdata "move parent"] 
+          ];
+          li [
+            button ~a:[a_onclick onClickMoveNS] [pcdata "move next sib"] 
+          ]
+        ]
+      ]
+      )
 
 
 
   let view (rs, rf) =
     let model = viewModel (rs, rf) in 
     let actions = viewActions (rs, rf) in 
-    let mActions = moveActions (rs, rf) in 
+    let mActions = moveActions (rs, rf) in
+    (* let actionsRP = moveActionsRP (rs, rf) in  *)
     Html5.(
       div [
         div ~a:[a_class ["comments"]] [
@@ -210,7 +291,8 @@ module View = struct
         ] ;
         div ~a:[a_class ["Model"]]  [ model ] ;
         div ~a:[a_class ["Actions"]]  [ actions ];
-        div ~a:[a_class ["MoveActions"]]  [ mActions ]
+        div ~a:[a_class ["ActionsLeftPlus"]]  [ mActions ]
+        (* div ~a:[a_class ["ActionsRightPlus"]]  [ actionsRP ] *)
       ]
     ) 
 
