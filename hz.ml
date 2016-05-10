@@ -129,7 +129,8 @@ module Action = struct
               | SPlus -> (ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,(HExp.EmptyHole)))) 
               | _ -> raise NotImplemented 
             end
-          | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)     (*  (ZExp.LeftPlus ((fst (performSyn (z1,htype) a)),h1)),htype *) (*  of t * HExp.t *)
+          | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
+          | ZExp.RightPlus (h1,z1) -> ZExp.RightPlus (h1,fst (performSyn (z1,htype) a))      (*  (ZExp.LeftPlus ((fst (performSyn (z1,htype) a)),h1)),htype *) (*  of t * HExp.t *)
           | _ -> raise NotImplemented  
         end
       | Move dir -> begin
@@ -141,6 +142,7 @@ module Action = struct
                   | HExp.Plus (h1,h2) -> ZExp.LeftPlus ((ZExp.FocusedE h1),h2)
                 end
               | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
+              | ZExp.RightPlus (h1,z1) -> ZExp.RightPlus (h1,fst (performSyn (z1,htype) a))
             end
           | Parent -> begin
               match zexp with 
@@ -149,11 +151,30 @@ module Action = struct
                   | ZExp.FocusedE hexp -> ZExp.FocusedE (Plus (hexp,h1))
                   | _ -> ZExp.LeftPlus((fst (performSyn (z1,htype) a)),h1)
                 end
+              | ZExp.RightPlus (h1,z1) -> begin
+                  match z1 with
+                  | ZExp.FocusedE hexp -> ZExp.FocusedE (Plus (h1,hexp))
+                  | _ -> ZExp.RightPlus(h1,(fst (performSyn (z1,htype) a)))
+                end
             end
+          | NextSib -> begin
+              match zexp with
+              | ZExp.LeftPlus (z1,h1) -> begin
+                  match z1 with
+                  | ZExp.FocusedE hexp -> ZExp.RightPlus (hexp, (ZExp.FocusedE h1))
+                  | _ -> ZExp.LeftPlus((fst (performSyn (z1,htype) a)),h1)
+                end
+              | ZExp.RightPlus (h1,z1) -> begin
+                  match z1 with
+                  | ZExp.FocusedE hexp -> ZExp.LeftPlus ((ZExp.FocusedE h1),hexp)
+                  | _ -> ZExp.RightPlus(h1,(fst (performSyn (z1,htype) a)))
+                end
+            end
+          | PrevSib -> raise NotImplemented  
         end
       | _ -> raise NotImplemented
     in m,htype
- 
+
 
   and performAna zexp htype a : ZExp.t =
     raise NotImplemented 
