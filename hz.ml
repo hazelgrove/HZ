@@ -130,14 +130,8 @@ module Action = struct
               | _ -> raise NotImplemented 
             end
           | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)     (*  (ZExp.LeftPlus ((fst (performSyn (z1,htype) a)),h1)),htype *) (*  of t * HExp.t *)
-          (* | ZExp.LeftAsc _ -> raise NotImplemented (* of t * HType.t *) *)
           | _ -> raise NotImplemented  
         end
-      (*         begin 
-                 match shape with 
-                 | SPlus -> (ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,(HExp.EmptyHole)))) 
-                 | _ -> raise NotImplemented 
-                 end  *)
       | Move dir -> begin
           match dir with 
           | FirstChild -> begin
@@ -147,13 +141,7 @@ module Action = struct
                   | HExp.Plus (h1,h2) -> ZExp.LeftPlus ((ZExp.FocusedE h1),h2)
                 end
               | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
-              (*   | ZExp.FocusedE hexp  *)
-              (* | HExp.Plus (h1,h2) -> ZExp.LeftPlus ((ZExp.FocusedE h1),h2) *)
             end
-          (* | Parent -> begin
-              match hexp with
-              | _ -> raise InProgress
-             end *)
           | Parent -> begin
               match zexp with 
               | ZExp.LeftPlus (z1,h1) -> begin
@@ -165,143 +153,7 @@ module Action = struct
         end
       | _ -> raise NotImplemented
     in m,htype
-  (*     let focusedModel = match zexp with
-         | ZExp.FocusedE hexp -> zexp,htype 
-         | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus ((fst (performSyn (z1,htype) a)),h1) ,htype (*  of t * HExp.t *)
-         | ZExp.LeftAsc _ -> raise NotImplemented (* of t * HType.t *)
-         | _ -> raise NotImplemented 
-
-         in
-         let m = match (fst focusedModel) with
-         | ZExp.FocusedE hexp -> 
-          begin
-            match a with
-            | Construct shape -> 
-              begin 
-                match shape with 
-                | SPlus -> (ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,(HExp.EmptyHole)))) 
-                | _ -> raise NotImplemented 
-              end 
-            | Move dir -> begin
-                match dir with 
-                | FirstChild -> begin
-                    match hexp with 
-                    | HExp.Plus (h1,h2) -> ZExp.LeftPlus ((ZExp.FocusedE h1),h2)
-                    | _ -> raise NotImplemented
-                  end
-                | Parent -> begin
-                    match hexp with
-                    | _ -> raise InProgress
-                  end
-                | _ -> raise NotImplemented
-              end
-            | _ -> raise NotImplemented
-          end
-         | _ -> fst focusedModel
-         in m,HType.Num *)
-
-  (* raise InProgress *)
-
-
-  (*  match a with
-      | Del ->  raise NotImplemented
-      (*  begin
-      -> raise NotImplemented
-      end *)
-      | Construct shape -> raise NotImplemented (* (ZExp.FocusedE (NumLit 999)), HType.Num  *)
-
-      | Move dir -> raise NotImplemented
-      | Finish -> raise NotImplemented *)
-
-  (* match zexp with 
-     | ZExp.FocusedE hexp -> 
-     begin
-     match a with 
-     | Del ->  ZExp.FocusedE HExp.EmptyHole, HType.Hole 
-     | Move dir -> 
-     begin
-     match dir with 
-     | FirstChild -> begin
-     match hexp with
-     | Model.HExp.Plus (n1,n2) -> (ZExp.LeftPlus ((ZExp.FocusedE n1), n2)), HType.Num 
-     | _ -> raise NotImplemented
-     end
-     | Parent -> begin
-     match zexp with
-     | ZExp.LeftPlus _ -> raise NotImplemented
-     | ZExp.FocusedE _ -> raise NotImplemented
-     | _ -> raise NotImplemented
-     end
-     | NextSib -> begin
-     match zexp with
-     | ZExp.LeftPlus _ -> raise NotImplemented
-     | ZExp.FocusedE _ -> raise NotImplemented
-     | _ -> raise NotImplemented
-     end
-     | PrevSib -> raise NotImplemented
-     end
-     | Construct shape -> begin (* (ZExp.FocusedE (NumLit 999)), HType.Num  *)
-     match shape with 
-     | SPlus -> ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,(HExp.EmptyHole))),HType.Num
-     | _ -> raise NotImplemented 
-     end
-     | _ -> raise NotImplemented 
-     end
-     | ZExp.LeftPlus (selected,hexp) ->  (* (ZExp.FocusedE (NumLit 811)), HType.Num  *)(* performSyn (focus,htype) a *)
-     begin
-     match a with 
-     | Del ->  (ZExp.LeftPlus  (ZExp.FocusedE HExp.EmptyHole,(hexp))), HType.Num  (* ZExp.FocusedE HExp.EmptyHole, HType.Hole  *)
-     | Move dir -> 
-     begin
-     match dir with 
-     | Parent -> begin
-     match zexp with
-     | ZExp.LeftPlus (z1,h1) -> (* (ZExp.FocusedE (NumLit 888)), HType.Num *)
-     begin 
-     match z1 with 
-     | ZExp.FocusedE h -> (ZExp.FocusedE (HExp.Plus (h,h1))), HType.Num
-     | _ -> raise NotImplemented
-     end
-     | ZExp.FocusedE _ -> raise NotImplemented
-     | _ -> raise NotImplemented
-     end
-     | NextSib -> begin
-     match zexp with
-     | ZExp.LeftPlus (z1,h1) -> (* (ZExp.FocusedE (NumLit 888)), HType.Num *)
-     begin 
-     match z1 with 
-     | ZExp.FocusedE h -> (ZExp.RightPlus (h,(ZExp.FocusedE h1))), HType.Num (* (ZExp.FocusedE (HExp.Plus (h,h1))), HType.Num *)
-     | _ -> raise NotImplemented
-     end
-     | ZExp.FocusedE _ -> raise NotImplemented
-     | _ -> raise NotImplemented
-     end
-     | FirstChild ->  raise NotImplemented
-     | PrevSib -> raise NotImplemented
-     (* | _ ->  raise NotImplemented *)
-     end
-     | Construct shape -> begin (* (ZExp.FocusedE (NumLit 999)), HType.Num  *)
-     match shape with 
-     | SPlus -> ZExp.LeftPlus (ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,(HExp.EmptyHole))),hexp),HType.Num
-     | _ -> raise NotImplemented 
-     end
-     | _ -> raise NotImplemented 
-     end
-     | ZExp.RightPlus (hexp,selected) -> begin
-     match a with
-     | Del ->  (ZExp.RightPlus (hexp, ZExp.FocusedE HExp.EmptyHole)), HType.Num 
-     | Move dir -> begin
-     match dir with 
-     | Parent -> begin 
-     match selected with 
-     | ZExp.FocusedE f -> (ZExp.FocusedE (HExp.Plus (hexp,f))), HType.Num
-     | _ -> raise NotImplemented 
-     end
-     | _ -> raise NotImplemented 
-     end
-     | _ -> raise NotImplemented 
-     end 
-     | _ -> raise NotImplemented *)
+ 
 
   and performAna zexp htype a : ZExp.t =
     raise NotImplemented 
