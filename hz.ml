@@ -41,7 +41,7 @@ module Model = struct
     type t = 
       | FocusedE of HExp.t
       | LeftAsc of t * HType.t
-      | RightAsc of HType.t * t 
+      | RightAsc of HExp.t * ZType.t 
       | LamZ of string * t
       | LeftAp of t * HExp.t
       | RightAp of HExp.t * t 
@@ -127,11 +127,16 @@ module Action = struct
           | ZExp.FocusedE hexp -> begin
               match shape with 
               | SPlus -> (ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,(HExp.EmptyHole)))) 
+              | SNumlit i -> (ZExp.FocusedE (HExp.NumLit i))
+              | SLam var -> (ZExp.FocusedE  (HExp.Asc ((HExp.Lam ("x",HExp.EmptyHole)),HType.Arrow (HType.Hole,HType.Hole)))) (* (HExp.Asc (HExp.Lam ("x",HExp.EmptyHole)), HType.Arrow (HType.Hole, HType.Hole))) *)
               | _ -> raise NotImplemented 
             end
           | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
-          | ZExp.RightPlus (h1,z1) -> ZExp.RightPlus (h1,fst (performSyn (z1,htype) a))      (*  (ZExp.LeftPlus ((fst (performSyn (z1,htype) a)),h1)),htype *) (*  of t * HExp.t *)
-          | _ -> raise NotImplemented  
+          | ZExp.RightPlus (h1,z1) -> ZExp.RightPlus (h1,fst (performSyn (z1,htype) a)) 
+          | ZExp.LamZ (var,z1) -> ZExp.LamZ (var,fst (performSyn (z1,htype) a))       (*  (ZExp.LeftPlus ((fst (performSyn (z1,htype) a)),h1)),htype *) (*  of t * HExp.t *)
+          | ZExp.LeftAsc (z1,a1) -> ZExp.LeftAsc (fst (performSyn (z1,htype) a),a1)
+          | ZExp.RightAsc (a1,z1) -> ZExp.RightAsc (a1, snd (performSyn (z1,htype) a)) 
+          | _ -> raise InProgress  
         end
       | Move dir -> begin
           match dir with 
@@ -140,9 +145,14 @@ module Action = struct
               | ZExp.FocusedE hexp -> begin
                   match hexp with
                   | HExp.Plus (h1,h2) -> ZExp.LeftPlus ((ZExp.FocusedE h1),h2)
+                  | HExp.Lam (var,body) -> ZExp.LamZ (var,(ZExp.FocusedE body))
+                  | HExp.Asc (a1,a2) -> ZExp.LeftAsc ((ZExp.FocusedE a1),a2)
                 end
               | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
               | ZExp.RightPlus (h1,z1) -> ZExp.RightPlus (h1,fst (performSyn (z1,htype) a))
+              | ZExp.LeftAsc (z1,a1) -> ZExp.LeftAsc (fst (performSyn (z1,htype) a),a1)
+              | ZExp.RightAsc (a1,z1) -> ZExp.RightAsc (a1,fst (performSyn (z1,htype) a))
+              | ZExp.LamZ (var,z1) -> ZExp.LamZ (var,fst (performSyn (z1,htype) a))
             end
           | Parent -> begin
               match zexp with 
@@ -155,6 +165,16 @@ module Action = struct
                   match z1 with
                   | ZExp.FocusedE hexp -> ZExp.FocusedE (Plus (h1,hexp))
                   | _ -> ZExp.RightPlus(h1,(fst (performSyn (z1,htype) a)))
+                end
+              | ZExp.LeftAsc (z1,a1) -> begin
+                  match z1 with 
+                  | ZExp.FocusedE hexp -> ZExp.FocusedE (Asc (hexp,a1))
+                  | _ -> ZExp.LeftAsc((fst (performSyn (z1,htype) a)),a1)
+                end
+              | ZExp.RightAsc (a1,z1) -> begin
+                  match z1 with
+                  | ZType.FocusedT htype -> ZExp.FocusedE (Asc (a1,htype))
+                  | _ -> ZExp.RightAsc(a1,(fst (performSyn (z1,htype) a)))
                 end
             end
           | NextSib -> begin
@@ -229,9 +249,9 @@ module View = struct
 
   let rec stringFromZExp (zexp : Model.ZExp.t ) : string = match zexp with
     | FocusedE hexp -> ">" ^ stringFromHExp hexp ^ "<"
-    | LeftAsc (e, asc) -> stringFromZExp e ^ stringFromHType asc 
-    | RightAsc (e, asc) -> stringFromHType e ^ stringFromZExp asc
-    | LamZ (var,exp) -> stringFromZExp exp
+    | LeftAsc (e, asc) -> (* "LA" ^ *)  stringFromZExp e ^ ":" ^ stringFromHType asc 
+    | RightAsc (e, asc) -> stringFromHType e ^ ":" ^ stringFromZExp asc
+    | LamZ (var,exp) -> "λ" ^  var ^ "." ^ (stringFromZExp exp)
     | LeftAp (e1,e2) -> stringFromZExp e1 ^ stringFromHExp e2
     | RightAp (e1,e2) -> stringFromHExp e1 ^ stringFromZExp e2
     | LeftPlus (num1,num2) -> stringFromZExp num1 ^ "+" ^ stringFromHExp num2
@@ -330,12 +350,17 @@ module View = struct
       )
 
 
+  (* let addTextInput (rs, rf) =
+     Html5.(textarea) *)
+  (* ~name:textname *) (* 1 10 () *) 
+  (* textarea [pcdata "del"]~a:[a_onclick onClickDel] (* [pcdata "del"] *) *) 
 
   let view (rs, rf) =
     let model = viewModel (rs, rf) in 
     let actions = viewActions (rs, rf) in 
     let mActions = moveActions (rs, rf) in
     let aActions = addActions (rs, rf) in
+    (* let textInputs = addTextInput (rs, rf) in *)
     (* let actionsRP = moveActionsRP (rs, rf) in  *)
     Html5.(
       div [
@@ -347,8 +372,9 @@ module View = struct
         div ~a:[a_class ["Model"]]  [ model ] ;
         div ~a:[a_class ["Actions"]]  [ actions ];
         div ~a:[a_class ["ActionsLeftPlus"]]  [ mActions ];
-        div ~a:[a_class ["ActionsAdd"]]  [ aActions ]
-        (* div ~a:[a_class ["ActionsRightPlus"]]  [ actionsRP ] *)
+        div ~a:[a_class ["ActionsAdd"]]  [ aActions ];
+        (* div ~a:[a_class ["textArea"]]  [ addTextInput ] *)
+        (* (* (* div ~a:[a_class ["ActionsRightPlus"]]  [ actionsRP ] *) *) *)
       ]
     ) 
 
@@ -362,7 +388,9 @@ let main _ =
   in
   let m = Model.empty in
   let rp = React.S.create m in
+  let input = Dom_html.createInput ~_type:(Js.string "text") doc in
   Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view rp)) ;
+  Dom.appendChild parent input;
   Lwt.return ()
 
 let _ = Lwt_js_events.onload () >>= main
