@@ -92,41 +92,10 @@ module Action = struct
     | Finish
 
 
-
-  (*     Asc of t * HType.t 
-         | Var of string
-         | Lam of string * t
-         | Ap of t * t 
-         | NumLit of int
-         | Plus of t * t
-         | EmptyHole 
-         | NonEmptyHole of t *)
-
-  (* | RightAscn _ -> raise NotImplemented  *)(* of HType.t * t  *)
-  (*     | LamZ _ -> raise NotImplemented (*  of string * t *)
-         | LeftAp _ -> raise NotImplemented  (* of t * HExp.t *)
-         | RightAp _ -> raise NotImplemented (*  of HExp.t * t  *)
-         | LeftPlus _-> raise NotImplemented (*  of t * HExp.t *)
-         | RightPlus _-> raise NotImplemented (* of HExp.t * t *)
-         | NonEmptyHoleZ _ -> raise NotImplemented (* of t *)
-  *)
-
-  (* | SArrow -> raise NotImplemented 
-     | SNum -> raise NotImplemented 
-     | SAsc -> raise NotImplemented 
-     | SVar _ -> raise NotImplemented 
-     | SLam _ -> raise NotImplemented 
-     | SAp -> raise NotImplemented 
-     | SArg -> raise NotImplemented 
-     | SNumlit num -> (ZExp.FocusedE (HExp.NumLit num)) *)
-
-  (*      | FocusedT of HType.t
-          | FirstArrow of t * HType.t
-          | SecondArrow of HType.t * t  *)
   let rec performTyp (ztype,a) : Model.ZType.t =
     (* ztype *)
     let m = match a with 
-        Move dir -> begin
+      | Move dir -> begin
           match dir with 
           | FirstChild -> begin
               match ztype with 
@@ -138,27 +107,23 @@ module Action = struct
               | ZType.SecondArrow _ -> ZType.FocusedT (Hole)
             end
         end
+      | Construct shape -> begin
+          match ztype with
+          | ZType.FocusedT t1 -> begin
+              match t1 with
+              | HType.Hole -> begin
+                  match shape with 
+                  | SNum -> ZType.FocusedT (Num)
+                end
+              | HType.Arrow (t1,t2) -> ZType.FirstArrow (( ZType.FocusedT t1),t2)
+              | _ -> raise InProgress
+              (* (fst (performTyp ((ZType.FocusedT t1),a))) ,t2) *)
+            end
+          | ZType.FirstArrow (z1,t1) -> ZType.FirstArrow ((performTyp (z1,a)),t1)
+          | _ -> raise NotImplemented
+        end        
+      | _ -> raise NotImplemented
     in m
-
-  (* 
-    | HType.Num -> ZType.FocusedT (Hole)
-    | HType.Arrow (_,_) -> ZType.FocusedT (Hole)
-    | HType.Hole -> ZType.FocusedT (Hole) *)
-
-  (*     let m = match ztype with 
-         | Move dir -> begin
-            match dir with 
-            | FirstChild -> begin
-                match ztype with
-                | ZType.FocusedT _ -> ZType.FocusedT (Hole)
-                | ZType.FirstArrow (_,_) -> raise NotImplemented 
-                   | ZType.SecondArrow (_,_) -> raise NotImplemented
-              end
-          end
-         in m *)
-
-  (* ZType.FocusedT (Hole) *)
-
 
   let rec performSyn ((zexp,htype): model) a : ZExp.t * HType.t =
     let m = match a with 
@@ -239,8 +204,8 @@ module Action = struct
           | ZExp.RightPlus (h1,z1) -> ZExp.RightPlus (h1,fst (performSyn (z1,htype) a)) 
           | ZExp.LamZ (var,z1) -> ZExp.LamZ (var,fst (performSyn (z1,htype) a))       (*  (ZExp.LeftPlus ((fst (performSyn (z1,htype) a)),h1)),htype *) (*  of t * HExp.t *)
           | ZExp.LeftAsc (z1,a1) -> ZExp.LeftAsc (fst (performSyn (z1,htype) a),a1)
-          (* | ZExp.RightAsc (a1,z1) -> ZExp.RightAsc (a1, snd (performSyn (z1,htype) a))  *)
-          | _ -> raise InProgress  
+          | ZExp.RightAsc (a1,z1) -> ZExp.RightAsc (a1, (performTyp (z1,a)) )(*   ZExp.RightAsc (a1, (performSyn (z1,a)))  *)
+          | _ -> raise NotImplemented  
         end
       | _ -> raise NotImplemented
     in m,htype
