@@ -41,7 +41,7 @@ module Model = struct
     type t = 
       | FocusedE of HExp.t
       | LeftAsc of t * HType.t
-      | RightAsc of HExp.t * ZType.t 
+      | RightAsc of HExp.t * ZType.t
       | LamZ of string * t
       | LeftAp of t * HExp.t
       | RightAp of HExp.t * t 
@@ -120,24 +120,48 @@ module Action = struct
      | SArg -> raise NotImplemented 
      | SNumlit num -> (ZExp.FocusedE (HExp.NumLit num)) *)
 
+  (*      | FocusedT of HType.t
+          | FirstArrow of t * HType.t
+          | SecondArrow of HType.t * t  *)
+  let rec performTyp (ztype,a) : Model.ZType.t =
+    (* ztype *)
+    let m = match a with 
+        Move dir -> begin
+          match dir with 
+          | FirstChild -> begin
+              match ztype with 
+              | ZType.FocusedT t1 -> begin
+                  match t1 with
+                  | HType.Arrow (t1,t2) ->  ZType.FirstArrow (( ZType.FocusedT t1),t2)
+                end
+              | ZType.FirstArrow (t1,t2) -> ZType.FocusedT (Hole)
+              | ZType.SecondArrow _ -> ZType.FocusedT (Hole)
+            end
+        end
+    in m
+
+  (* 
+    | HType.Num -> ZType.FocusedT (Hole)
+    | HType.Arrow (_,_) -> ZType.FocusedT (Hole)
+    | HType.Hole -> ZType.FocusedT (Hole) *)
+
+  (*     let m = match ztype with 
+         | Move dir -> begin
+            match dir with 
+            | FirstChild -> begin
+                match ztype with
+                | ZType.FocusedT _ -> ZType.FocusedT (Hole)
+                | ZType.FirstArrow (_,_) -> raise NotImplemented 
+                   | ZType.SecondArrow (_,_) -> raise NotImplemented
+              end
+          end
+         in m *)
+
+  (* ZType.FocusedT (Hole) *)
+
+
   let rec performSyn ((zexp,htype): model) a : ZExp.t * HType.t =
     let m = match a with 
-      | Construct shape -> begin
-          match zexp with
-          | ZExp.FocusedE hexp -> begin
-              match shape with 
-              | SPlus -> (ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,(HExp.EmptyHole)))) 
-              | SNumlit i -> (ZExp.FocusedE (HExp.NumLit i))
-              | SLam var -> (ZExp.FocusedE  (HExp.Asc ((HExp.Lam ("x",HExp.EmptyHole)),HType.Arrow (HType.Hole,HType.Hole)))) (* (HExp.Asc (HExp.Lam ("x",HExp.EmptyHole)), HType.Arrow (HType.Hole, HType.Hole))) *)
-              | _ -> raise NotImplemented 
-            end
-          | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
-          | ZExp.RightPlus (h1,z1) -> ZExp.RightPlus (h1,fst (performSyn (z1,htype) a)) 
-          | ZExp.LamZ (var,z1) -> ZExp.LamZ (var,fst (performSyn (z1,htype) a))       (*  (ZExp.LeftPlus ((fst (performSyn (z1,htype) a)),h1)),htype *) (*  of t * HExp.t *)
-          | ZExp.LeftAsc (z1,a1) -> ZExp.LeftAsc (fst (performSyn (z1,htype) a),a1)
-          | ZExp.RightAsc (a1,z1) -> ZExp.RightAsc (a1, snd (performSyn (z1,htype) a)) 
-          | _ -> raise InProgress  
-        end
       | Move dir -> begin
           match dir with 
           | FirstChild -> begin
@@ -151,7 +175,7 @@ module Action = struct
               | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
               | ZExp.RightPlus (h1,z1) -> ZExp.RightPlus (h1,fst (performSyn (z1,htype) a))
               | ZExp.LeftAsc (z1,a1) -> ZExp.LeftAsc (fst (performSyn (z1,htype) a),a1)
-              | ZExp.RightAsc (a1,z1) -> ZExp.RightAsc (a1,fst (performSyn (z1,htype) a))
+              | ZExp.RightAsc (a1,z1) -> ZExp.RightAsc (a1, (performTyp (z1,a)) )  (* fst (performTyp (z1,htype) a) *)
               | ZExp.LamZ (var,z1) -> ZExp.LamZ (var,fst (performSyn (z1,htype) a))
             end
           | Parent -> begin
@@ -174,7 +198,7 @@ module Action = struct
               | ZExp.RightAsc (a1,z1) -> begin
                   match z1 with
                   | ZType.FocusedT htype -> ZExp.FocusedE (Asc (a1,htype))
-                  | _ -> ZExp.RightAsc(a1,(fst (performSyn (z1,htype) a)))
+                  (* | _ -> ZExp.RightAsc(a1,(snd (performSyn (z1,htype) a))) *)
                 end
             end
           | NextSib -> begin
@@ -189,8 +213,34 @@ module Action = struct
                   | ZExp.FocusedE hexp -> ZExp.LeftPlus ((ZExp.FocusedE h1),hexp)
                   | _ -> ZExp.RightPlus(h1,(fst (performSyn (z1,htype) a)))
                 end
+              | ZExp.LeftAsc (z1,t1) ->   begin
+                  match z1 with
+                  | ZExp.FocusedE hexp -> ZExp.RightAsc (hexp, (ZType.FocusedT t1))
+                  | _ -> ZExp.LeftAsc((fst (performSyn (z1,htype) a)),t1)
+                end 
+              (*  | ZExp.RightAsc (z1,t1) ->   begin
+                   match z1 with
+                   | ZExp.FocusedE hexp -> ZExp.RightAsc (hexp, (ZType.FocusedT t1))
+                   | _ -> ZExp.LeftAsc((fst (performSyn (z1,htype) a)),t1)
+                  end  *)
             end
           | PrevSib -> raise NotImplemented  
+        end
+      | Construct shape -> begin
+          match zexp with
+          | ZExp.FocusedE hexp -> begin
+              match shape with 
+              | SPlus -> (ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,(HExp.EmptyHole)))) 
+              | SNumlit i -> (ZExp.FocusedE (HExp.NumLit i))
+              | SLam var -> (ZExp.FocusedE  (HExp.Asc ((HExp.Lam ("x",HExp.EmptyHole)),HType.Arrow (HType.Hole,HType.Hole)))) (* (HExp.Asc (HExp.Lam ("x",HExp.EmptyHole)), HType.Arrow (HType.Hole, HType.Hole))) *)
+              | _ -> raise NotImplemented 
+            end
+          | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
+          | ZExp.RightPlus (h1,z1) -> ZExp.RightPlus (h1,fst (performSyn (z1,htype) a)) 
+          | ZExp.LamZ (var,z1) -> ZExp.LamZ (var,fst (performSyn (z1,htype) a))       (*  (ZExp.LeftPlus ((fst (performSyn (z1,htype) a)),h1)),htype *) (*  of t * HExp.t *)
+          | ZExp.LeftAsc (z1,a1) -> ZExp.LeftAsc (fst (performSyn (z1,htype) a),a1)
+          (* | ZExp.RightAsc (a1,z1) -> ZExp.RightAsc (a1, snd (performSyn (z1,htype) a))  *)
+          | _ -> raise InProgress  
         end
       | _ -> raise NotImplemented
     in m,htype
@@ -250,7 +300,7 @@ module View = struct
   let rec stringFromZExp (zexp : Model.ZExp.t ) : string = match zexp with
     | FocusedE hexp -> ">" ^ stringFromHExp hexp ^ "<"
     | LeftAsc (e, asc) -> (* "LA" ^ *)  stringFromZExp e ^ ":" ^ stringFromHType asc 
-    | RightAsc (e, asc) -> stringFromHType e ^ ":" ^ stringFromZExp asc
+    | RightAsc (e, asc) -> stringFromHExp e ^ ":" ^ stringFromZType asc
     | LamZ (var,exp) -> "λ" ^  var ^ "." ^ (stringFromZExp exp)
     | LeftAp (e1,e2) -> stringFromZExp e1 ^ stringFromHExp e2
     | RightAp (e1,e2) -> stringFromHExp e1 ^ stringFromZExp e2
@@ -334,6 +384,18 @@ module View = struct
       Controller.update (Action.Construct (SLam "lam")) (rs, rf) ;
       true
     in
+    let onClickAddAsc evt =
+      Controller.update (Action.Construct (SAsc)) (rs, rf) ;
+      true
+    in
+    let onClickAddApp evt =
+      Controller.update (Action.Construct (SAp)) (rs, rf) ;
+      true
+    in
+    let onClickAddNum evt =
+      Controller.update (Action.Construct (SNum)) (rs, rf) ;
+      true
+    in
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
@@ -345,10 +407,40 @@ module View = struct
           li [
             button ~a:[a_onclick onClickAddLam] [pcdata "Add Lambda"] 
           ];
+          li [
+            button ~a:[a_onclick onClickAddAsc] [pcdata "Add Ascription"] 
+          ];
+          li [
+            button ~a:[a_onclick onClickAddApp] [pcdata "Add Appliction"] 
+          ];
+          li [
+            button ~a:[a_onclick onClickAddNum] [pcdata "Add Num"] 
+          ];
         ]
       ]
       )
 
+
+  let addTypes (rs, rf) =
+    let onClickAddNum evt =
+      Controller.update (Action.Construct SNum) (rs, rf) ;
+      true
+    in
+    let onClickAddArrow evt =
+      Controller.update (Action.Construct SArrow) (rs, rf) ;
+      true
+    in
+    Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
+        ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
+          li [
+            button ~a:[a_onclick onClickAddNum] [pcdata "Add Num"] 
+          ];
+          li [
+            button ~a:[a_onclick onClickAddArrow] [pcdata "Add Arrow"] 
+          ];
+        ]
+      ]
+      )
 
   (* let addTextInput (rs, rf) =
      Html5.(textarea) *)
@@ -360,6 +452,7 @@ module View = struct
     let actions = viewActions (rs, rf) in 
     let mActions = moveActions (rs, rf) in
     let aActions = addActions (rs, rf) in
+    let aTypes = addTypes (rs, rf) in
     (* let textInputs = addTextInput (rs, rf) in *)
     (* let actionsRP = moveActionsRP (rs, rf) in  *)
     Html5.(
@@ -373,6 +466,7 @@ module View = struct
         div ~a:[a_class ["Actions"]]  [ actions ];
         div ~a:[a_class ["ActionsLeftPlus"]]  [ mActions ];
         div ~a:[a_class ["ActionsAdd"]]  [ aActions ];
+        div ~a:[a_class ["ActionsTypes"]]  [ aTypes ];
         (* div ~a:[a_class ["textArea"]]  [ addTextInput ] *)
         (* (* (* div ~a:[a_class ["ActionsRightPlus"]]  [ actionsRP ] *) *) *)
       ]
