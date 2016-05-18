@@ -329,6 +329,10 @@ module View = struct
       Controller.update (Action.Move NextSib) (rs, rf) ;
       true
     in
+    let onClickMovePS evt =
+      Controller.update (Action.Move PrevSib) (rs, rf) ;
+      true
+    in
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
@@ -339,6 +343,9 @@ module View = struct
           ];
           li [
             button ~a:[a_onclick onClickMoveNS] [pcdata "move next sib"] 
+          ];
+          li [
+            button ~a:[a_onclick onClickMovePS] [pcdata "move prev sib"] 
           ]
         ]
       ]
