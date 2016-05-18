@@ -114,6 +114,19 @@ module Action = struct
                   | _ -> ZType.FirstArrow ((performTyp (t1,a)),t2)
                 end
             end
+          | Parent -> begin
+              match ztype with 
+              | ZType.FirstArrow (z1,t1) -> begin
+                  match z1 with 
+                  | ZType.FocusedT f1 -> ZType.FocusedT (HType.Arrow (f1,t1))
+                  | _  -> ZType.FirstArrow ((performTyp (z1,a)),t1)
+                end
+              | ZType.SecondArrow (t1,z1) -> begin
+                  match z1 with 
+                  | ZType.FocusedT f1 -> ZType.FocusedT (HType.Arrow (t1,f1))
+                  | _  -> ZType.SecondArrow (t1,(performTyp (z1,a)))
+                end
+            end 
         end
       | Construct shape -> begin
           match ztype with
@@ -172,7 +185,7 @@ module Action = struct
               | ZExp.RightAsc (a1,z1) -> begin
                   match z1 with
                   | ZType.FocusedT htype -> ZExp.FocusedE (Asc (a1,htype))
-                  (* | _ -> ZExp.RightAsc(a1,(snd (performSyn (z1,htype) a))) *)
+                  | _ -> ZExp.RightAsc(a1,(performTyp (z1,a)))
                 end
             end
           | NextSib -> begin
