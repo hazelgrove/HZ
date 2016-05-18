@@ -128,6 +128,7 @@ module Action = struct
               (* (fst (performTyp ((ZType.FocusedT t1),a))) ,t2) *)
             end
           | ZType.FirstArrow (z1,t1) -> ZType.FirstArrow ((performTyp (z1,a)),t1)
+          | ZType.SecondArrow (t1,z1) -> ZType.SecondArrow (t1,(performTyp (z1,a)))
           | _ -> raise NotImplemented
         end        
       | _ -> raise NotImplemented
