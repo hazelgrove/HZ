@@ -211,7 +211,13 @@ module Action = struct
                   | _ -> ZExp.RightAsc(a1,(performTyp (z1,a)))
                 end  
             end
-          | PrevSib -> raise NotImplemented  
+          | PrevSib -> begin
+              match zexp with 
+              | ZExp.RightAsc (a1,z1) -> begin
+                  match z1 with
+                  | ZType.FocusedT f1 -> ZExp.LeftAsc (ZExp.FocusedE (a1),f1)
+                end
+            end 
         end
       | Construct shape -> begin
           match zexp with
@@ -220,6 +226,7 @@ module Action = struct
               | SPlus -> (ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,(HExp.EmptyHole)))) 
               | SNumlit i -> (ZExp.FocusedE (HExp.NumLit i))
               | SLam var -> (ZExp.FocusedE  (HExp.Asc ((HExp.Lam ("x",HExp.EmptyHole)),HType.Arrow (HType.Hole,HType.Hole)))) (* (HExp.Asc (HExp.Lam ("x",HExp.EmptyHole)), HType.Arrow (HType.Hole, HType.Hole))) *)
+              | SVar v -> (ZExp.FocusedE (HExp.Var v))
               | _ -> raise NotImplemented 
             end
           | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
@@ -390,6 +397,10 @@ module View = struct
       Controller.update (Action.Construct (SNum)) (rs, rf) ;
       true
     in
+    let onClickAddVar evt =
+      Controller.update (Action.Construct (SVar "x")) (rs, rf) ;
+      true
+    in
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
@@ -409,6 +420,9 @@ module View = struct
           ];
           li [
             button ~a:[a_onclick onClickAddNum] [pcdata "Add Num"] 
+          ];
+          li [
+            button ~a:[a_onclick onClickAddVar] [pcdata "Add Var x"] 
           ];
         ]
       ]
