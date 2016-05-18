@@ -106,6 +106,14 @@ module Action = struct
               | ZType.FirstArrow (t1,t2) -> ZType.FocusedT (Hole)
               | ZType.SecondArrow _ -> ZType.FocusedT (Hole)
             end
+          | NextSib -> begin
+              match ztype with 
+              | ZType.FirstArrow (t1,t2) -> begin
+                  match t1 with 
+                  | ZType.FocusedT f1 -> ZType.SecondArrow (f1,(ZType.FocusedT(t2)))
+                  | _ -> ZType.FirstArrow ((performTyp (t1,a)),t2)
+                end
+            end
         end
       | Construct shape -> begin
           match ztype with
@@ -183,11 +191,11 @@ module Action = struct
                   | ZExp.FocusedE hexp -> ZExp.RightAsc (hexp, (ZType.FocusedT t1))
                   | _ -> ZExp.LeftAsc((fst (performSyn (z1,htype) a)),t1)
                 end 
-              (*  | ZExp.RightAsc (z1,t1) ->   begin
-                   match z1 with
-                   | ZExp.FocusedE hexp -> ZExp.RightAsc (hexp, (ZType.FocusedT t1))
-                   | _ -> ZExp.LeftAsc((fst (performSyn (z1,htype) a)),t1)
-                  end  *)
+              | ZExp.RightAsc (a1,z1) ->   begin
+                  match z1 with
+                  (* | ZExp.FocusedE hexp -> ZExp.RightAsc (hexp, (ZType.FocusedT t1)) *)
+                  | _ -> ZExp.RightAsc(a1,(performTyp (z1,a)))
+                end  
             end
           | PrevSib -> raise NotImplemented  
         end
