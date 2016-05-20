@@ -187,6 +187,12 @@ module Action = struct
                   | ZType.FocusedT htype -> ZExp.FocusedE (Asc (a1,htype))
                   | _ -> ZExp.RightAsc(a1,(performTyp (z1,a)))
                 end
+              | ZExp.LamZ (var,z1) -> begin
+                  match z1 with
+                  | ZExp.FocusedE htype -> ZExp.FocusedE (Lam (var,htype))
+                  | _ -> ZExp.LamZ (var,(fst (performSyn (z1,htype) a)))
+                end 
+              | _ -> raise NotImplemented
             end
           | NextSib -> begin
               match zexp with
