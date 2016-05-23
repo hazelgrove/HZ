@@ -93,8 +93,12 @@ module Action = struct
 
 
   let rec performTyp (ztype,a) : Model.ZType.t =
-    (* ztype *)
     let m = match a with 
+      | Del -> begin
+          match ztype with
+          | ZType.FocusedT _ -> ZType.FocusedT Hole
+          | _ -> (performTyp (ztype,a))
+        end
       | Move dir -> begin
           match dir with 
           | FirstChild -> begin
@@ -142,13 +146,22 @@ module Action = struct
             end
           | ZType.FirstArrow (z1,t1) -> ZType.FirstArrow ((performTyp (z1,a)),t1)
           | ZType.SecondArrow (t1,z1) -> ZType.SecondArrow (t1,(performTyp (z1,a)))
-          | _ -> raise NotImplemented
         end        
       | _ -> raise NotImplemented
     in m
 
   let rec performSyn ((zexp,htype): model) a : ZExp.t * HType.t =
     let m = match a with 
+      | Del -> begin
+          match zexp with
+          | ZExp.FocusedE _ -> ZExp.FocusedE Model.HExp.EmptyHole
+          | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
+          | ZExp.RightPlus (h1,z1) -> ZExp.RightPlus (h1,fst (performSyn (z1,htype) a))
+          | ZExp.LeftAsc (z1,a1) -> ZExp.LeftAsc (fst (performSyn (z1,htype) a),a1)
+          | ZExp.RightAsc (a1,z1) -> ZExp.RightAsc (a1, (performTyp (z1,a)) )  (* fst (performTyp (z1,htype) a) *)
+          | ZExp.LamZ (var,z1) -> ZExp.LamZ (var,fst (performSyn (z1,htype) a))
+          | _ -> raise NotImplemented
+        end
       | Move dir -> begin
           match dir with 
           | FirstChild -> begin
@@ -233,6 +246,7 @@ module Action = struct
               | SNumlit i -> (ZExp.FocusedE (HExp.NumLit i))
               | SLam var -> (ZExp.FocusedE  (HExp.Asc ((HExp.Lam ("x",HExp.EmptyHole)),HType.Arrow (HType.Hole,HType.Hole)))) (* (HExp.Asc (HExp.Lam ("x",HExp.EmptyHole)), HType.Arrow (HType.Hole, HType.Hole))) *)
               | SVar v -> (ZExp.FocusedE (HExp.Var v))
+              | SAsc -> (ZExp.LeftAsc ((ZExp.FocusedE HExp.EmptyHole),(HType.Hole))) 
               | _ -> raise NotImplemented 
             end
           | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
