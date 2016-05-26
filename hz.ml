@@ -247,6 +247,7 @@ module Action = struct
               | SLam var -> (ZExp.FocusedE  (HExp.Asc ((HExp.Lam ("x",HExp.EmptyHole)),HType.Arrow (HType.Hole,HType.Hole)))) (* (HExp.Asc (HExp.Lam ("x",HExp.EmptyHole)), HType.Arrow (HType.Hole, HType.Hole))) *)
               | SVar v -> (ZExp.FocusedE (HExp.Var v))
               | SAsc -> (ZExp.LeftAsc ((ZExp.FocusedE HExp.EmptyHole),(HType.Hole))) 
+              | SAp -> ZExp.RightAp (hexp,(ZExp.FocusedE HExp.EmptyHole))
               | _ -> raise NotImplemented 
             end
           | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
@@ -254,6 +255,8 @@ module Action = struct
           | ZExp.LamZ (var,z1) -> ZExp.LamZ (var,fst (performSyn (z1,htype) a))       (*  (ZExp.LeftPlus ((fst (performSyn (z1,htype) a)),h1)),htype *) (*  of t * HExp.t *)
           | ZExp.LeftAsc (z1,a1) -> ZExp.LeftAsc (fst (performSyn (z1,htype) a),a1)
           | ZExp.RightAsc (a1,z1) -> ZExp.RightAsc (a1, (performTyp (z1,a)) )(*   ZExp.RightAsc (a1, (performSyn (z1,a)))  *)
+          | ZExp.LeftAp (z1,h1) -> ZExp.LeftAp(fst (performSyn (z1,htype) a),h1)
+          | ZExp.RightAp (h1,z1) -> ZExp.RightAp(h1,fst (performSyn (z1,htype) a))
           | _ -> raise NotImplemented  
         end
       | _ -> raise NotImplemented
