@@ -141,7 +141,11 @@ module Action = struct
                   | SNum -> ZType.FocusedT (Num)
                 end
               | HType.Arrow (t1,t2) -> ZType.FirstArrow (( ZType.FocusedT t1),t2)
-              | _ -> raise InProgress
+              | HType.Num -> begin 
+                  match shape with
+                  | SArrow -> ZType.SecondArrow(t1,ZType.FocusedT HType.Hole)
+                  | _ -> raise NotImplemented
+                end
               (* (fst (performTyp ((ZType.FocusedT t1),a))) ,t2) *)
             end
           | ZType.FirstArrow (z1,t1) -> ZType.FirstArrow ((performTyp (z1,a)),t1)
@@ -442,10 +446,6 @@ module View = struct
       Controller.update (Action.Construct (SAp)) (rs, rf) ;
       true
     in
-    let onClickAddNum evt =
-      Controller.update (Action.Construct (SNum)) (rs, rf) ;
-      true
-    in
     let onClickAddVar evt =
       Controller.update (Action.Construct (SVar "x")) (rs, rf) ;
       true
@@ -466,10 +466,7 @@ module View = struct
           ];
           li [
             button ~a:[a_onclick onClickAddApp] [pcdata "Add Appliction"] 
-          ];
-          li [
-            button ~a:[a_onclick onClickAddNum] [pcdata "Add Num"] 
-          ];
+          ];      
           li [
             button ~a:[a_onclick onClickAddVar] [pcdata "Add Var x"] 
           ];
@@ -543,5 +540,6 @@ let main _ =
   Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view rp)) ;
   Dom.appendChild parent input;
   Lwt.return ()
+
 
 let _ = Lwt_js_events.onload () >>= main
