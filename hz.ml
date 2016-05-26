@@ -171,11 +171,14 @@ module Action = struct
                   | HExp.Plus (h1,h2) -> ZExp.LeftPlus ((ZExp.FocusedE h1),h2)
                   | HExp.Lam (var,body) -> ZExp.LamZ (var,(ZExp.FocusedE body))
                   | HExp.Asc (a1,a2) -> ZExp.LeftAsc ((ZExp.FocusedE a1),a2)
+                  | HExp.Ap (a1,a2) -> ZExp.LeftAp ((ZExp.FocusedE a1),a2)
                 end
               | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
               | ZExp.RightPlus (h1,z1) -> ZExp.RightPlus (h1,fst (performSyn (z1,htype) a))
               | ZExp.LeftAsc (z1,a1) -> ZExp.LeftAsc (fst (performSyn (z1,htype) a),a1)
               | ZExp.RightAsc (a1,z1) -> ZExp.RightAsc (a1, (performTyp (z1,a)) )  (* fst (performTyp (z1,htype) a) *)
+              | ZExp.LeftAp (z1,a1) -> ZExp.LeftAp (fst (performSyn (z1,htype) a),a1)
+              | ZExp.RightAp (a1,z1) -> ZExp.RightAp (a1,(fst (performSyn (z1,htype) a))) 
               | ZExp.LamZ (var,z1) -> ZExp.LamZ (var,fst (performSyn (z1,htype) a))
             end
           | Parent -> begin
@@ -200,6 +203,16 @@ module Action = struct
                   | ZType.FocusedT htype -> ZExp.FocusedE (Asc (a1,htype))
                   | _ -> ZExp.RightAsc(a1,(performTyp (z1,a)))
                 end
+              | ZExp.LeftAp (z1,a1) -> begin
+                  match z1 with 
+                  | ZExp.FocusedE hexp -> ZExp.FocusedE (Ap (hexp,a1))
+                  | _ -> ZExp.LeftAp((fst (performSyn (z1,htype) a)),a1)
+                end
+              | ZExp.RightAp (a1,z1) -> begin
+                  match z1 with
+                  | ZExp.FocusedE hexp -> ZExp.FocusedE (Ap (a1,hexp))
+                  | _ -> ZExp.RightAp(a1,(fst (performSyn (z1,htype) a)))
+                end  
               | ZExp.LamZ (var,z1) -> begin
                   match z1 with
                   | ZExp.FocusedE htype -> ZExp.FocusedE (Lam (var,htype))
@@ -228,13 +241,26 @@ module Action = struct
                   match z1 with
                   (* | ZExp.FocusedE hexp -> ZExp.RightAsc (hexp, (ZType.FocusedT t1)) *)
                   | _ -> ZExp.RightAsc(a1,(performTyp (z1,a)))
-                end  
+                end 
+              | ZExp.LeftAp (z1,t1) ->   begin
+                  match z1 with
+                  | ZExp.FocusedE hexp -> ZExp.RightAp (hexp, (ZExp.FocusedE t1))
+                  | _ -> ZExp.LeftAp((fst (performSyn (z1,htype) a)),t1)
+                end 
+              | ZExp.RightAp (a1,z1) ->   begin
+                  match z1 with
+                  | _ -> ZExp.RightAp(a1,(fst (performSyn (z1,htype) a)))
+                end    
             end
           | PrevSib -> begin
               match zexp with 
               | ZExp.RightAsc (a1,z1) -> begin
                   match z1 with
                   | ZType.FocusedT f1 -> ZExp.LeftAsc (ZExp.FocusedE (a1),f1)
+                end
+              | ZExp.RightAp (a1,z1) -> begin
+                  match z1 with
+                  | ZExp.FocusedE hexp -> ZExp.LeftAp (ZExp.FocusedE (a1),hexp)
                 end
             end 
         end
