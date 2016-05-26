@@ -10,6 +10,6 @@ ocamlfind ocamlc \
 	-package react \
 	-package reactiveData \
 	-linkpkg \
-	-g hz.ml test.ml
+	-g hz_model.ml test.ml
 
 ./test 
