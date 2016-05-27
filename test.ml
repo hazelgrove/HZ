@@ -1,6 +1,9 @@
 open OUnit2;;
+open Hz_model;;
+open Hz_model.Action;;
+open Hz_model.Model;;
 
-let test1 test_ctxt = assert_equal 1 1
+let test1 test_ctxt = assert_equal 1 1 (* (performSyn ((FocusedE EmptyHole),(Num)) Del) *)
 
 
 let suite =

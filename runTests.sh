@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ocamlfind ocamlc \
 	-o test \
 	-package oUnit \
@@ -12,4 +14,10 @@ ocamlfind ocamlc \
 	-linkpkg \
 	-g hz_model.ml test.ml
 
-./test 
+if [ $? = 0 ]; then
+  ./test 
+else
+	echo "Test Build Fail"
+fi
+            
+
