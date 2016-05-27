@@ -269,6 +269,12 @@ module Action = struct
               | ZExp.RightAsc (a1,z1) -> begin
                   match z1 with
                   | ZType.FocusedT f1 -> ZExp.LeftAsc (ZExp.FocusedE (a1),f1)
+                  | ZType.SecondArrow (t1,zt1) -> begin 
+                    match zt1 with 
+                    | ZType.FocusedT htype -> ZExp.RightAsc (a1,(ZType.FirstArrow (ZType.FocusedT (HType.Num),HType.Num)))
+                  end
+
+                  (* ZType.Arrow (a1,(performTyp (z1,a))) *)
                 end
               | ZExp.RightAp (a1,z1) -> begin
                   match z1 with
