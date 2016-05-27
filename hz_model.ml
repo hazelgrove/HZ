@@ -118,6 +118,14 @@ module Action = struct
                   | _ -> ZType.FirstArrow ((performTyp (t1,a)),t2)
                 end
             end
+          | PrevSib -> begin
+              match ztype with 
+              | ZType.SecondArrow (t1,t2) -> begin
+                  match t2 with 
+                  | ZType.FocusedT f1 -> ZType.FirstArrow ((ZType.FocusedT(t1)),f1)
+                  | _ -> ZType.SecondArrow (t1,(performTyp (t2,a)))
+                end
+            end
           | Parent -> begin
               match ztype with 
               | ZType.FirstArrow (z1,t1) -> begin
