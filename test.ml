@@ -67,6 +67,16 @@ let test13d test_ctxt = assertZexpsEqual (arrowSelectedRight,arrowSelectedLeft,(
 let test13e test_ctxt = assertZexpsEqual (arrowSelectedLeft,arrowSelectedRight,(Move PrevSib))
 
 
+let ascSelectedParent = zexpToModel (ZExp.FocusedE (HExp.Asc (HExp.EmptyHole,HType.Hole)))
+let ascSelectedFirst = zexpToModel (ZExp.LeftAsc (ZExp.FocusedE HExp.EmptyHole,HType.Hole))   
+let ascSelectedSecond = zexpToModel (ZExp.RightAsc (HExp.EmptyHole,ZType.FocusedT HType.Hole))   
+
+
+let test15a test_ctxt = assertZexpsEqual (ascSelectedFirst,ascSelectedParent,(Move FirstChild))
+let test15b test_ctxt = assertZexpsEqual (ascSelectedParent,ascSelectedFirst,(Move Parent))
+let test15c test_ctxt = assertZexpsEqual (ascSelectedParent,ascSelectedSecond,(Move Parent))
+let test15d test_ctxt = assertZexpsEqual (ascSelectedSecond,ascSelectedFirst,(Move NextSib))
+let test15e test_ctxt = assertZexpsEqual (ascSelectedFirst,ascSelectedSecond,(Move PrevSib))
 
 
 let suite =
@@ -77,6 +87,12 @@ let suite =
    "test13c">:: test13c;
    "test13d">:: test13d;
    "test13e">:: test13e;
+   "test13e">:: test13e;
+   "test15a">:: test15a;
+   "test15b">:: test15b;
+   "test15c">:: test15c;
+   "test15d">:: test15d;
+   "test15e">:: test15e;
 
 
   ]
