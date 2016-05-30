@@ -123,11 +123,19 @@ let test19bEmptyHole test_ctxt = assertZexpsEqual (varSynthed,emptyHole,(Constru
 let numHoleType = zexpToModel (ZExp.LeftAsc (ZExp.FocusedE (HExp.EmptyHole),HType.Num))
 
 let numHoleMatched = zexpToModel (ZExp.LeftAsc (ZExp.FocusedE (HExp.NumLit 5),HType.Num)) 
-let numHoleMisMatched = zexpToModel (ZExp.RightAsc ((HExp.Lam ("x",HExp.EmptyHole)),ZType.FocusedT (HType.Num))) 
+let numHoleMisMatched = zexpToModel (ZExp.LeftAsc (ZExp.NonEmptyHoleZ (ZExp.FocusedE (HExp.Var "x")),HType.Num)) 
+
+let ascHoleArrow = zexpToModel (ZExp.LeftAsc (ZExp.FocusedE (HExp.EmptyHole),HType.Arrow (HType.Num,HType.Num)))
+let numHoleMisMatched = zexpToModel (ZExp.LeftAsc (ZExp.NonEmptyHoleZ (ZExp.FocusedE (HExp.Var "x")),HType.Num)) 
+
+let numHoleMisMatchedArrow = zexpToModel (ZExp.LeftAsc (ZExp.NonEmptyHoleZ (ZExp.FocusedE (HExp.NumLit 5)),HType.Arrow (HType.Num,HType.Num))) 
+
 
 let test19dMatched test_ctxt = assertZexpsEqual (numHoleMatched,numHoleType,(Construct (SNumlit 5)))
-(* let test19dMisMatched test_ctxt = assertZexpsEqual (numHoleMisMatched,numHoleType,(Construct (SVar "v"))) *)
- 
+let test19dMisMatched test_ctxt = assertZexpsEqual (numHoleMisMatched,ascHoleArrow,(Construct (SVar "x")))
+
+let test19dMisMatchedNum test_ctxt = assertZexpsEqual (numHoleMisMatchedArrow,ascHoleArrow,(Construct (SNumlit 5)))
+
 
 
 let suite =
@@ -152,7 +160,8 @@ let suite =
    "test19bNumLit">:: test19bNumLit; 
    (* "test19cAllHoles">:: test19cAllHoles; *)
    "test19dMatched">:: test19dMatched;
-   (* "test19dMisMatched">:: test19dMisMatched; *)
+   "test19dMisMatched">:: test19dMisMatched;
+   "test19dMisMatchedNum">:: test19dMisMatchedNum;
 
 
    (* "test19aPlusNum">:: test19aPlusNum; *)
