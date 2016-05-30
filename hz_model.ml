@@ -302,6 +302,7 @@ module Action = struct
           | ZExp.RightAsc (a1,z1) -> ZExp.RightAsc (a1, (performTyp (z1,a)) )(*   ZExp.RightAsc (a1, (performSyn (z1,a)))  *)
           | ZExp.LeftAp (z1,h1) -> ZExp.LeftAp(fst (performSyn (z1,htype) a),h1)
           | ZExp.RightAp (h1,z1) -> ZExp.RightAp(h1,fst (performSyn (z1,htype) a))
+          (* | ZExp.RightAp (h1,z1) -> ZExp.RightAp(h1,fst (performSyn (z1,htype) a)) *)
           | _ -> raise NotImplemented  
         end
       | _ -> raise NotImplemented
@@ -319,7 +320,7 @@ module Action = struct
     | HExp.Ap (t1,t2) -> raise NotImplemented
     | HExp.NumLit i ->  HType.Num
     | HExp.Plus (t1,t2) -> raise NotImplemented
-    | HExp.EmptyHole -> raise NotImplemented
+    | HExp.EmptyHole -> HType.Hole
     | HExp.NonEmptyHole t -> raise NotImplemented
 
 

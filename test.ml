@@ -92,8 +92,42 @@ let test18b test_ctxt = assertZexpsEqual (ascNumType,ascHoleType,(Construct SNum
 
 
 let numLit5 = zexpToModel (ZExp.FocusedE (HExp.NumLit 5)) 
-let numLit5WithType = zexpToModel (ZExp.RightAsc ((HExp.NumLit 5),ZType.FocusedT (HType.Num))) 
-let test19a test_ctxt = assertZexpsEqual (numLit5WithType,numLit5,(Construct SAsc))
+let numLit5Synthed = zexpToModel (ZExp.RightAsc ((HExp.NumLit 5),ZType.FocusedT (HType.Num))) 
+
+let emptyHole = zexpToModel (ZExp.FocusedE (HExp.EmptyHole)) 
+let emptyHoleSynthed = zexpToModel (ZExp.RightAsc (HExp.EmptyHole,ZType.FocusedT (HType.Hole))) 
+let nonEmptyHole = zexpToModel (ZExp.FocusedE (HExp.NonEmptyHole (HExp.NumLit 5))) 
+let nomEmptyHoleSynthed = zexpToModel (ZExp.RightAsc ((HExp.NonEmptyHole (HExp.NumLit 5)),ZType.FocusedT (HType.Hole))) 
+let numLit5 = zexpToModel (ZExp.FocusedE (HExp.NumLit 5)) 
+let numLit5Synthed = zexpToModel (ZExp.RightAsc ((HExp.NumLit 5),ZType.FocusedT (HType.Num))) 
+
+let plusNumLit5 = zexpToModel (ZExp.FocusedE (HExp.NumLit 5)) 
+let plusNumLit5Synthed = zexpToModel (ZExp.RightAsc ((HExp.NumLit 5),ZType.FocusedT (HType.Num))) 
+
+let varSynthed = zexpToModel (ZExp.FocusedE (HExp.Var "v")) 
+
+let empty = zexpToModel (ZExp.RightAsc ((HExp.NumLit 5),ZType.FocusedT (HType.Num))) 
+
+
+let test19aNumLit test_ctxt = assertZexpsEqual (numLit5Synthed,numLit5,(Construct SAsc))
+let test19aEmptyHole test_ctxt = assertZexpsEqual (emptyHoleSynthed,emptyHole,(Construct SAsc))
+let test19aNonEmptyHole test_ctxt = assertZexpsEqual (nomEmptyHoleSynthed,nonEmptyHole,(Construct SAsc))
+(* let test19aPlusNum test_ctxt = assertZexpsEqual (nomEmptyHoleSynthed,numLit5,(Construct SPlus)) *)
+(* let test19aNumLit test_ctxt = assertZexpsEqual (numLit5Synthed,numLit5,(Construct SAsc)) *)
+
+let test19bNumLit test_ctxt = assertZexpsEqual (varSynthed,emptyHole,(Construct (SVar "v")))
+let test19bEmptyHole test_ctxt = assertZexpsEqual (varSynthed,emptyHole,(Construct (SVar "v")))
+
+(* let test19cAllHoles test_ctxt = assertZexpsEqual (emptyHoleSynthed,emptyHoleSynthed,(Construct (SVar "v"))) *)
+
+let numHoleType = zexpToModel (ZExp.LeftAsc (ZExp.FocusedE (HExp.EmptyHole),HType.Num))
+
+let numHoleMatched = zexpToModel (ZExp.LeftAsc (ZExp.FocusedE (HExp.NumLit 5),HType.Num)) 
+let numHoleMisMatched = zexpToModel (ZExp.RightAsc ((HExp.Lam ("x",HExp.EmptyHole)),ZType.FocusedT (HType.Num))) 
+
+let test19dMatched test_ctxt = assertZexpsEqual (numHoleMatched,numHoleType,(Construct (SNumlit 5)))
+(* let test19dMisMatched test_ctxt = assertZexpsEqual (numHoleMisMatched,numHoleType,(Construct (SVar "v"))) *)
+ 
 
 
 let suite =
@@ -113,7 +147,15 @@ let suite =
    "test18a">:: test18a;
    "test18a2">:: test18a2;
    "test18b">:: test18b;
-   "test19a">:: test19a;
+   "test19aNumLit">:: test19aNumLit;
+   "test19aEmptyHole">:: test19aEmptyHole;
+   "test19bNumLit">:: test19bNumLit; 
+   (* "test19cAllHoles">:: test19cAllHoles; *)
+   "test19dMatched">:: test19dMatched;
+   (* "test19dMisMatched">:: test19dMisMatched; *)
+
+
+   (* "test19aPlusNum">:: test19aPlusNum; *)
 
 
 
