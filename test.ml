@@ -143,6 +143,12 @@ let testApOnVar test_ctxt = assertZexpsEqual (numHoleMisMatchedApp,numHoleMisMat
 
 
 
+let exampleFromHole =  zexpToModel (ZExp.LeftAsc (ZExp.NonEmptyHoleZ (ZExp.RightAp ((HExp.Var "x"),ZExp.FocusedE (HExp.NumLit 1))),HType.Num))
+let exampleFromHoleParent =  zexpToModel (ZExp.LeftAsc (ZExp.NonEmptyHoleZ (ZExp.FocusedE (HExp.Ap ((HExp.Var "x"),(HExp.NumLit 1)))),HType.Num))
+
+let testMoveInHole test_ctxt = assertZexpsEqual (exampleFromHoleParent,exampleFromHole,(Move Parent))
+
+
 let suite =
   "suite">:::
   ["test1">:: test1;
@@ -173,6 +179,7 @@ let suite =
    (* "test19aPlusNum">:: test19aPlusNum; *)
 
    "testApOnVar">:: testApOnVar;
+   "testMoveInHole">:: testMoveInHole;
 
 
   ]

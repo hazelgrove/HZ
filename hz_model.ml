@@ -231,6 +231,12 @@ module Action = struct
                   | ZExp.FocusedE htype -> ZExp.FocusedE (Lam (var,htype))
                   | _ -> ZExp.LamZ (var,(fst (performSyn (z1,htype) a)))
                 end 
+              | ZExp.NonEmptyHoleZ (h1) -> begin
+                  match h1 with
+                  | ZExp.FocusedE htype -> ZExp.FocusedE htype
+                  | _ -> ZExp.NonEmptyHoleZ ((fst (performSyn (h1,htype) a)))
+                end 
+
               | _ -> raise NotImplemented
             end
           | NextSib -> begin
