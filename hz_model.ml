@@ -301,32 +301,26 @@ module Action = struct
           | ZExp.LeftAsc (z1,a1) -> begin 
               match z1 with 
               | ZExp.FocusedE h1 -> begin            
-                match shape with
-                | SVar v -> begin (* raise NotImplemented *)
-                  match a1 with
-                  | HType.Arrow (t1,t2) -> raise NotImplemented
-                  | HType.Num -> raise NotImplemented
-                  | HType.Hole -> raise NotImplemented
+                  match shape with
+                  | SVar v -> begin (* raise NotImplemented *)
+                      match a1 with
+                      | HType.Arrow (t1,t2) -> ZExp.LeftAsc ((ZExp.FocusedE (HExp.Var v)),a1)
+                      | _ -> ZExp.LeftAsc (ZExp.NonEmptyHoleZ ((ZExp.FocusedE (HExp.Var v))),a1)
+                    end 
+                  | SNumlit n -> begin
+                      match a1 with
+                      | HType.Arrow (t1,t2) -> ZExp.LeftAsc (ZExp.NonEmptyHoleZ ((ZExp.FocusedE (HExp.NumLit n))),a1)
+                      | _ -> ZExp.LeftAsc ((ZExp.FocusedE (HExp.NumLit n)),a1)
+                    end
                   | _ -> raise NotImplemented
-                  end 
-                | SNumlit n -> begin
-                  match a1 with
-                  | HType.Arrow (t1,t2) -> ZExp.LeftAsc (ZExp.NonEmptyHoleZ ((ZExp.FocusedE (HExp.NumLit n))),a1)
-                  | _ -> ZExp.LeftAsc ((ZExp.FocusedE (HExp.NumLit n)),a1)
                 end
-                  (* | SNumlit n ->  begin
-                  match a1 with
-                  | HType.Arrow (t1,t2)-> raise NotImplemented
-                  | _ -> ZExp.LeftAsc (ZExp.FocusedE (HExp.NumLit n)),a1)
-                  end  *)
-                | _ -> raise NotImplemented
-              end
               | _ -> ZExp.LeftAsc (fst (performSyn (z1,htype) a),a1)
             end
           | ZExp.RightAsc (a1,z1) -> ZExp.RightAsc (a1, (performTyp (z1,a)) )
           | ZExp.LeftAp (z1,h1) -> ZExp.LeftAp(fst (performSyn (z1,htype) a),h1)
           | ZExp.RightAp (h1,z1) -> ZExp.RightAp(h1,fst (performSyn (z1,htype) a))
           (* | ZExp.RightAp (h1,z1) -> ZExp.RightAp(h1,fst (performSyn (z1,htype) a)) *)
+          | ZExp.NonEmptyHoleZ exp -> ZExp.NonEmptyHoleZ (fst (performSyn (exp,htype) a))
           | _ -> raise NotImplemented  
         end
       | _ -> raise NotImplemented
