@@ -79,6 +79,18 @@ let test15d test_ctxt = assertZexpsEqual (ascSelectedSecond,ascSelectedFirst,(Mo
 let test15e test_ctxt = assertZexpsEqual (ascSelectedFirst,ascSelectedSecond,(Move PrevSib))
 
 
+let ascHoleType = zexpToModel (ZExp.RightAsc (HExp.EmptyHole,ZType.FocusedT HType.Hole))   
+let ascArrowType = zexpToModel (ZExp.RightAsc (HExp.EmptyHole,ZType.SecondArrow(HType.Hole,ZType.FocusedT HType.Hole)))  (* ZType.FocusedT HType.Hole *)  
+
+let ascNumType = zexpToModel (ZExp.RightAsc (HExp.EmptyHole,ZType.FocusedT HType.Num))   
+let ascArrowNumType = zexpToModel (ZExp.RightAsc (HExp.EmptyHole,ZType.SecondArrow(HType.Num,ZType.FocusedT HType.Hole)))  (* ZType.FocusedT HType.Hole *)  
+
+let test18a test_ctxt = assertZexpsEqual (ascArrowType,ascHoleType,(Construct SArrow))
+let test18a2 test_ctxt = assertZexpsEqual (ascArrowNumType,ascNumType,(Construct SArrow))
+
+let test18b test_ctxt = assertZexpsEqual (ascNumType,ascHoleType,(Construct SNum))
+
+
 let suite =
   "suite">:::
   ["test1">:: test1;
@@ -93,6 +105,11 @@ let suite =
    "test15c">:: test15c;
    "test15d">:: test15d;
    "test15e">:: test15e;
+   "test18a">:: test18a;
+   "test18a2">:: test18a2;
+   "test18b">:: test18b;
+
+
 
 
   ]

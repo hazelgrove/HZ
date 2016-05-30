@@ -147,6 +147,7 @@ module Action = struct
               | HType.Hole -> begin
                   match shape with 
                   | SNum -> ZType.FocusedT (Num)
+                  | SArrow -> ZType.SecondArrow(t1,ZType.FocusedT HType.Hole)
                 end
               | HType.Arrow (t1,t2) -> ZType.FirstArrow (( ZType.FocusedT t1),t2)
               | HType.Num -> begin 
@@ -270,9 +271,9 @@ module Action = struct
                   match z1 with
                   | ZType.FocusedT f1 -> ZExp.LeftAsc (ZExp.FocusedE (a1),f1)
                   | ZType.SecondArrow (t1,zt1) -> begin 
-                    match zt1 with 
-                    | ZType.FocusedT htype -> ZExp.RightAsc (a1,(ZType.FirstArrow (ZType.FocusedT (HType.Num),HType.Num)))
-                  end
+                      match zt1 with 
+                      | ZType.FocusedT htype -> ZExp.RightAsc (a1,(ZType.FirstArrow (ZType.FocusedT (HType.Num),HType.Num)))
+                    end
 
                   (* ZType.Arrow (a1,(performTyp (z1,a))) *)
                 end
