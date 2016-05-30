@@ -291,7 +291,7 @@ module Action = struct
               | SNumlit i -> (ZExp.FocusedE (HExp.NumLit i))
               | SLam var -> (ZExp.FocusedE  (HExp.Asc ((HExp.Lam ("x",HExp.EmptyHole)),HType.Arrow (HType.Hole,HType.Hole)))) (* (HExp.Asc (HExp.Lam ("x",HExp.EmptyHole)), HType.Arrow (HType.Hole, HType.Hole))) *)
               | SVar v -> (ZExp.FocusedE (HExp.Var v))
-              | SAsc -> (ZExp.LeftAsc ((ZExp.FocusedE HExp.EmptyHole),(HType.Hole))) 
+              | SAsc -> ZExp.RightAsc (hexp, ZType.FocusedT (synthType hexp) ) 
               | SAp -> ZExp.RightAp (hexp,(ZExp.FocusedE HExp.EmptyHole))
               | _ -> raise NotImplemented 
             end
@@ -310,6 +310,17 @@ module Action = struct
 
   and performAna zexp htype a : ZExp.t =
     raise NotImplemented 
+
+  and synthType hexp : HType.t =
+    match hexp with
+    | HExp.Asc (t1,h1) -> raise NotImplemented 
+    | HExp.Var s -> raise NotImplemented
+    | HExp.Lam (s,t) -> raise NotImplemented
+    | HExp.Ap (t1,t2) -> raise NotImplemented
+    | HExp.NumLit i ->  HType.Num
+    | HExp.Plus (t1,t2) -> raise NotImplemented
+    | HExp.EmptyHole -> raise NotImplemented
+    | HExp.NonEmptyHole t -> raise NotImplemented
 
 
 

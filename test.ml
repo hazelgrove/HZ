@@ -91,6 +91,11 @@ let test18a2 test_ctxt = assertZexpsEqual (ascArrowNumType,ascNumType,(Construct
 let test18b test_ctxt = assertZexpsEqual (ascNumType,ascHoleType,(Construct SNum))
 
 
+let numLit5 = zexpToModel (ZExp.FocusedE (HExp.NumLit 5)) 
+let numLit5WithType = zexpToModel (ZExp.RightAsc ((HExp.NumLit 5),ZType.FocusedT (HType.Num))) 
+let test19a test_ctxt = assertZexpsEqual (numLit5WithType,numLit5,(Construct SAsc))
+
+
 let suite =
   "suite">:::
   ["test1">:: test1;
@@ -108,6 +113,7 @@ let suite =
    "test18a">:: test18a;
    "test18a2">:: test18a2;
    "test18b">:: test18b;
+   "test19a">:: test19a;
 
 
 
