@@ -46,9 +46,40 @@ module View = struct
   let viewModel (rs, rf) =
     R.Html5.(pcdata (viewSignal (rs,rf))) 
 
+  let enableButtons (rs,rf)=  
+    try Controller.update (Action.Del) (rs, rf) with
+    | NotImplemented -> raise InProgress
+  (* Js.Unsafe.fun_call (Js.Unsafe.variable "testFun") [|Js.Unsafe.inject "test"|] *)
+
+
   let viewActions (rs, rf) =
+    (*     let doc = Dom_html.document in
+           let parent =
+           Js.Opt.get (doc##getElementById(Js.string "spreadsheet"))
+            (fun () -> assert false)
+           in *)
+    (* let doc = Dom_html.document in
+       let parent =
+       Js.Opt.get (doc##getElementById(Js.string "spreadsheet"))
+        (fun () -> assert false)
+       in *)
+
+    (* Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view rp)) ; *)
     let onClickDel evt =
-      Controller.update (Action.Del) (rs, rf) ;
+      (* Js.set o s v; *)
+      Controller.update (Action.Del) (rs, rf); 
+      (* let bArrow = Dom_html.document##getElementById(Js.string "addArrowButton") in
+         bArrow##disabled := (Js.string "true"); *)
+      (* let doc = Dom_html.document in
+         let button = Js.Opt.get (doc##getElementById(Js.string "addArrowButton"))
+          (fun () -> assert false) in 
+         button##setAttribute := (Js.string "disabled")  *)
+      (*  Dom_html.window##alert (Js.string "Hello world"); *)
+      (*    (Js.Unsafe.set "addArrowButton" "disabled" "true"); *)
+      enableButtons (rs, rf);
+      (* let div = 
+         Dom_html.document##getElementById(Js.string "addArrowButton"))
+         ##.innerHTML := (Js.string "I'm a paragraph and I'm in a paragraph"); *)
       true
     in
     Html5.(button ~a:[a_onclick onClickDel] [pcdata "del"] )
@@ -150,14 +181,16 @@ module View = struct
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
-            button ~a:[a_onclick onClickAddNum] [pcdata "Add Num"] 
+            button ~a:[a_id "addNumButton"; a_onclick onClickAddNum] [pcdata "Add Num"] 
           ];
           li [
-            button ~a:[a_onclick onClickAddArrow] [pcdata "Add Arrow"] 
+            button ~a:[a_id "addArrowButton"; a_onclick onClickAddArrow] [pcdata "Add Arrow"] 
           ];
         ]
       ]
       )
+
+
 
   let view (rs, rf) =
     let model = viewModel (rs, rf) in 
@@ -179,7 +212,6 @@ module View = struct
         div ~a:[a_class ["ActionsTypes"]]  [ aTypes ];
       ]
     ) 
-
 end 
 
 open Lwt.Infix
