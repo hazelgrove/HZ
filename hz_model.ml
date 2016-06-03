@@ -185,6 +185,7 @@ module Action = struct
                   | HExp.Lam (var,body) -> ZExp.LamZ (var,(ZExp.FocusedE body))
                   | HExp.Asc (a1,a2) -> ZExp.LeftAsc ((ZExp.FocusedE a1),a2)
                   | HExp.Ap (a1,a2) -> ZExp.LeftAp ((ZExp.FocusedE a1),a2)
+                  | _ -> raise NotImplemented
                 end
               | ZExp.LeftPlus (z1,h1) -> ZExp.LeftPlus (fst (performSyn (z1,htype) a),h1)
               | ZExp.RightPlus (h1,z1) -> ZExp.RightPlus (h1,fst (performSyn (z1,htype) a))

@@ -53,33 +53,12 @@ module View = struct
 
 
   let viewActions (rs, rf) =
-    (*     let doc = Dom_html.document in
-           let parent =
-           Js.Opt.get (doc##getElementById(Js.string "spreadsheet"))
-            (fun () -> assert false)
-           in *)
-    (* let doc = Dom_html.document in
-       let parent =
-       Js.Opt.get (doc##getElementById(Js.string "spreadsheet"))
-        (fun () -> assert false)
-       in *)
-
-    (* Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view rp)) ; *)
     let onClickDel evt =
-      (* Js.set o s v; *)
       Controller.update (Action.Del) (rs, rf); 
-      (* let bArrow = Dom_html.document##getElementById(Js.string "addArrowButton") in
-         bArrow##disabled := (Js.string "true"); *)
-      (* let doc = Dom_html.document in
-         let button = Js.Opt.get (doc##getElementById(Js.string "addArrowButton"))
-          (fun () -> assert false) in 
-         button##setAttribute := (Js.string "disabled")  *)
-      (*  Dom_html.window##alert (Js.string "Hello world"); *)
-      (*    (Js.Unsafe.set "addArrowButton" "disabled" "true"); *)
-      enableButtons (rs, rf);
-      (* let div = 
-         Dom_html.document##getElementById(Js.string "addArrowButton"))
-         ##.innerHTML := (Js.string "I'm a paragraph and I'm in a paragraph"); *)
+      begin
+        try Controller.update (Action.Del) (rs, rf) with
+        | NotImplemented -> raise InProgress
+      end;
       true
     in
     Html5.(button ~a:[a_onclick onClickDel] [pcdata "del"] )
@@ -87,6 +66,11 @@ module View = struct
   let moveActions (rs, rf) =
     let onClickMoveLC evt =
       Controller.update (Action.Move FirstChild) (rs, rf) ;
+      begin
+        try Controller.update (Action.Move FirstChild) (rs, rf) with
+        | NotImplemented -> raise InProgress
+        | InProgress -> raise InProgress
+      end;
       true
     in
     let onClickMoveP evt =
