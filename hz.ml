@@ -1,6 +1,12 @@
 open Hz_model
 open Hz_controller
 open Tyxml_js
+open Hz_model.Action
+open Hz_model.Model
+open Hz_model.Model.ZExp
+open Hz_model.Model.ZType
+open Hz_model.Model.HExp
+open Hz_model.Model.HType
 
 module View = struct
 
