@@ -296,7 +296,7 @@ module Action = struct
               match shape with 
               | SPlus -> (ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,(HExp.EmptyHole)))) 
               | SNumlit i -> (ZExp.FocusedE (HExp.NumLit i))
-              | SLam var -> (ZExp.FocusedE  (HExp.Asc ((HExp.Lam ("x",HExp.EmptyHole)),HType.Arrow (HType.Hole,HType.Hole)))) (* (HExp.Asc (HExp.Lam ("x",HExp.EmptyHole)), HType.Arrow (HType.Hole, HType.Hole))) *)
+              | SLam var -> (ZExp.FocusedE  (HExp.Asc ((HExp.Lam (var,HExp.EmptyHole)),HType.Arrow (HType.Hole,HType.Hole)))) (* (HExp.Asc (HExp.Lam ("x",HExp.EmptyHole)), HType.Arrow (HType.Hole, HType.Hole))) *)
               | SVar v -> (ZExp.FocusedE (HExp.Var v))
               | SAsc -> ZExp.RightAsc (hexp, ZType.FocusedT (synthType hexp) ) 
               | SAp -> ZExp.RightAp (hexp,(ZExp.FocusedE HExp.EmptyHole))

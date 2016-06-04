@@ -46,6 +46,20 @@ module View = struct
   let calculateActiveButtons a (rs, rf) =
     let mOld = React.S.value rs in
     (* let m = (Action.performSyn mOld a) in *)
+    (* begin
+       (*       let elements =
+               Dom_html.window##document##getElementsByTagName(Js.string "inputTextBox")
+               in
+               Js.Opt.get elements##item(0)
+               (fun () -> failwith ("find_tag("^name^")")); *)
+       begin
+        let tbox =
+          Js.Opt.get (Dom_html.document##getElementById(Js.string "inputTextBox"))
+            (fun () -> assert false) in
+        tbox##value := Js.string "test";
+
+       end
+    *)
     begin
       Js.Unsafe.fun_call (Js.Unsafe.variable "enableAll") [|Js.Unsafe.inject "test"|]
     end;
@@ -68,6 +82,15 @@ module View = struct
         end
     end
 
+
+  let decodeURI () =
+    let varname = 
+      begin Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveParentButton"|]  
+      end
+
+    in
+
+    Js.string varname
 
   let viewModel (rs, rf) =
     R.Html5.(pcdata (viewSignal (rs,rf))) 
@@ -129,7 +152,29 @@ module View = struct
       true
     in
     let onClickAddLam evt =
-      Controller.update (Action.Construct (SLam "lam")) (rs, rf) ;
+      (*       let tbox =
+               Js.Opt.get (Dom_html.document##getElementById(Js.string "inputTextBox"))
+                (fun () -> assert false) in *)
+      (* let text = Js.to_string (input##value) in  *)
+      (* let text = Js.to_string (textbox##value) in *)
+      (*       let question =
+               Js.string "Do you find this tutorial useful ?" in
+               let result = Dom_html.window##(prompt question) in
+      *)
+      (* 
+      let res = Dom_html.window##alert(Js.string "title", Js.string "default") in *)
+      (*       let question =
+               Js.string "Do you find this tutorial useful ?" in
+               let result = Dom_html.window##(prompt question) in *)
+
+      (* let varName = decodeURI in *) 
+      let varname = 
+        begin 
+          (* Js.Unsafe.fun_call (Js.Unsafe.variable "lambdaName") [|Js.Unsafe.inject "moveParentButton"|]   *)
+          Js.Unsafe.call (Js.Unsafe.variable "lambdaName") [|Js.Unsafe.inject "moveParentButton"|]
+        end
+      in
+      Controller.update (Action.Construct (SLam (varname))) (rs, rf) ;
       true
     in
     let onClickAddAsc evt =
@@ -225,7 +270,9 @@ let main _ =
   in
   let m = Model.empty in
   let rp = React.S.create m in
-  let input = Dom_html.createInput ~_type:(Js.string "text") doc in
+  let input = Dom_html.createInput  ~name: (Js.string "inputTextBox") ~_type:(Js.string "text") doc in
+  let textbox = Dom_html.createTextarea Dom_html.document in
+  Dom.appendChild parent textbox;
   Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view rp)) ;
   Dom.appendChild parent input;
   Lwt.return ()
