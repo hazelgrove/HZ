@@ -43,6 +43,29 @@ module View = struct
 
   let viewSignal (rs, rf) = (React.S.map (fun ((zexp,htype) :model) -> stringFromZExp zexp) rs)
 
+  let calculateActiveButtons a (rs, rf) =
+    let mOld = React.S.value rs in
+    (* let m = (Action.performSyn mOld a) in *)
+    begin
+      try (Action.performSyn mOld (Action.Move FirstChild)) with
+      | NotImplemented -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "testFun") [|Js.Unsafe.inject "test"|]
+        end
+    end;
+    begin
+      try (Action.performSyn mOld (Action.Move Parent)) with
+      | NotImplemented -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "testFun") [|Js.Unsafe.inject "test"|]
+        end
+    end
+
+  (* raise InProgress *)
+  (* Js.Unsafe.fun_call (Js.Unsafe.variable "testFun") [|Js.Unsafe.inject "test"|] *)
+  (*     let update a ((rs, rf) : rp) =
+         let mOld = React.S.value rs in
+         let m = (Action.performSyn mOld a) in
+
+  *)
   let viewModel (rs, rf) =
     R.Html5.(pcdata (viewSignal (rs,rf))) 
 
@@ -55,10 +78,7 @@ module View = struct
   let viewActions (rs, rf) =
     let onClickDel evt =
       Controller.update (Action.Del) (rs, rf); 
-      begin
-        try Controller.update (Action.Del) (rs, rf) with
-        | NotImplemented -> raise InProgress
-      end;
+      calculateActiveButtons (Action.Del) (rs, rf);
       true
     in
     Html5.(button ~a:[a_onclick onClickDel] [pcdata "del"] )
@@ -66,11 +86,7 @@ module View = struct
   let moveActions (rs, rf) =
     let onClickMoveLC evt =
       Controller.update (Action.Move FirstChild) (rs, rf) ;
-      begin
-        try Controller.update (Action.Move FirstChild) (rs, rf) with
-        | NotImplemented -> raise InProgress
-        | InProgress -> raise InProgress
-      end;
+      calculateActiveButtons (Action.Move FirstChild) (rs, rf) ;
       true
     in
     let onClickMoveP evt =
