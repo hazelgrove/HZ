@@ -47,33 +47,30 @@ module View = struct
     let mOld = React.S.value rs in
     (* let m = (Action.performSyn mOld a) in *)
     begin
+      Js.Unsafe.fun_call (Js.Unsafe.variable "enableAll") [|Js.Unsafe.inject "test"|]
+    end;
+    begin
+      try (Action.performSyn mOld (Action.Del)) with
+      | NotImplemented -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "delButton"|]
+        end
+    end;
+    begin
       try (Action.performSyn mOld (Action.Move FirstChild)) with
       | NotImplemented -> begin
-          Js.Unsafe.fun_call (Js.Unsafe.variable "testFun") [|Js.Unsafe.inject "test"|]
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveLeftChildButton"|]
         end
     end;
     begin
       try (Action.performSyn mOld (Action.Move Parent)) with
       | NotImplemented -> begin
-          Js.Unsafe.fun_call (Js.Unsafe.variable "testFun") [|Js.Unsafe.inject "test"|]
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveParentButton"|]
         end
     end
 
-  (* raise InProgress *)
-  (* Js.Unsafe.fun_call (Js.Unsafe.variable "testFun") [|Js.Unsafe.inject "test"|] *)
-  (*     let update a ((rs, rf) : rp) =
-         let mOld = React.S.value rs in
-         let m = (Action.performSyn mOld a) in
 
-  *)
   let viewModel (rs, rf) =
     R.Html5.(pcdata (viewSignal (rs,rf))) 
-
-  let enableButtons (rs,rf)=  
-    try Controller.update (Action.Del) (rs, rf) with
-    | NotImplemented -> raise InProgress
-  (* Js.Unsafe.fun_call (Js.Unsafe.variable "testFun") [|Js.Unsafe.inject "test"|] *)
-
 
   let viewActions (rs, rf) =
     let onClickDel evt =
@@ -81,7 +78,7 @@ module View = struct
       calculateActiveButtons (Action.Del) (rs, rf);
       true
     in
-    Html5.(button ~a:[a_onclick onClickDel] [pcdata "del"] )
+    Html5.(button ~a:[a_id "delButton"; a_onclick onClickDel] [pcdata "del"] )
 
   let moveActions (rs, rf) =
     let onClickMoveLC evt =
@@ -91,7 +88,10 @@ module View = struct
     in
     let onClickMoveP evt =
       Controller.update (Action.Move Parent) (rs, rf) ;
-      true
+      begin
+        Js.Unsafe.fun_call (Js.Unsafe.variable "testFun") [|Js.Unsafe.inject "test"|]
+      end
+        true
     in
     let onClickMoveNS evt =
       Controller.update (Action.Move NextSib) (rs, rf) ;
@@ -104,16 +104,16 @@ module View = struct
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
-            button ~a:[a_onclick onClickMoveLC] [pcdata "move left child"] 
+            button ~a:[a_id "moveLeftChildButton"; a_onclick onClickMoveLC] [pcdata "move left child"] 
           ];
           li [
-            button ~a:[a_onclick onClickMoveP] [pcdata "move parent"] 
+            button ~a:[a_id "moveParentButton"; a_onclick onClickMoveP] [pcdata "move parent"] 
           ];
           li [
-            button ~a:[a_onclick onClickMoveNS] [pcdata "move next sib"] 
+            button ~a:[a_id "moveNextSibButton"; a_onclick onClickMoveNS] [pcdata "move next sib"] 
           ];
           li [
-            button ~a:[a_onclick onClickMovePS] [pcdata "move prev sib"] 
+            button ~a:[a_id "movePrevSibButton"; a_onclick onClickMovePS] [pcdata "move prev sib"] 
           ]
         ]
       ]
@@ -147,22 +147,22 @@ module View = struct
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
-            button ~a:[a_onclick onClickAddPlus] [pcdata "Add Plus"] 
+            button ~a:[a_id "addPlusButton"; a_onclick onClickAddPlus] [pcdata "Add Plus"] 
           ];
           li [
-            button ~a:[a_onclick onClickAddNumber] [pcdata "Add Number"] 
+            button ~a:[a_id "addNumberButton"; a_onclick onClickAddNumber] [pcdata "Add Number"] 
           ];
           li [
-            button ~a:[a_onclick onClickAddLam] [pcdata "Add Lambda"] 
+            button ~a:[a_id "addLambdaButton"; a_onclick onClickAddLam] [pcdata "Add Lambda"] 
           ];
           li [
-            button ~a:[a_onclick onClickAddAsc] [pcdata "Add Ascription"] 
+            button ~a:[a_id "addAscButton"; a_onclick onClickAddAsc] [pcdata "Add Ascription"] 
           ];
           li [
-            button ~a:[a_onclick onClickAddApp] [pcdata "Add Appliction"] 
+            button ~a:[a_id "addAppButton"; a_onclick onClickAddApp] [pcdata "Add Appliction"] 
           ];      
           li [
-            button ~a:[a_onclick onClickAddVar] [pcdata "Add Var x"] 
+            button ~a:[a_id "addVarButton"; a_onclick onClickAddVar] [pcdata "Add Var x"] 
           ];
         ]
       ]

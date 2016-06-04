@@ -3,6 +3,7 @@
 	<head>
 		<title>hz - js_of_ocaml</title>
 		<link href="css/style.css" type="text/css" rel="style.css" />
+		<script src="js/jquery-2.2.4.min.js"></script>
 	</head>
 	<body id="body">
 		<h2>HZ</h2>
@@ -10,8 +11,31 @@
 		<script src="js/hz.js"></script>
 	</body>
 	<script type="text/javascript">
-		function testFun() {
+		function testFun(str) {
     	document.getElementById("addArrowButton").disabled = true;
+    	console.log(str);
 		}
+
+		function enableAll() {
+			$("button").prop('disabled', false);
+		}
+
+		function disable(button) {
+			console.log(button);
+			$("#"+button).prop('disabled', true);
+			
+		}
+
+		// function disableFirstChild() {
+		// 	$("#moveLeftChildButton").prop('disabled', true);
+		// }
+
+		// function disableParent() {
+		// 	$("#moveParentButton").prop('disabled', true);
+		// }
+
+		
+
+		
 	</script>
 </html>
