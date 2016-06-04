@@ -35,20 +35,20 @@ end
 module Ctx : sig
   type t
   val empty : t
-  val lookup : t -> Var.t -> HType.t option
   val extend : t -> Var.t * HType.t -> t
+  val lookup : t -> Var.t -> HType.t option
 end = struct
   type t = (Var.t * HType.t) list
 
   let empty = []
 
-  let rec lookup ctx x = match ctx with 
-    | [] -> None
-    | (y, ty) :: ctx' -> 
-      if x == y then Some ty 
-      else lookup ctx' x
-
   let extend ctx (x, ty) = (x, ty) :: ctx
+
+  let rec lookup ctx x = match ctx with 
+  | [] -> None
+  | (y, ty) :: ctx' -> 
+    if x == y then Some ty 
+    else lookup ctx' x
 end
 
 module HExp = struct
