@@ -151,6 +151,7 @@ module View = struct
        let input = Dom_html.createInput ~name: (Js.string "inputTextBox") ~_type:(Js.string "text") doc in
        Dom.appendChild con input;  *)
     let inputVar  = Html5.(input ~a:[a_class ["c1"]; a_id "id-of-input"]) () in
+    inputVar##value <- (Js.string "inputTextBox") ;
 
     let onClickAddPlus evt =
       Controller.update (Action.Construct SPlus) (rs, rf) ;
@@ -190,9 +191,9 @@ module View = struct
       (* let varName = Dom_html.document##getElementById(Js.string "textId") in
          let value =  Js.Opt.get varName##value (fun () -> assert false) in *)
 
-      let varValue = Tyxml_js.To_dom.of_input inputVar in 
-      let varStr =  Js.to_string varValue##value in 
-      Controller.update (Action.Construct (SLam (varStr))) (rs, rf) ;
+      (*       let varValue = Tyxml_js.To_dom.of_input inputVar in 
+               let varStr =  Js.to_string (varValue##value()) in  *)
+      Controller.update (Action.Construct (SLam ("varStr"))) (rs, rf) ;
       true
     in
     let onClickAddAsc evt =
