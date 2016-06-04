@@ -1,11 +1,14 @@
 open OUnit2;;
+open Hz_semantics;;
 open Hz_model;;
-open Hz_model.Action;;
-open Hz_model.Model;;
-open Hz_model.Model.ZExp;;
-open Hz_model.Model.ZType;;
-open Hz_model.Model.HType;;
-open Hz_model.Model.HExp;;
+
+open Hz_semantics.Action;;
+open Hz_semantics.Model;;
+open Hz_semantics.Model.ZExp;;
+open Hz_semantics.Model.ZType;;
+open Hz_semantics.Model.HType;;
+open Hz_semantics.Model.HExp;;
+
 
 
 

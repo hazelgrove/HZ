@@ -1,6 +1,8 @@
 module Controller = struct
 
-  open Hz_model
+  open Hz_semantics
+  open Hz_model.Model
+
   (*   open Action
        open Model.ZExp
        open Model.HExp

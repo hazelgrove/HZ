@@ -1,6 +1,7 @@
-open Hz_model
 open Hz_controller
 open Tyxml_js
+open Hz_semantics
+open Hz_model
 open Hz_model.Action
 open Hz_model.Model
 open Hz_model.Model.ZExp

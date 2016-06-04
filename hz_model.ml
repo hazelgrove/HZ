@@ -1,3 +1,5 @@
+open Hz_semantics
+
 module Model = struct
   type t = ZExp.t * HType.t
 
