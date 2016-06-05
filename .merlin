@@ -7,4 +7,5 @@ PKG reactiveData
 PKG oUnit
 PKG js_of_ocaml.ppx
 PKG lwt.ppx
+B _build
 

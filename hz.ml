@@ -46,7 +46,6 @@ module View = struct
 
   let calculateActiveButtons a (rs, rf) =
     let mOld = React.S.value rs in
-    (* let m = (Action.performSyn mOld a) in *)
     begin
       Js.Unsafe.fun_call (Js.Unsafe.variable "enableAll") [|Js.Unsafe.inject "test"|]
     end;
@@ -67,8 +66,41 @@ module View = struct
       | NotImplemented -> begin
           Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveParentButton"|]
         end
+    end;
+    begin
+      try (Action.performSyn mOld (Action.Move NextSib)) with
+      | NotImplemented -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveNextSibButton"|]
+        end
+    end;
+    begin
+      try (Action.performSyn mOld (Action.Move PrevSib)) with
+      | NotImplemented -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "movePrevSibButton"|]
+        end
+    end;
+    begin
+      try (Action.performSyn mOld (Action.Construct SPlus)) with
+      | NotImplemented -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addPlusButton"|]
+        end
+    end;
+    begin
+      try (Action.performSyn mOld (Action.Construct (SNum 1))) with
+      | NotImplemented -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addNumberButton"|]
+        end
     end
 
+
+  let decodeURI () =
+    let varname = 
+      begin Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveParentButton"|]  
+      end
+
+    in
+
+    Js.string varname
 
   let viewModel (rs, rf) =
     R.Html5.(pcdata (viewSignal (rs,rf))) 
@@ -121,16 +153,23 @@ module View = struct
       )
 
   let addActions (rs, rf) =
+    let inputLam  = Html5.(input ~a:[a_class ["c1"]; a_id "lamInput"] ()) in
+    let inputVar  = Html5.(input ~a:[a_class ["c1"]; a_id "varInput"] ()) in
+    let inputNum  = Html5.(input ~a:[a_class ["c1"]; a_id "varInput"] ()) in
     let onClickAddPlus evt =
       Controller.update (Action.Construct SPlus) (rs, rf) ;
       true
     in
     let onClickAddNumber evt =
-      Controller.update (Action.Construct (SNumlit 1)) (rs, rf) ;
+      let numValue = Tyxml_js.To_dom.of_input inputNum in 
+      let numStr = Js.to_string (numValue##value) in 
+      Controller.update (Action.Construct (SNumlit (int_of_string numStr))) (rs, rf) ;
       true
     in
     let onClickAddLam evt =
-      Controller.update (Action.Construct (SLam "lam")) (rs, rf) ;
+      let lamValue = Tyxml_js.To_dom.of_input inputLam in 
+      let lamStr = Js.to_string (lamValue##value) in 
+      Controller.update (Action.Construct (SLam (lamStr))) (rs, rf) ;
       true
     in
     let onClickAddAsc evt =
@@ -142,19 +181,22 @@ module View = struct
       true
     in
     let onClickAddVar evt =
-      Controller.update (Action.Construct (SVar "x")) (rs, rf) ;
+      let varValue = Tyxml_js.To_dom.of_input inputVar in 
+      let varStr = Js.to_string (varValue##value) in 
+      Controller.update (Action.Construct (SVar varStr)) (rs, rf) ;
       true
     in
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
+
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
             button ~a:[a_id "addPlusButton"; a_onclick onClickAddPlus] [pcdata "Add Plus"] 
           ];
           li [
-            button ~a:[a_id "addNumberButton"; a_onclick onClickAddNumber] [pcdata "Add Number"] 
+            button ~a:[a_id "addNumberButton"; a_onclick onClickAddNumber] [pcdata "Add Number"];inputNum 
           ];
           li [
-            button ~a:[a_id "addLambdaButton"; a_onclick onClickAddLam] [pcdata "Add Lambda"] 
+            button ~a:[a_id "addLambdaButton"; a_onclick onClickAddLam] [pcdata "Add Lambda"];inputLam;
           ];
           li [
             button ~a:[a_id "addAscButton"; a_onclick onClickAddAsc] [pcdata "Add Ascription"] 
@@ -163,11 +205,12 @@ module View = struct
             button ~a:[a_id "addAppButton"; a_onclick onClickAddApp] [pcdata "Add Appliction"] 
           ];      
           li [
-            button ~a:[a_id "addVarButton"; a_onclick onClickAddVar] [pcdata "Add Var x"] 
+            button ~a:[a_id "addVarButton"; a_onclick onClickAddVar] [pcdata "Add Var x"];inputVar;
           ];
         ]
       ]
       )
+
 
 
   let addTypes (rs, rf) =
@@ -226,9 +269,11 @@ let main _ =
   in
   let m = Model.empty in
   let rp = React.S.create m in
-  let input = Dom_html.createInput ~_type:(Js.string "text") doc in
+  (* let input = Dom_html.createInput ~name: (Js.string "inputTextBox") ~_type:(Js.string "text") doc in *)
+  (*   let textbox = Dom_html.createTextarea Dom_html.document in
+       Dom.appendChild parent textbox; *)
   Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view rp)) ;
-  Dom.appendChild parent input;
+  (* Dom.appendChild parent input; *)
   Lwt.return ()
 
 

@@ -45,10 +45,10 @@ end = struct
   let extend ctx (x, ty) = (x, ty) :: ctx
 
   let rec lookup ctx x = match ctx with 
-  | [] -> None
-  | (y, ty) :: ctx' -> 
-    if x == y then Some ty 
-    else lookup ctx' x
+    | [] -> None
+    | (y, ty) :: ctx' -> 
+      if x == y then Some ty 
+      else lookup ctx' x
 end
 
 module HExp = struct
