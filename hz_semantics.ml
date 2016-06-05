@@ -163,8 +163,8 @@ module Action = struct
     | SArrow
     | SNum
     | SAsc
-    | SVar of string
-    | SLam of string
+    | SVar of Var.t
+    | SLam of Var.t
     | SAp 
     | SArg
     | SNumLit of int
