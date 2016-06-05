@@ -130,12 +130,15 @@ module View = struct
   let addActions (rs, rf) =
     let inputLam  = Html5.(input ~a:[a_class ["c1"]; a_id "lamInput"] ()) in
     let inputVar  = Html5.(input ~a:[a_class ["c1"]; a_id "varInput"] ()) in
+    let inputNum  = Html5.(input ~a:[a_class ["c1"]; a_id "varInput"] ()) in
     let onClickAddPlus evt =
       Controller.update (Action.Construct SPlus) (rs, rf) ;
       true
     in
     let onClickAddNumber evt =
-      Controller.update (Action.Construct (SNumlit 1)) (rs, rf) ;
+      let numValue = Tyxml_js.To_dom.of_input inputNum in 
+      let numStr = Js.to_string (numValue##value) in 
+      Controller.update (Action.Construct (SNumlit (int_of_string numStr))) (rs, rf) ;
       true
     in
     let onClickAddLam evt =
@@ -165,7 +168,7 @@ module View = struct
             button ~a:[a_id "addPlusButton"; a_onclick onClickAddPlus] [pcdata "Add Plus"] 
           ];
           li [
-            button ~a:[a_id "addNumberButton"; a_onclick onClickAddNumber] [pcdata "Add Number"] 
+            button ~a:[a_id "addNumberButton"; a_onclick onClickAddNumber] [pcdata "Add Number"];inputNum 
           ];
           li [
             button ~a:[a_id "addLambdaButton"; a_onclick onClickAddLam] [pcdata "Add Lambda"];inputLam;
