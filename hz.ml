@@ -91,11 +91,19 @@ module View = struct
   let moveActions (rs, rf) =
     let onClickMoveLC evt =
       Controller.update (Action.Move Action.FirstChild) (rs, rf) ;
-      calculateActiveButtons (Action.Move Action.FirstChild) (rs, rf) ;
       true
     in
+    let mOld = (React.S.value rs) in 
+    let moveLCButton = 
+      try (Action.performSyn Ctx.empty (Action.Move Action.FirstChild) mOld); 
+        Html5.(button ~a:[a_id "moveLeftChildButton"; a_onclick onClickMoveLC] [pcdata "move first child"] )
+      with
+      | Action.InvalidAction -> 
+        Html5.(button ~a:[a_id "moveLeftChildButton"; a_onclick onClickMoveLC;  a_disabled `Disabled ] [pcdata "move first child"] )
+    in 
     let onClickMoveP evt =
       Controller.update (Action.Move Action.Parent) (rs, rf) ;
+      (* calculateActiveButtons (Action.Move Action.Parent) (rs, rf) ; *)
       true
     in
     let onClickMoveNS evt =
@@ -109,7 +117,8 @@ module View = struct
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
-            button ~a:[a_id "moveLeftChildButton"; a_onclick onClickMoveLC] [pcdata "move left child"] 
+            (* button ~a:[a_id "moveLeftChildButton"; a_onclick onClickMoveLC] [pcdata "move left child"]  *)
+            moveLCButton
           ];
           li [
             button ~a:[a_id "moveParentButton"; a_onclick onClickMoveP] [pcdata "move parent"] 
