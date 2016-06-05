@@ -65,7 +65,35 @@ module View = struct
       | NotImplemented -> begin
           Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveParentButton"|]
         end
+    end;
+    begin
+      try (Action.performSyn mOld (Action.Move NextSib)) with
+      | NotImplemented -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveNextSibButton"|]
+        end
+    end;
+    begin
+      try (Action.performSyn mOld (Action.Move PrevSib)) with
+      | NotImplemented -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "movePrevSibButton"|]
+        end
+    end;
+    begin
+      try (Action.performSyn mOld (Action.Construct SPlus)) with
+      | NotImplemented -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addPlusButton"|]
+        end
+    end;
+        begin
+      try (Action.performSyn mOld (Action.Construct SNum 1)) with
+      | NotImplemented -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addNumberButton"|]
+        end
     end
+
+
+
+
 
 
   let decodeURI () =
