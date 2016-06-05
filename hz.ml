@@ -150,8 +150,7 @@ module View = struct
        in
        let input = Dom_html.createInput ~name: (Js.string "inputTextBox") ~_type:(Js.string "text") doc in
        Dom.appendChild con input;  *)
-    let inputVar  = Html5.(input ~a:[a_class ["c1"]; a_id "id-of-input"]) () in
-    inputVar##value <- (Js.string "inputTextBox") ;
+    let inputVar  = Html5.(input ~a:[a_class ["c1"]; a_id "id-of-input"] ()) in
 
     let onClickAddPlus evt =
       Controller.update (Action.Construct SPlus) (rs, rf) ;
@@ -193,7 +192,9 @@ module View = struct
 
       (*       let varValue = Tyxml_js.To_dom.of_input inputVar in 
                let varStr =  Js.to_string (varValue##value()) in  *)
-      Controller.update (Action.Construct (SLam ("varStr"))) (rs, rf) ;
+      let varValue = Tyxml_js.To_dom.of_input inputVar in 
+      let varStr = Js.to_string (varValue##value) in 
+      Controller.update (Action.Construct (SLam (varStr))) (rs, rf) ;
       true
     in
     let onClickAddAsc evt =
@@ -209,7 +210,7 @@ module View = struct
       true
     in
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
-        inputVar;
+        inputVar; 
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
             button ~a:[a_id "addPlusButton"; a_onclick onClickAddPlus] [pcdata "Add Plus"] 
@@ -232,6 +233,7 @@ module View = struct
         ]
       ]
       )
+
 
 
   let addTypes (rs, rf) =
@@ -290,11 +292,11 @@ let main _ =
   in
   let m = Model.empty in
   let rp = React.S.create m in
-  let input = Dom_html.createInput ~name: (Js.string "inputTextBox") ~_type:(Js.string "text") doc in
+  (* let input = Dom_html.createInput ~name: (Js.string "inputTextBox") ~_type:(Js.string "text") doc in *)
   (*   let textbox = Dom_html.createTextarea Dom_html.document in
        Dom.appendChild parent textbox; *)
   Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view rp)) ;
-  Dom.appendChild parent input;
+  (* Dom.appendChild parent input; *)
   Lwt.return ()
 
 
