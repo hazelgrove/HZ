@@ -81,10 +81,12 @@ module View = struct
   let viewActions (rs, rf) =
     let onClickDel evt =
       Controller.update (Action.Del) (rs, rf); 
-      calculateActiveButtons (Action.Del) (rs, rf);
       true
     in
-    Html5.(button ~a:[a_id "delButton"; a_onclick onClickDel; a_disabled `Disabled] [pcdata "del"] )
+    try (Action.performSyn Ctx.empty Action.Del (React.S.value rs)); Html5.(button ~a:[a_id "delButton"; a_onclick onClickDel] [pcdata "del"] )
+    with
+    | Action.InvalidAction -> Html5.(button ~a:[a_id "delButton"; a_onclick onClickDel; a_disabled `Disabled] [pcdata "del"] )
+
 
   let moveActions (rs, rf) =
     let onClickMoveLC evt =
