@@ -45,21 +45,6 @@ module View = struct
 
   let calculateActiveButtons a (rs, rf) =
     let mOld = React.S.value rs in
-    (* let m = (Action.performSyn mOld a) in *)
-    (* begin
-       (*       let elements =
-               Dom_html.window##document##getElementsByTagName(Js.string "inputTextBox")
-               in
-               Js.Opt.get elements##item(0)
-               (fun () -> failwith ("find_tag("^name^")")); *)
-       begin
-        let tbox =
-          Js.Opt.get (Dom_html.document##getElementById(Js.string "inputTextBox"))
-            (fun () -> assert false) in
-        tbox##value := Js.string "test";
-
-       end
-    *)
     begin
       Js.Unsafe.fun_call (Js.Unsafe.variable "enableAll") [|Js.Unsafe.inject "test"|]
     end;
@@ -143,15 +128,8 @@ module View = struct
       )
 
   let addActions (rs, rf) =
-    (* let doc = Dom_html.document in
-       let con =
-       Js.Opt.get (doc##getElementById(Js.string "containerDiv"))
-        (fun () -> assert false)
-       in
-       let input = Dom_html.createInput ~name: (Js.string "inputTextBox") ~_type:(Js.string "text") doc in
-       Dom.appendChild con input;  *)
-    let inputVar  = Html5.(input ~a:[a_class ["c1"]; a_id "id-of-input"] ()) in
-
+    let inputLam  = Html5.(input ~a:[a_class ["c1"]; a_id "lamInput"] ()) in
+    let inputVar  = Html5.(input ~a:[a_class ["c1"]; a_id "varInput"] ()) in
     let onClickAddPlus evt =
       Controller.update (Action.Construct SPlus) (rs, rf) ;
       true
@@ -161,40 +139,9 @@ module View = struct
       true
     in
     let onClickAddLam evt =
-      (*       let tbox =
-               Js.Opt.get (Dom_html.document##getElementById(Js.string "inputTextBox"))
-                (fun () -> assert false) in *)
-      (* let text = Js.to_string (input##value) in  *)
-      (* let text = Js.to_string (textbox##value) in *)
-      (*       let question =
-               Js.string "Do you find this tutorial useful ?" in
-               let result = Dom_html.window##(prompt question) in
-      *)
-      (* 
-      let res = Dom_html.window##alert(Js.string "title", Js.string "default") in *)
-      (*       let question =
-               Js.string "Do you find this tutorial useful ?" in
-               let result = Dom_html.window##(prompt question) in *)
-
-      (* let varName = decodeURI in *) 
-      (*      let varname = 
-              begin 
-               (* Js.Unsafe.fun_call (Js.Unsafe.variable "lambdaName") [|Js.Unsafe.inject "moveParentButton"|]   *)
-               Js.Unsafe.call (Js.Unsafe.variable "lambdaName") [|Js.Unsafe.inject "moveParentButton"|]
-              end
-              in *)
-      (*       let tbox =
-               Js.Opt.get (Dom_html.document##getElementById(Js.string "textId"))
-                (fun () -> assert false) in
-               let text = Js.to_string (tbox##innerHTML) in *)
-      (* let varName = Dom_html.document##getElementById(Js.string "textId") in
-         let value =  Js.Opt.get varName##value (fun () -> assert false) in *)
-
-      (*       let varValue = Tyxml_js.To_dom.of_input inputVar in 
-               let varStr =  Js.to_string (varValue##value()) in  *)
-      let varValue = Tyxml_js.To_dom.of_input inputVar in 
-      let varStr = Js.to_string (varValue##value) in 
-      Controller.update (Action.Construct (SLam (varStr))) (rs, rf) ;
+      let lamValue = Tyxml_js.To_dom.of_input inputLam in 
+      let lamStr = Js.to_string (lamValue##value) in 
+      Controller.update (Action.Construct (SLam (lamStr))) (rs, rf) ;
       true
     in
     let onClickAddAsc evt =
@@ -206,11 +153,13 @@ module View = struct
       true
     in
     let onClickAddVar evt =
-      Controller.update (Action.Construct (SVar "x")) (rs, rf) ;
+      let varValue = Tyxml_js.To_dom.of_input inputVar in 
+      let varStr = Js.to_string (varValue##value) in 
+      Controller.update (Action.Construct (SVar varStr)) (rs, rf) ;
       true
     in
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
-        inputVar; 
+
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
             button ~a:[a_id "addPlusButton"; a_onclick onClickAddPlus] [pcdata "Add Plus"] 
@@ -219,7 +168,7 @@ module View = struct
             button ~a:[a_id "addNumberButton"; a_onclick onClickAddNumber] [pcdata "Add Number"] 
           ];
           li [
-            button ~a:[a_id "addLambdaButton"; a_onclick onClickAddLam] [pcdata "Add Lambda"];
+            button ~a:[a_id "addLambdaButton"; a_onclick onClickAddLam] [pcdata "Add Lambda"];inputLam;
           ];
           li [
             button ~a:[a_id "addAscButton"; a_onclick onClickAddAsc] [pcdata "Add Ascription"] 
@@ -228,7 +177,7 @@ module View = struct
             button ~a:[a_id "addAppButton"; a_onclick onClickAddApp] [pcdata "Add Appliction"] 
           ];      
           li [
-            button ~a:[a_id "addVarButton"; a_onclick onClickAddVar] [pcdata "Add Var x"] 
+            button ~a:[a_id "addVarButton"; a_onclick onClickAddVar] [pcdata "Add Var x"];inputVar;
           ];
         ]
       ]
