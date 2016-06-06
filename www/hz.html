@@ -12,26 +12,14 @@
 
 		<input type="text" name="inputTextBox2" id="textID">
 	</body>
-	<script type="text/javascript">
-		function testFun(str) {
-    	document.getElementById("addArrowButton").disabled = true;
-    	console.log(str);
-		}
-
+	<script type="text/javascript">		
 		function enableAll() {
 			$("button").prop('disabled', false);
 		}
 
 		function disable(button) {
-			console.log(button);
+			// console.log(button);
 			$("#"+button).prop('disabled', true);
-		}	
-
-		function lambdaName() {
-			console.log("getLambdaName");
-			return "JSName";
 		}		
-
-		
 	</script>
 </html>

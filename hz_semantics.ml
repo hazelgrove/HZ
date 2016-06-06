@@ -243,11 +243,30 @@ module Action = struct
       ZExp.RightPlus (e1, ZExp.FocusedE e2)
     | (PrevSib, ZExp.RightPlus (e1, ZExp.FocusedE e2)) -> 
       ZExp.LeftPlus (ZExp.FocusedE e1, e2)
+    (* Recursive Cases Plus*)
+    | (FirstChild, ZExp.LeftPlus (e1, e2)) -> 
+      ZExp.LeftPlus ((performEMove FirstChild e1),e2)
+    | (FirstChild, ZExp.RightPlus (e1, e2)) -> 
+      ZExp.RightPlus (e1,(performEMove FirstChild e2))
+    | (Parent, ZExp.LeftPlus (e1, e2)) -> 
+      ZExp.LeftPlus ((performEMove Parent e1),e2)
+    | (Parent, ZExp.RightPlus (e1, e2)) -> 
+      ZExp.RightPlus (e1,(performEMove Parent e2))
+    | (NextSib, ZExp.LeftPlus (e1, e2)) -> 
+      ZExp.LeftPlus ((performEMove NextSib e1),e2)
+    | (NextSib, ZExp.RightPlus (e1, e2)) -> 
+      ZExp.RightPlus (e1,(performEMove NextSib e2))
+    | (PrevSib, ZExp.LeftPlus (e1, e2)) -> 
+      ZExp.LeftPlus ((performEMove PrevSib e1),e2)
+    | (PrevSib, ZExp.RightPlus (e1, e2)) -> 
+      ZExp.RightPlus (e1,(performEMove PrevSib e2))
+
     (* Non-Empty Hole *)
     | (FirstChild, ZExp.FocusedE (HExp.NonEmptyHole e)) -> 
       ZExp.NonEmptyHoleZ (ZExp.FocusedE e)
     | (Parent, ZExp.NonEmptyHoleZ (ZExp.FocusedE e)) -> 
       ZExp.FocusedE (HExp.NonEmptyHole e)
+
     | _ -> raise InvalidAction
 
   let rec performSyn ctx a (ze, ty) = match (a, (ze, ty)) with 

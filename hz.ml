@@ -39,7 +39,7 @@ module View = struct
 
   let viewSignal (rs, rf) = (React.S.map (fun ((zexp,htype) : Model.t) -> stringFromZExp zexp) rs)
 
-  let calculateActiveButtons a (rs, rf) =
+  let calculateActiveButtons (rs, rf) = 
     let mOld = React.S.value rs in
     let performSyn = Action.performSyn Ctx.empty in 
     let _ = Js.Unsafe.fun_call (Js.Unsafe.variable "enableAll") [|Js.Unsafe.inject "test"|] in 
@@ -72,6 +72,30 @@ module View = struct
         | Action.InvalidAction -> begin
             Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addNumberButton"|]
           end
+    in let _ = try (performSyn (Action.Construct (Action.SLam "lamStr")) mOld) with
+        | Action.InvalidAction -> begin
+            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addLambdaButton"|]
+          end
+    in let _ = try (performSyn (Action.Construct (Action.SAsc)) mOld) with
+        | Action.InvalidAction -> begin
+            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addAscButton"|]
+          end
+    in let _ = try (performSyn (Action.Construct (Action.SAp)) mOld) with
+        | Action.InvalidAction -> begin
+            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addAppButton"|]
+          end
+    in let _ = try (performSyn (Action.Construct (Action.SVar "varStr")) mOld) with
+        | Action.InvalidAction -> begin
+            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addVarButton"|]
+          end
+    in let _ = try (performSyn (Action.Construct (Action.SNum)) mOld) with
+        | Action.InvalidAction -> begin
+            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addNumButton"|]
+          end
+    in let _ = try (performSyn (Action.Construct (Action.SArrow)) mOld) with
+        | Action.InvalidAction -> begin
+            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addArrowButton"|]
+          end         
     in ()
 
 
@@ -81,44 +105,36 @@ module View = struct
   let viewActions (rs, rf) =
     let onClickDel evt =
       Controller.update (Action.Del) (rs, rf); 
+      calculateActiveButtons (rs, rf) ;
       true
     in
-    try (Action.performSyn Ctx.empty Action.Del (React.S.value rs)); Html5.(button ~a:[a_id "delButton"; a_onclick onClickDel] [pcdata "del"] )
-    with
-    | Action.InvalidAction -> Html5.(button ~a:[a_id "delButton"; a_onclick onClickDel; a_disabled `Disabled] [pcdata "del"] )
-
+    Html5.(button ~a:[a_id "delButton"; a_onclick onClickDel] [pcdata "del"] )
 
   let moveActions (rs, rf) =
     let onClickMoveLC evt =
       Controller.update (Action.Move Action.FirstChild) (rs, rf) ;
+      calculateActiveButtons  (rs, rf) ;
       true
     in
-    let mOld = (React.S.value rs) in 
-    let moveLCButton = 
-      try (Action.performSyn Ctx.empty (Action.Move Action.FirstChild) mOld); 
-        Html5.(button ~a:[a_id "moveLeftChildButton"; a_onclick onClickMoveLC] [pcdata "move first child"] )
-      with
-      | Action.InvalidAction -> 
-        Html5.(button ~a:[a_id "moveLeftChildButton"; a_onclick onClickMoveLC;  a_disabled `Disabled ] [pcdata "move first child"] )
-    in 
     let onClickMoveP evt =
       Controller.update (Action.Move Action.Parent) (rs, rf) ;
-      (* calculateActiveButtons (Action.Move Action.Parent) (rs, rf) ; *)
+      calculateActiveButtons (rs, rf) ;
       true
     in
     let onClickMoveNS evt =
       Controller.update (Action.Move Action.NextSib) (rs, rf) ;
+      calculateActiveButtons  (rs, rf) ;
       true
     in
     let onClickMovePS evt =
       Controller.update (Action.Move Action.PrevSib) (rs, rf) ;
+      calculateActiveButtons (rs, rf) ;
       true
     in
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
-            (* button ~a:[a_id "moveLeftChildButton"; a_onclick onClickMoveLC] [pcdata "move left child"]  *)
-            moveLCButton
+            button ~a:[a_id "moveLeftChildButton"; a_onclick onClickMoveLC] [pcdata "move left child"] 
           ];
           li [
             button ~a:[a_id "moveParentButton"; a_onclick onClickMoveP] [pcdata "move parent"] 
@@ -139,32 +155,38 @@ module View = struct
     let inputNum  = Html5.(input ~a:[a_class ["c1"]; a_id "varInput"] ()) in
     let onClickAddPlus evt =
       Controller.update (Action.Construct Action.SPlus) (rs, rf) ;
+      calculateActiveButtons   (rs, rf) ;
       true
     in
     let onClickAddNumber evt =
       let numValue = Tyxml_js.To_dom.of_input inputNum in 
       let numStr = Js.to_string (numValue##value) in 
       Controller.update (Action.Construct (Action.SNumLit (int_of_string numStr))) (rs, rf) ;
+      calculateActiveButtons (rs, rf) ;
       true
     in
     let onClickAddLam evt =
       let lamValue = Tyxml_js.To_dom.of_input inputLam in 
       let lamStr = Js.to_string (lamValue##value) in 
       Controller.update (Action.Construct (Action.SLam (lamStr))) (rs, rf) ;
+      calculateActiveButtons  (rs, rf) ;
       true
     in
     let onClickAddAsc evt =
       Controller.update (Action.Construct (Action.SAsc)) (rs, rf) ;
+      calculateActiveButtons  (rs, rf) ;
       true
     in
     let onClickAddApp evt =
       Controller.update (Action.Construct (Action.SAp)) (rs, rf) ;
+      calculateActiveButtons  (rs, rf) ;
       true
     in
     let onClickAddVar evt =
       let varValue = Tyxml_js.To_dom.of_input inputVar in 
       let varStr = Js.to_string (varValue##value) in 
       Controller.update (Action.Construct (Action.SVar varStr)) (rs, rf) ;
+      calculateActiveButtons (rs, rf) ;
       true
     in
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
@@ -197,10 +219,12 @@ module View = struct
   let addTypes (rs, rf) =
     let onClickAddNum evt =
       Controller.update (Action.Construct Action.SNum) (rs, rf) ;
+      calculateActiveButtons (rs, rf) ;
       true
     in
     let onClickAddArrow evt =
       Controller.update (Action.Construct Action.SArrow) (rs, rf) ;
+      calculateActiveButtons (rs, rf) ;
       true
     in
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
@@ -223,6 +247,7 @@ module View = struct
     let mActions = moveActions (rs, rf) in
     let aActions = addActions (rs, rf) in
     let aTypes = addTypes (rs, rf) in
+    calculateActiveButtons (rs, rf);
     Html5.(
       div [
         div ~a:[a_class ["comments"]] [
