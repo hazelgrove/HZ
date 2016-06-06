@@ -6,7 +6,7 @@ module Model = struct
 
   let empty = ((ZExp.FocusedE HExp.EmptyHole), HType.Hole)
   (* let empty = (ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,HExp.EmptyHole)),  *)
-               (* HType.Num) *)
+  (* HType.Num) *)
 
   (* react *)
   type rs = t React.signal (* reactive signal *)

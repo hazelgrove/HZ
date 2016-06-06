@@ -243,30 +243,28 @@ module Action = struct
       ZExp.RightPlus (e1, ZExp.FocusedE e2)
     | (PrevSib, ZExp.RightPlus (e1, ZExp.FocusedE e2)) -> 
       ZExp.LeftPlus (ZExp.FocusedE e1, e2)
-    (* Recursive Cases Plus*)
-    | (FirstChild, ZExp.LeftPlus (e1, e2)) -> 
-      ZExp.LeftPlus ((performEMove FirstChild e1),e2)
-    | (FirstChild, ZExp.RightPlus (e1, e2)) -> 
-      ZExp.RightPlus (e1,(performEMove FirstChild e2))
-    | (Parent, ZExp.LeftPlus (e1, e2)) -> 
-      ZExp.LeftPlus ((performEMove Parent e1),e2)
-    | (Parent, ZExp.RightPlus (e1, e2)) -> 
-      ZExp.RightPlus (e1,(performEMove Parent e2))
-    | (NextSib, ZExp.LeftPlus (e1, e2)) -> 
-      ZExp.LeftPlus ((performEMove NextSib e1),e2)
-    | (NextSib, ZExp.RightPlus (e1, e2)) -> 
-      ZExp.RightPlus (e1,(performEMove NextSib e2))
-    | (PrevSib, ZExp.LeftPlus (e1, e2)) -> 
-      ZExp.LeftPlus ((performEMove PrevSib e1),e2)
-    | (PrevSib, ZExp.RightPlus (e1, e2)) -> 
-      ZExp.RightPlus (e1,(performEMove PrevSib e2))
-
     (* Non-Empty Hole *)
     | (FirstChild, ZExp.FocusedE (HExp.NonEmptyHole e)) -> 
       ZExp.NonEmptyHoleZ (ZExp.FocusedE e)
     | (Parent, ZExp.NonEmptyHoleZ (ZExp.FocusedE e)) -> 
       ZExp.FocusedE (HExp.NonEmptyHole e)
-
+    (* Zipper Cases *)
+    | (_, ZExp.LeftAsc (ze, ty)) -> 
+      ZExp.LeftAsc ((performEMove direction ze), ty)
+    | (_, ZExp.RightAsc (e, zty)) -> 
+      ZExp.RightAsc (e, performTyp (Move direction) zty)
+    | (_, ZExp.LamZ (x, ze)) -> 
+      ZExp.LamZ (x, (performEMove direction ze))
+    | (_, ZExp.LeftAp (ze1, e2)) -> 
+      ZExp.LeftAp ((performEMove direction ze1), e2)
+    | (_, ZExp.RightAp (e1, ze2)) -> 
+      ZExp.RightAp (e1, (performEMove direction ze2))
+    | (_, ZExp.LeftPlus (ze1, e2)) -> 
+      ZExp.LeftPlus ((performEMove direction ze1), e2)
+    | (_, ZExp.RightPlus (e1, ze2)) -> 
+      ZExp.RightPlus (e1, (performEMove direction ze2))
+    | (_, ZExp.NonEmptyHoleZ (ze)) -> 
+      ZExp.NonEmptyHoleZ (performEMove direction ze)
     | _ -> raise InvalidAction
 
   let rec performSyn ctx a (ze, ty) = match (a, (ze, ty)) with 
