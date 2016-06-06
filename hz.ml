@@ -99,6 +99,15 @@ module View = struct
     in ()
 
 
+  let get_el s = Js.Opt.get (Dom_html.document##getElementById(Js.string s))
+      (fun _ -> assert false)
+
+  let get x = Js.Opt.get x (fun _ -> assert false)
+
+  let get_input s = 
+    get (Dom_html.CoerceTo.input (get_el s))
+
+
   let viewModel (rs, rf) =
     R.Html5.(pcdata (viewSignal (rs,rf))) 
 
@@ -150,9 +159,37 @@ module View = struct
       )
 
   let addActions (rs, rf) =
+    let addNumberKeyHandler evt =
+      (*  begin Js.Unsafe.fun_call (Js.Unsafe.variable "enable") [|Js.Unsafe.inject "delButton"|] end;
+          let numValue =  Dom_html.document##getElementById(Js.string "numInput") in 
+          let numStr = Js.to_string (numValue##value) in 
+          calculateActiveButtons (rs, rf) ;
+          let mOld = React.S.value rs in
+          let performSyn = Action.performSyn Ctx.empty in 
+          let _ = Js.Unsafe.fun_call (Js.Unsafe.variable "enableAll") [|Js.Unsafe.inject "test"|] in 
+          let _ = try (performSyn (Action.Construct (Action.SNumLit numStr)) mOld) with
+          | Action.InvalidAction -> begin
+             Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "delButton"|]
+           end in 
+          (* Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addAppButton"|]; *)
+          false *)
+      (*  let numValue = Tyxml_js.To_dom.of_input (get_el "numInput") in
+          numValue##value <- "test" *)
+
+      (* let input = Js.coerce_opt (Dom_html.document##getElementById "numInput")
+          Dom_html.CoerceTo.div (fun _ -> assert false) in 
+
+         input##value <-  Js.string "test" *)
+      let doc = Dom_html.document in
+      Js.Opt.case (doc##getElementById(Js.string "numInput"))
+        (fun _ -> assert false)
+        (fun e ->
+           e##value <- Js.some (Js.string "test"));
+      true
+    in
     let inputLam  = Html5.(input ~a:[a_class ["c1"]; a_id "lamInput"] ()) in
     let inputVar  = Html5.(input ~a:[a_class ["c1"]; a_id "varInput"] ()) in
-    let inputNum  = Html5.(input ~a:[a_class ["c1"]; a_id "varInput"] ()) in
+    let inputNum  = Html5.(input ~a:[a_class ["c1"]; a_id "numInput"; a_onkeypress addNumberKeyHandler; a_onkeydown addNumberKeyHandler] ()) in
     let onClickAddPlus evt =
       Controller.update (Action.Construct Action.SPlus) (rs, rf) ;
       calculateActiveButtons   (rs, rf) ;
