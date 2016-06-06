@@ -99,6 +99,15 @@ module View = struct
     in ()
 
 
+  let alert str = Dom_html.window##alert(Js.string str)
+
+  type handler = (Dom_html.element Js.t, Dom_html.event Js.t) Dom_html.event_listener
+
+
+  let get_element_by_id id =
+    Js.Opt.get (Dom_html.document##getElementById (Js.string id))
+      (fun _ -> assert false)
+
   let get_el s = Js.Opt.get (Dom_html.document##getElementById(Js.string s))
       (fun _ -> assert false)
 
@@ -180,11 +189,21 @@ module View = struct
           Dom_html.CoerceTo.div (fun _ -> assert false) in 
 
          input##value <-  Js.string "test" *)
-      let doc = Dom_html.document in
-      Js.Opt.case (doc##getElementById(Js.string "numInput"))
-        (fun _ -> assert false)
-        (fun e ->
-           e##value <- Js.some (Js.string "test"));
+      (* let doc = Dom_html.document in
+         Js.Opt.case (doc##getElementById(Js.string "numInput"))
+         (fun _ -> assert false)
+         (fun e ->
+           (* e##title <- Js.string "test" *)
+           e##title <- Js.to_string  (e##getAttribute "value")
+           (* e##title <- Js.some (Js.string "test") *)
+           (* e##setAttribute "value" "test";  *)
+         ); *)
+
+      let b = get_element_by_id "numInput" in
+      b##onclick <- Dom_html.handler
+      (fun _ -> dp_custom##setExtraWeekAtEnd(i##checked); Js._true);
+      (*  (fun _ -> 
+          callback (e##title <- Js.some (Js.string "test")); _true);   *)
       true
     in
     let inputLam  = Html5.(input ~a:[a_class ["c1"]; a_id "lamInput"] ()) in
