@@ -229,7 +229,7 @@ module View = struct
       let numStr = 
         Js.to_string
           (Js.Opt.get  
-             (numValue##getAttribute (Js.string "nodeValue"))
+             (numValue##getAttribute (Js.string "value"))
              (fun () -> Js.string "AAA"))
       in
       Js.Unsafe.fun_call (Js.Unsafe.variable "enable") [|Js.Unsafe.inject numStr|] ;
