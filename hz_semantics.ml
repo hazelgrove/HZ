@@ -47,8 +47,10 @@ end = struct
   let rec lookup ctx x = match ctx with 
     | [] -> None
     | (y, ty) :: ctx' -> 
-      if x == y then Some ty 
-      else lookup ctx' x
+      begin match String.compare x y with 
+        | 0 -> Some ty 
+        | _ -> lookup ctx' x 
+      end 
 end
 
 module HExp = struct
@@ -398,7 +400,7 @@ module Action = struct
             ZExp.FocusedE (HExp.Var x) 
           else
             ZExp.FocusedE (HExp.NonEmptyHole (HExp.Var x))
-        | None -> raise InvalidAction
+        | None -> raise InvalidAction 
       end
     | (Construct (SLam x), ZExp.FocusedE HExp.EmptyHole, HType.Arrow (ty1, ty2)) -> 
       ZExp.LamZ (x, ze)
@@ -421,7 +423,7 @@ module Action = struct
     | (_, ZExp.LamZ (x, ze'), HType.Arrow (ty1, ty2)) -> 
       let ctx' = Ctx.extend ctx (x, ty1) in 
       let ze'' = performAna ctx' a ze' ty2 in 
-      ZExp.LamZ (x, ze'')
+      ZExp.LamZ (x, ze'') 
     (* Subsumption *) 
     | _ -> 
       let e = ZExp.erase ze in 
