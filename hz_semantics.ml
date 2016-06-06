@@ -323,13 +323,16 @@ module Action = struct
       (ZExp.FocusedE e, ty')
     (* Zipper Cases *)
     | (_, (ZExp.LeftAsc (ze, ty), _)) -> 
-      (performAna ctx a ze ty, ty)
+      (ZExp.LeftAsc ((performAna ctx a ze ty), ty), ty)
     | (_, (ZExp.RightAsc (e, zty), _)) -> 
       let zty' = performTyp a zty in 
       let ty' = ZType.erase zty' in 
-      let _ = HExp.ana ctx e ty' in 
-      (ZExp.RightAsc (e, zty'), 
-       ty')
+      begin try 
+          let _ = HExp.ana ctx e ty' in 
+          (ZExp.RightAsc (e, zty'), ty')
+        with 
+        | HExp.IllTyped -> raise InvalidAction
+      end
     | (_, (ZExp.LeftAp (ze1, e2), _)) -> 
       let e1 = ZExp.erase ze1 in 
       let ty1 = HExp.syn ctx e1 in 
@@ -417,7 +420,8 @@ module Action = struct
     (* Zipper Cases *)
     | (_, ZExp.LamZ (x, ze'), HType.Arrow (ty1, ty2)) -> 
       let ctx' = Ctx.extend ctx (x, ty1) in 
-      performAna ctx' a ze' ty2
+      let ze'' = performAna ctx' a ze' ty2 in 
+      ZExp.LamZ (x, ze'')
     (* Subsumption *) 
     | _ -> 
       let e = ZExp.erase ze in 
