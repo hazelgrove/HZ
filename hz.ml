@@ -99,15 +99,20 @@ module View = struct
     in ()
 
 
+
+  let get_value dom = Js.to_string ((Tyxml_js.To_dom.of_input dom)##value)
+  let set_value e s = (Tyxml_js.To_dom.of_input e)##value <- Js.string s
+
+
   let alert str = Dom_html.window##alert(Js.string str)
 
   type handler = (Dom_html.element Js.t, Dom_html.event Js.t) Dom_html.event_listener
 
 
-  let get_element_by_id id =
-    Js.Opt.get (Dom_html.document##getElementById (Js.string id))
+  (* let get_element_by_id id =
+     Js.Opt.get (Dom_html.document##getElementById (Js.string id) : Dom.input)
       (fun _ -> assert false)
-
+  *)
   let get_el s = Js.Opt.get (Dom_html.document##getElementById(Js.string s))
       (fun _ -> assert false)
 
@@ -198,12 +203,42 @@ module View = struct
            (* e##title <- Js.some (Js.string "test") *)
            (* e##setAttribute "value" "test";  *)
          ); *)
+      (* 
+      let inputNumId = get_element_by_id "numInput" in
+      let numValue = Tyxml_js.Of_dom.of_input inputNumId in 
+      numValue##value <- "test"; *)
+      (* let numStr = Js.to_string (numValue##value) in 
+         Tyxml_js.To_dom.of_input
+         b##onclick <- Dom_html.handler
+         (fun _ -> dp_custom##setExtraWeekAtEnd(i##checked); Js._true);
+         (*  (fun _ -> 
+          callback (e##title <- Js.some (Js.string "test")); _true);   *) *)
 
-      let b = get_element_by_id "numInput" in
-      b##onclick <- Dom_html.handler
-      (fun _ -> dp_custom##setExtraWeekAtEnd(i##checked); Js._true);
-      (*  (fun _ -> 
-          callback (e##title <- Js.some (Js.string "test")); _true);   *)
+
+      (*  let click = (Dom.document#getElementById "numInput" : Dom.button) in
+          click##value <- "test"; *)
+      (*       let input = (Dom.document#createElement "input" : Dom.text) in
+               let set_input () =
+               let i = float_of_string input#_get_value in
+               v#set i
+               in
+               let set_value i =
+               input#_set_value (string_of_float i) in (); *)
+      (*       let numValue = Tyxml_js.To_dom.of_input (get_el "numInput") in  *)
+      let numValue = get_el "numInput" in 
+      let numStr = 
+        Js.to_string
+          (Js.Opt.get  
+             (numValue##getAttribute (Js.string "nodeValue"))
+             (fun () -> Js.string "AAA"))
+      in
+      Js.Unsafe.fun_call (Js.Unsafe.variable "enable") [|Js.Unsafe.inject numStr|] ;
+      (* in  *)
+
+      (*       (Js.Opt.case (e##getAttribute (Js.string "rel"))
+                   (fun () -> "") *)
+      (*       Controller.update (Action.Construct (Action.SNumLit (int_of_string numStr))) (rs, rf) ;
+               calculateActiveButtons (rs, rf) ; *)
       true
     in
     let inputLam  = Html5.(input ~a:[a_class ["c1"]; a_id "lamInput"] ()) in
