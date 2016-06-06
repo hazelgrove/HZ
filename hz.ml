@@ -39,64 +39,64 @@ module View = struct
 
   let viewSignal (rs, rf) = (React.S.map (fun ((zexp,htype) : Model.t) -> stringFromZExp zexp) rs)
 
-  let calculateActiveButtons (rs, rf) = 
-    let mOld = React.S.value rs in
-    let performSyn = Action.performSyn Ctx.empty in 
-    let _ = Js.Unsafe.fun_call (Js.Unsafe.variable "enableAll") [|Js.Unsafe.inject "test"|] in 
-    let _ = try (performSyn Action.Del mOld) with
+  let calculateActiveButtons (rs, rf) = ()
+  (* let mOld = React.S.value rs in
+     let performSyn = Action.performSyn Ctx.empty in 
+     let _ = Js.Unsafe.fun_call (Js.Unsafe.variable "enableAll") [|Js.Unsafe.inject "test"|] in 
+     let _ = try (performSyn Action.Del mOld) with
+     | Action.InvalidAction -> begin
+        Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "delButton"|]
+      end
+     in let _ = try (performSyn (Action.Move Action.FirstChild) mOld) with
       | Action.InvalidAction -> begin
-          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "delButton"|]
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveLeftChildButton"|]
         end
-    in let _ = try (performSyn (Action.Move Action.FirstChild) mOld) with
-        | Action.InvalidAction -> begin
-            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveLeftChildButton"|]
-          end
-    in let _ = try (performSyn (Action.Move Action.Parent) mOld) with
-        | Action.InvalidAction -> begin
-            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveParentButton"|]
-          end
-    in let _ = try (performSyn (Action.Move Action.NextSib) mOld) with
-        | Action.InvalidAction -> begin
-            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveNextSibButton"|]
-          end
-    in let _ = try (performSyn (Action.Move Action.PrevSib) mOld) with
-        | Action.InvalidAction -> begin
-            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "movePrevSibButton"|]
-          end
-    in let _ = try (performSyn (Action.Construct Action.SPlus) mOld) with
-        | Action.InvalidAction -> begin
-            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addPlusButton"|]
-          end
-        (* TODO: validate numbers, variables when text box changes *)
-    in let _ = try (performSyn (Action.Construct (Action.SNumLit 1)) mOld) with
-        | Action.InvalidAction -> begin
-            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addNumberButton"|]
-          end
-    in let _ = try (performSyn (Action.Construct (Action.SLam "lamStr")) mOld) with
-        | Action.InvalidAction -> begin
-            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addLambdaButton"|]
-          end
-    in let _ = try (performSyn (Action.Construct (Action.SAsc)) mOld) with
-        | Action.InvalidAction -> begin
-            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addAscButton"|]
-          end
-    in let _ = try (performSyn (Action.Construct (Action.SAp)) mOld) with
-        | Action.InvalidAction -> begin
-            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addAppButton"|]
-          end
-    in let _ = try (performSyn (Action.Construct (Action.SVar "varStr")) mOld) with
-        | Action.InvalidAction -> begin
-            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addVarButton"|]
-          end
-    in let _ = try (performSyn (Action.Construct (Action.SNum)) mOld) with
-        | Action.InvalidAction -> begin
-            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addNumButton"|]
-          end
-    in let _ = try (performSyn (Action.Construct (Action.SArrow)) mOld) with
-        | Action.InvalidAction -> begin
-            Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addArrowButton"|]
-          end         
-    in ()
+     in let _ = try (performSyn (Action.Move Action.Parent) mOld) with
+      | Action.InvalidAction -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveParentButton"|]
+        end
+     in let _ = try (performSyn (Action.Move Action.NextSib) mOld) with
+      | Action.InvalidAction -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "moveNextSibButton"|]
+        end
+     in let _ = try (performSyn (Action.Move Action.PrevSib) mOld) with
+      | Action.InvalidAction -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "movePrevSibButton"|]
+        end
+     in let _ = try (performSyn (Action.Construct Action.SPlus) mOld) with
+      | Action.InvalidAction -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addPlusButton"|]
+        end
+      (* TODO: validate numbers, variables when text box changes *)
+     in let _ = try (performSyn (Action.Construct (Action.SNumLit 1)) mOld) with
+      | Action.InvalidAction -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addNumberButton"|]
+        end
+     in let _ = try (performSyn (Action.Construct (Action.SLam "lamStr")) mOld) with
+      | Action.InvalidAction -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addLambdaButton"|]
+        end
+     in let _ = try (performSyn (Action.Construct (Action.SAsc)) mOld) with
+      | Action.InvalidAction -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addAscButton"|]
+        end
+     in let _ = try (performSyn (Action.Construct (Action.SAp)) mOld) with
+      | Action.InvalidAction -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addAppButton"|]
+        end
+     in let _ = try (performSyn (Action.Construct (Action.SVar "varStr")) mOld) with
+      | Action.InvalidAction -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addVarButton"|]
+        end
+     in let _ = try (performSyn (Action.Construct (Action.SNum)) mOld) with
+      | Action.InvalidAction -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addNumButton"|]
+        end
+     in let _ = try (performSyn (Action.Construct (Action.SArrow)) mOld) with
+      | Action.InvalidAction -> begin
+          Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addArrowButton"|]
+        end         
+     in () *)
 
 
 
@@ -225,15 +225,15 @@ module View = struct
                let set_value i =
                input#_set_value (string_of_float i) in (); *)
       (*       let numValue = Tyxml_js.To_dom.of_input (get_el "numInput") in  *)
-      let numValue = get_el "numInput" in 
-      let numStr = 
-        Js.to_string
+      (* let numValue = get_el "numInput" in 
+         let numStr = 
+         Js.to_string
           (Js.Opt.get  
              (numValue##getAttribute (Js.string "value"))
              (fun () -> Js.string "AAA"))
-      in
-      Js.Unsafe.fun_call (Js.Unsafe.variable "enable") [|Js.Unsafe.inject numStr|] ;
-      (* in  *)
+         in
+         Js.Unsafe.fun_call (Js.Unsafe.variable "enable") [|Js.Unsafe.inject numStr|] ;
+         (* in  *) *)
 
       (*       (Js.Opt.case (e##getAttribute (Js.string "rel"))
                    (fun () -> "") *)
@@ -243,7 +243,8 @@ module View = struct
     in
     let inputLam  = Html5.(input ~a:[a_class ["c1"]; a_id "lamInput"] ()) in
     let inputVar  = Html5.(input ~a:[a_class ["c1"]; a_id "varInput"] ()) in
-    let inputNum  = Html5.(input ~a:[a_class ["c1"]; a_id "numInput"; a_onkeypress addNumberKeyHandler; a_onkeydown addNumberKeyHandler] ()) in
+    (* let inputTextArea  = Html5.(textarea ~a:[a_class ["c1"]; a_id "numInput"]) in *)
+    let inputNum  = Html5.(input ~a:[a_class ["c1"]; a_id "numInput"] ()) in
     let onClickAddPlus evt =
       Controller.update (Action.Construct Action.SPlus) (rs, rf) ;
       calculateActiveButtons   (rs, rf) ;
