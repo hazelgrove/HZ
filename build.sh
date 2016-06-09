@@ -8,7 +8,7 @@ done
 
 
 ocamlbuild -use-ocamlfind \
-  -pkgs lwt.ppx,js_of_ocaml,js_of_ocaml.syntax,js_of_ocaml.tyxml,tyxml,react,reactiveData \
+  -pkgs lwt.ppx,js_of_ocaml,js_of_ocaml.syntax,js_of_ocaml.ppx,js_of_ocaml.tyxml,tyxml,react,reactiveData \
 	-syntax camlp4o \
    hz.byte;
 

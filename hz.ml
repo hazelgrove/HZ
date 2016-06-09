@@ -173,95 +173,33 @@ module View = struct
       )
 
   let addActions (rs, rf) =
-    let addNumberKeyHandler evt =
-      (*  begin Js.Unsafe.fun_call (Js.Unsafe.variable "enable") [|Js.Unsafe.inject "delButton"|] end;
-          let numValue =  Dom_html.document##getElementById(Js.string "numInput") in 
-          let numStr = Js.to_string (numValue##value) in 
-          calculateActiveButtons (rs, rf) ;
-          let mOld = React.S.value rs in
-          let performSyn = Action.performSyn Ctx.empty in 
-          let _ = Js.Unsafe.fun_call (Js.Unsafe.variable "enableAll") [|Js.Unsafe.inject "test"|] in 
-          let _ = try (performSyn (Action.Construct (Action.SNumLit numStr)) mOld) with
-          | Action.InvalidAction -> begin
-             Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "delButton"|]
-           end in 
-          (* Js.Unsafe.fun_call (Js.Unsafe.variable "disable") [|Js.Unsafe.inject "addAppButton"|]; *)
-          false *)
-      (*  let numValue = Tyxml_js.To_dom.of_input (get_el "numInput") in
-          numValue##value <- "test" *)
-
-      (* let input = Js.coerce_opt (Dom_html.document##getElementById "numInput")
-          Dom_html.CoerceTo.div (fun _ -> assert false) in 
-
-         input##value <-  Js.string "test" *)
-      (* let doc = Dom_html.document in
-         Js.Opt.case (doc##getElementById(Js.string "numInput"))
-         (fun _ -> assert false)
-         (fun e ->
-           (* e##title <- Js.string "test" *)
-           e##title <- Js.to_string  (e##getAttribute "value")
-           (* e##title <- Js.some (Js.string "test") *)
-           (* e##setAttribute "value" "test";  *)
-         ); *)
-      (* 
-      let inputNumId = get_element_by_id "numInput" in
-      let numValue = Tyxml_js.Of_dom.of_input inputNumId in 
-      numValue##value <- "test"; *)
-      (* let numStr = Js.to_string (numValue##value) in 
-         Tyxml_js.To_dom.of_input
-         b##onclick <- Dom_html.handler
-         (fun _ -> dp_custom##setExtraWeekAtEnd(i##checked); Js._true);
-         (*  (fun _ -> 
-          callback (e##title <- Js.some (Js.string "test")); _true);   *) *)
-
-
-      (*  let click = (Dom.document#getElementById "numInput" : Dom.button) in
-          click##value <- "test"; *)
-      (*       let input = (Dom.document#createElement "input" : Dom.text) in
-               let set_input () =
-               let i = float_of_string input#_get_value in
-               v#set i
-               in
-               let set_value i =
-               input#_set_value (string_of_float i) in (); *)
-      (*       let numValue = Tyxml_js.To_dom.of_input (get_el "numInput") in  *)
-      (* let numValue = get_el "numInput" in 
-         let numStr = 
-         Js.to_string
-          (Js.Opt.get  
-             (numValue##getAttribute (Js.string "value"))
-             (fun () -> Js.string "AAA"))
-         in
-         Js.Unsafe.fun_call (Js.Unsafe.variable "enable") [|Js.Unsafe.inject numStr|] ;
-         (* in  *) *)
-
-      (*       (Js.Opt.case (e##getAttribute (Js.string "rel"))
-                   (fun () -> "") *)
-      (*       Controller.update (Action.Construct (Action.SNumLit (int_of_string numStr))) (rs, rf) ;
-               calculateActiveButtons (rs, rf) ; *)
-      true
+    let lam_key_handler evt =
+      if evt##keyCode = 13 then (
+        let tgt = Dom_html.CoerceTo.input(Dom.eventTarget evt) in
+        Js.Opt.case tgt
+          (fun () -> ())
+          (fun e -> 
+             (*     alert (Js.to_string e##value); *)
+             Controller.update (Action.Construct (Action.SLam ((Js.to_string e##value)))) (rs, rf) ;
+          ) ;
+        false
+      ) else true
     in
-    let inputLam  = Html5.(input ~a:[a_class ["c1"]; a_id "lamInput"] ()) in
-    let inputVar  = Html5.(input ~a:[a_class ["c1"]; a_id "varInput"] ()) in
-    (* let inputTextArea  = Html5.(textarea ~a:[a_class ["c1"]; a_id "numInput"]) in *)
-    let inputNum  = Html5.(input ~a:[a_class ["c1"]; a_id "numInput"] ()) in
+    let lamInput = Html5.(input ~a:[
+        a_id "lam_input_id" ;
+        a_input_type `Text ;
+        a_value "" ;
+        a_onkeypress lam_key_handler ;
+        a_onkeydown lam_key_handler ;
+      ] ()) in 
     let onClickAddPlus evt =
       Controller.update (Action.Construct Action.SPlus) (rs, rf) ;
       calculateActiveButtons   (rs, rf) ;
       true
     in
     let onClickAddNumber evt =
-      let numValue = Tyxml_js.To_dom.of_input inputNum in 
-      let numStr = Js.to_string (numValue##value) in 
-      Controller.update (Action.Construct (Action.SNumLit (int_of_string numStr))) (rs, rf) ;
+      Controller.update (Action.Construct (Action.SNumLit (int_of_string "numStr"))) (rs, rf) ;
       calculateActiveButtons (rs, rf) ;
-      true
-    in
-    let onClickAddLam evt =
-      let lamValue = Tyxml_js.To_dom.of_input inputLam in 
-      let lamStr = Js.to_string (lamValue##value) in 
-      Controller.update (Action.Construct (Action.SLam (lamStr))) (rs, rf) ;
-      calculateActiveButtons  (rs, rf) ;
       true
     in
     let onClickAddAsc evt =
@@ -275,9 +213,7 @@ module View = struct
       true
     in
     let onClickAddVar evt =
-      let varValue = Tyxml_js.To_dom.of_input inputVar in 
-      let varStr = Js.to_string (varValue##value) in 
-      Controller.update (Action.Construct (Action.SVar varStr)) (rs, rf) ;
+      Controller.update (Action.Construct (Action.SVar "varStr")) (rs, rf) ;
       calculateActiveButtons (rs, rf) ;
       true
     in
@@ -285,13 +221,13 @@ module View = struct
 
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
-            button ~a:[a_id "addPlusButton"; a_onclick onClickAddPlus] [pcdata "Add Plus"] 
+            button ~a:[a_id "addPlusButton"; a_onclick onClickAddPlus] [pcdata "Add Plus"] ; 
           ];
           li [
-            button ~a:[a_id "addNumberButton"; a_onclick onClickAddNumber] [pcdata "Add Number"];inputNum 
+            button ~a:[a_id "addNumberButton"; a_onclick onClickAddNumber] [pcdata "Add Number"]; 
           ];
           li [
-            button ~a:[a_id "addLambdaButton"; a_onclick onClickAddLam] [pcdata "Add Lambda"];inputLam;
+            div ~a:[a_id "lamLabel"] [ pcdata "Lambda:" ] ;lamInput;
           ];
           li [
             button ~a:[a_id "addAscButton"; a_onclick onClickAddAsc] [pcdata "Add Ascription"] 
@@ -300,7 +236,7 @@ module View = struct
             button ~a:[a_id "addAppButton"; a_onclick onClickAddApp] [pcdata "Add Appliction"] 
           ];      
           li [
-            button ~a:[a_id "addVarButton"; a_onclick onClickAddVar] [pcdata "Add Var x"];inputVar;
+            button ~a:[a_id "addVarButton"; a_onclick onClickAddVar] [pcdata "Add Var x"];
           ];
         ]
       ]
