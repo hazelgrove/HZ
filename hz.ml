@@ -173,6 +173,44 @@ module View = struct
       )
 
   let addActions (rs, rf) =
+    let var_key_handler evt =
+      if evt##keyCode = 13 then (
+        let tgt = Dom_html.CoerceTo.input(Dom.eventTarget evt) in
+        Js.Opt.case tgt
+          (fun () -> ())
+          (fun e -> 
+             (*     alert (Js.to_string e##value); *)
+             Controller.update (Action.Construct (Action.SVar ((Js.to_string e##value)))) (rs, rf) ;
+          ) ;
+        false
+      ) else true
+    in
+    let varInput = Html5.(input ~a:[
+        a_id "num_input_id" ;
+        a_input_type `Text ;
+        a_value "" ;
+        a_onkeypress var_key_handler ;
+        a_onkeydown var_key_handler ;
+      ] ()) in 
+    let num_key_handler evt =
+      if evt##keyCode = 13 then (
+        let tgt = Dom_html.CoerceTo.input(Dom.eventTarget evt) in
+        Js.Opt.case tgt
+          (fun () -> ())
+          (fun e -> 
+             (*     alert (Js.to_string e##value); *)
+             Controller.update (Action.Construct (Action.SNumLit (int_of_string (Js.to_string e##value)))) (rs, rf) ;
+          ) ;
+        false
+      ) else true
+    in
+    let numInput = Html5.(input ~a:[
+        a_id "num_input_id" ;
+        a_input_type `Number ;
+        a_value "" ;
+        a_onkeypress num_key_handler ;
+        a_onkeydown num_key_handler ;
+      ] ()) in 
     let lam_key_handler evt =
       if evt##keyCode = 13 then (
         let tgt = Dom_html.CoerceTo.input(Dom.eventTarget evt) in
@@ -224,7 +262,7 @@ module View = struct
             button ~a:[a_id "addPlusButton"; a_onclick onClickAddPlus] [pcdata "Add Plus"] ; 
           ];
           li [
-            button ~a:[a_id "addNumberButton"; a_onclick onClickAddNumber] [pcdata "Add Number"]; 
+            div ~a:[a_id "numLabel"] [ pcdata "Number:" ] ;  numInput
           ];
           li [
             div ~a:[a_id "lamLabel"] [ pcdata "Lambda:" ] ;lamInput;
@@ -236,7 +274,7 @@ module View = struct
             button ~a:[a_id "addAppButton"; a_onclick onClickAddApp] [pcdata "Add Appliction"] 
           ];      
           li [
-            button ~a:[a_id "addVarButton"; a_onclick onClickAddVar] [pcdata "Add Var x"];
+            div ~a:[a_id "lamLabel"] [ pcdata "Var:" ] ; varInput;
           ];
         ]
       ]
