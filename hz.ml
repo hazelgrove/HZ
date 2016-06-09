@@ -9,7 +9,7 @@ module View = struct
   let rec stringFromHType (htype : HType.t ) : string = match htype with
     | HType.Num -> "num"
     | HType.Arrow (fst,snd) -> "(" ^ stringFromHType (fst) ^ "->" ^ stringFromHType (snd) ^ ")"
-    | HType.Hole -> "H" 
+    | HType.Hole -> "{| |}"  
 
   let rec stringFromHExp (hexp : HExp.t ) : string = match hexp with
     | HExp.Asc (hexp,htype) -> (stringFromHExp hexp) ^ ":" ^ (stringFromHType htype)
@@ -22,12 +22,12 @@ module View = struct
     | HExp.NonEmptyHole hc -> "{" ^ (stringFromHExp hc) ^ "}"
 
   let rec stringFromZType (ztype : ZType.t ) : string = match ztype with
-    | ZType.FocusedT htype -> ">" ^ stringFromHType htype ^ "<"
+    | ZType.FocusedT htype -> "⊳" ^ stringFromHType htype ^ "⊲"
     | ZType.LeftArrow  (ztype, htype) -> stringFromZType ztype  ^ "->" ^ stringFromHType htype
     | ZType.RightArrow (htype, ztype) -> stringFromHType htype ^ "->" ^ stringFromZType ztype
 
   let rec stringFromZExp (zexp : ZExp.t ) : string = match zexp with
-    | ZExp.FocusedE hexp -> ">" ^ stringFromHExp hexp ^ "<"
+    | ZExp.FocusedE hexp -> "⊳" ^ stringFromHExp hexp ^ "⊲"
     | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  stringFromZExp e ^ ":" ^ stringFromHType asc 
     | ZExp.RightAsc (e, asc) -> stringFromHExp e ^ ":" ^ stringFromZType asc
     | ZExp.LamZ (var,exp) -> "λ" ^  var ^ "." ^ (stringFromZExp exp)
@@ -211,7 +211,7 @@ module View = struct
                       mOld) with
                | Action.InvalidAction -> 
                  begin
-                   alert (currStr);
+                   (* alert (currStr); *)
                    Js.Unsafe.fun_call (Js.Unsafe.variable "badValue") [|Js.Unsafe.inject ("var_input_id")|]
                  end
              end in ()
