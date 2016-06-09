@@ -9,33 +9,33 @@ module View = struct
   let rec stringFromHType (htype : HType.t ) : string = match htype with
     | HType.Num -> "num"
     | HType.Arrow (fst,snd) -> "(" ^ stringFromHType (fst) ^ "->" ^ stringFromHType (snd) ^ ")"
-    | HType.Hole -> "{| |}"  
+    | HType.Hole -> "(||)"  
 
   let rec stringFromHExp (hexp : HExp.t ) : string = match hexp with
-    | HExp.Asc (hexp,htype) -> (stringFromHExp hexp) ^ ":" ^ (stringFromHType htype)
+    | HExp.Asc (hexp,htype) -> (stringFromHExp hexp) ^ " : " ^ (stringFromHType htype)
     | HExp.Var str -> str
     | HExp.Lam (var,exp) -> "λ" ^  var ^ "." ^ (stringFromHExp exp)
     | HExp.Ap (e1, e2) -> (stringFromHExp e1) ^ "(" ^ (stringFromHExp e2) ^ ")"
     | HExp.NumLit num -> string_of_int num
-    | HExp.Plus (n1,n2) -> (stringFromHExp n1) ^"+"^ (stringFromHExp n2)
-    | HExp.EmptyHole ->  "{}" 
-    | HExp.NonEmptyHole hc -> "{" ^ (stringFromHExp hc) ^ "}"
+    | HExp.Plus (n1,n2) -> (stringFromHExp n1) ^ " + " ^ (stringFromHExp n2)
+    | HExp.EmptyHole ->  "(||)" 
+    | HExp.NonEmptyHole hc -> "(|" ^ (stringFromHExp hc) ^ "|)"
 
   let rec stringFromZType (ztype : ZType.t ) : string = match ztype with
     | ZType.FocusedT htype -> "⊳" ^ stringFromHType htype ^ "⊲"
-    | ZType.LeftArrow  (ztype, htype) -> stringFromZType ztype  ^ "->" ^ stringFromHType htype
-    | ZType.RightArrow (htype, ztype) -> stringFromHType htype ^ "->" ^ stringFromZType ztype
+    | ZType.LeftArrow  (ztype, htype) -> "(" ^ stringFromZType ztype  ^ " -> " ^ stringFromHType htype ^ ")"
+    | ZType.RightArrow (htype, ztype) -> "(" ^ stringFromHType htype ^ " -> " ^ stringFromZType ztype ^ ")"
 
   let rec stringFromZExp (zexp : ZExp.t ) : string = match zexp with
     | ZExp.FocusedE hexp -> "⊳" ^ stringFromHExp hexp ^ "⊲"
-    | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  stringFromZExp e ^ ":" ^ stringFromHType asc 
-    | ZExp.RightAsc (e, asc) -> stringFromHExp e ^ ":" ^ stringFromZType asc
+    | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  stringFromZExp e ^ " : " ^ stringFromHType asc 
+    | ZExp.RightAsc (e, asc) -> stringFromHExp e ^ " : " ^ stringFromZType asc
     | ZExp.LamZ (var,exp) -> "λ" ^  var ^ "." ^ (stringFromZExp exp)
-    | ZExp.LeftAp (e1,e2) -> stringFromZExp e1 ^ stringFromHExp e2
-    | ZExp.RightAp (e1,e2) -> stringFromHExp e1 ^ stringFromZExp e2
-    | ZExp.LeftPlus (num1,num2) -> stringFromZExp num1 ^ "+" ^ stringFromHExp num2
-    | ZExp.RightPlus (num1,num2) -> stringFromHExp num1  ^ "+" ^ stringFromZExp num2
-    | ZExp.NonEmptyHoleZ e -> "{" ^ stringFromZExp e ^ "}"
+    | ZExp.LeftAp (e1,e2) -> stringFromZExp e1 ^ "(" ^ stringFromHExp e2 ^ ")"
+    | ZExp.RightAp (e1,e2) -> stringFromHExp e1 ^ "(" ^ stringFromZExp e2 ^ ")"
+    | ZExp.LeftPlus (num1,num2) -> stringFromZExp num1 ^ " + " ^ stringFromHExp num2
+    | ZExp.RightPlus (num1,num2) -> stringFromHExp num1  ^ " + " ^ stringFromZExp num2
+    | ZExp.NonEmptyHoleZ e -> "(|" ^ stringFromZExp e ^ "|)"
 
   let viewSignal (rs, rf) = (React.S.map (fun ((zexp,htype) : Model.t) -> stringFromZExp zexp) rs)
 
@@ -345,9 +345,9 @@ module View = struct
     Html5.(
       div [
         div ~a:[a_class ["comments"]] [
-          p [
-            pcdata "HZ model"
-          ] ;
+          (* p [
+             pcdata "HZ model"
+             ] ; *)
         ] ;
         div ~a:[a_class ["container"]] [
           div ~a:[a_class ["Model"]]  [ model ] ;
