@@ -287,22 +287,22 @@ module View = struct
 
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
-            button ~a:[a_class ["btn btn-primary"]; a_id "addPlusButton"; a_onclick onClickAddPlus] [pcdata "Add Plus"] ; 
+            button ~a:[a_class ["btn btn-primary"]; a_id "addPlusButton"; a_onclick onClickAddPlus] [pcdata "Construct Plus"] ; 
           ];
           li [
-            div ~a:[a_id "numLabel"] [ pcdata "Number:" ] ;  numInput
+            div ~a:[a_id "numLabel"] [ pcdata "Construct Number:" ] ;  numInput
           ];
           li [
-            div ~a:[a_id "lamLabel"] [ pcdata "Lambda:" ] ;lamInput;
+            div ~a:[a_id "lamLabel"] [ pcdata "Construct Lambda:" ] ;lamInput;
           ];
           li [
-            button ~a:[a_class ["btn btn-primary"]; a_id "addAscButton"; a_onclick onClickAddAsc] [pcdata "Add Ascription"] 
+            button ~a:[a_class ["btn btn-primary"]; a_id "addAscButton"; a_onclick onClickAddAsc] [pcdata "Construct Ascription"] 
           ];
           li [
-            button ~a:[a_class ["btn btn-primary"]; a_id "addAppButton"; a_onclick onClickAddApp] [pcdata "Add Appliction"] 
+            button ~a:[a_class ["btn btn-primary"]; a_id "addAppButton"; a_onclick onClickAddApp] [pcdata "Construct Application"] 
           ];      
           li [
-            div ~a:[a_id "lamLabel"] [ pcdata "Var:" ] ; varInput;
+            div ~a:[a_id "lamLabel"] [ pcdata "Construct Var:" ] ; varInput;
           ];
         ]
       ]
@@ -324,10 +324,10 @@ module View = struct
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
-            button ~a:[a_class ["btn btn-primary"]; a_id "addNumButton"; a_onclick onClickAddNum] [pcdata "Add Num"] 
+            button ~a:[a_class ["btn btn-primary"]; a_id "addNumButton"; a_onclick onClickAddNum] [pcdata "Construct Num"] 
           ];
           li [
-            button ~a:[a_class ["btn btn-primary"]; a_id "addArrowButton"; a_onclick onClickAddArrow] [pcdata "Add Arrow"] 
+            button ~a:[a_class ["btn btn-primary"]; a_id "addArrowButton"; a_onclick onClickAddArrow] [pcdata "Construct Arrow"] 
           ];
         ]
       ]
