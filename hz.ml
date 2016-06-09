@@ -184,14 +184,34 @@ module View = struct
              calculateActiveButtons (rs, rf)
           ) ;
         false
-      ) else true
+      ) else 
+        let mOld = React.S.value rs in
+        let performSyn = Action.performSyn Ctx.empty in 
+        let tgt = Dom_html.CoerceTo.input(Dom.eventTarget evt) in
+        Js.Opt.case tgt
+          (fun () -> (alert ("ERROR")) )
+          (fun e -> let _ = begin
+               let currStr = (Js.to_string e##value)^(Char.escaped(Char.chr (evt##keyCode))) in 
+               Js.Unsafe.fun_call (Js.Unsafe.variable "goodVal") [|Js.Unsafe.inject ("var_input_id")|]
+               try (performSyn 
+                      (Action.Construct 
+                         (Action.SVar currStr)) 
+                      mOld) with
+               | Action.InvalidAction -> 
+                 begin
+                   alert (currStr);
+                   Js.Unsafe.fun_call (Js.Unsafe.variable "badVal") [|Js.Unsafe.inject ("var_input_id")|]
+                 end
+             end in ()
+          ) ; 
+        true
     in
     let varInput = Html5.(input ~a:[
         a_id "var_input_id" ;
         a_input_type `Text ;
         a_value "" ;
-        (* a_onkeypress var_key_handler ; *)
-        (* a_onkeydown var_key_handler ; *)
+        a_onkeypress var_key_handler ; 
+        a_onkeydown var_key_handler ; 
       ] ()) in 
     let num_key_handler evt =
       if evt##keyCode = 13 then (
