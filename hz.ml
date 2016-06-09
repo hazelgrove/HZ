@@ -338,7 +338,8 @@ let main _ =
   (*   let textbox = Dom_html.createTextarea Dom_html.document in
        Dom.appendChild parent textbox; *)
   Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view rp)) ;
-  (* Dom.appendChild parent input; *)
+  (* Dom.appendChild parent input;*)
+  View.calculateActiveButtons (rp);
   Lwt.return ()
 
 
