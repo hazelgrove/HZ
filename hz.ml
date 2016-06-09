@@ -9,7 +9,7 @@ module View = struct
   let rec stringFromHType (htype : HType.t ) : string = match htype with
     | HType.Num -> "num"
     | HType.Arrow (fst,snd) -> "(" ^ stringFromHType (fst) ^ "->" ^ stringFromHType (snd) ^ ")"
-    | HType.Hole -> "{| |}"  
+    | HType.Hole -> "{}"  
 
   let rec stringFromHExp (hexp : HExp.t ) : string = match hexp with
     | HExp.Asc (hexp,htype) -> (stringFromHExp hexp) ^ ":" ^ (stringFromHType htype)
