@@ -131,7 +131,19 @@ module View = struct
       calculateActiveButtons (rs, rf) ;
       true
     in
-    Html5.(button ~a:[a_id "delButton"; a_onclick onClickDel] [pcdata "del"] )
+    Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
+        ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
+          li [
+            button ~a:[a_class ["btn btn-primary"]; a_id "delButton"; a_onclick onClickDel] [pcdata "del"]
+          ]
+        ]
+      ]
+      )
+
+
+
+
+
 
   let moveActions (rs, rf) =
     let onClickMoveLC evt =
@@ -157,16 +169,16 @@ module View = struct
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
-            button ~a:[a_id "moveLeftChildButton"; a_onclick onClickMoveLC] [pcdata "move left child"] 
+            button ~a:[a_class ["btn btn-primary"]; a_id "moveLeftChildButton"; a_onclick onClickMoveLC] [pcdata "move left child"] 
           ];
           li [
-            button ~a:[a_id "moveParentButton"; a_onclick onClickMoveP] [pcdata "move parent"] 
+            button ~a:[a_class ["btn btn-primary"]; a_id "moveParentButton"; a_onclick onClickMoveP] [pcdata "move parent"] 
           ];
           li [
-            button ~a:[a_id "moveNextSibButton"; a_onclick onClickMoveNS] [pcdata "move next sib"] 
+            button ~a:[a_class ["btn btn-primary"]; a_id "moveNextSibButton"; a_onclick onClickMoveNS] [pcdata "move next sib"] 
           ];
           li [
-            button ~a:[a_id "movePrevSibButton"; a_onclick onClickMovePS] [pcdata "move prev sib"] 
+            button ~a:[a_class ["btn btn-primary"]; a_id "movePrevSibButton"; a_onclick onClickMovePS] [pcdata "move prev sib"] 
           ]
         ]
       ]
@@ -192,7 +204,7 @@ module View = struct
           (fun () -> (alert ("ERROR")) )
           (fun e -> let _ = begin
                let currStr = (Js.to_string e##value)^(Char.escaped(Char.chr (evt##keyCode))) in 
-               Js.Unsafe.fun_call (Js.Unsafe.variable "goodVal") [|Js.Unsafe.inject ("var_input_id")|]
+               Js.Unsafe.fun_call (Js.Unsafe.variable "goodValue") [|Js.Unsafe.inject ("var_input_id")|];
                try (performSyn 
                       (Action.Construct 
                          (Action.SVar currStr)) 
@@ -200,18 +212,19 @@ module View = struct
                | Action.InvalidAction -> 
                  begin
                    alert (currStr);
-                   Js.Unsafe.fun_call (Js.Unsafe.variable "badVal") [|Js.Unsafe.inject ("var_input_id")|]
+                   Js.Unsafe.fun_call (Js.Unsafe.variable "badValue") [|Js.Unsafe.inject ("var_input_id")|]
                  end
              end in ()
           ) ; 
         true
     in
     let varInput = Html5.(input ~a:[
+        a_class ["form-control"];
         a_id "var_input_id" ;
         a_input_type `Text ;
         a_value "" ;
         a_onkeypress var_key_handler ; 
-        a_onkeydown var_key_handler ; 
+        (* a_onkeydown var_key_handler ;  *)
       ] ()) in 
     let num_key_handler evt =
       if evt##keyCode = 13 then (
@@ -227,6 +240,7 @@ module View = struct
       ) else true
     in
     let numInput = Html5.(input ~a:[
+        a_class ["form-control"];
         a_id "num_input_id" ;
         a_input_type `Number ;
         a_value "" ;
@@ -247,6 +261,7 @@ module View = struct
       ) else true
     in
     let lamInput = Html5.(input ~a:[
+        a_class ["form-control"]; 
         a_id "lam_input_id" ;
         a_input_type `Text ;
         a_value "" ;
@@ -272,7 +287,7 @@ module View = struct
 
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
-            button ~a:[a_id "addPlusButton"; a_onclick onClickAddPlus] [pcdata "Add Plus"] ; 
+            button ~a:[a_class ["btn btn-primary"]; a_id "addPlusButton"; a_onclick onClickAddPlus] [pcdata "Add Plus"] ; 
           ];
           li [
             div ~a:[a_id "numLabel"] [ pcdata "Number:" ] ;  numInput
@@ -281,10 +296,10 @@ module View = struct
             div ~a:[a_id "lamLabel"] [ pcdata "Lambda:" ] ;lamInput;
           ];
           li [
-            button ~a:[a_id "addAscButton"; a_onclick onClickAddAsc] [pcdata "Add Ascription"] 
+            button ~a:[a_class ["btn btn-primary"]; a_id "addAscButton"; a_onclick onClickAddAsc] [pcdata "Add Ascription"] 
           ];
           li [
-            button ~a:[a_id "addAppButton"; a_onclick onClickAddApp] [pcdata "Add Appliction"] 
+            button ~a:[a_class ["btn btn-primary"]; a_id "addAppButton"; a_onclick onClickAddApp] [pcdata "Add Appliction"] 
           ];      
           li [
             div ~a:[a_id "lamLabel"] [ pcdata "Var:" ] ; varInput;
@@ -309,10 +324,10 @@ module View = struct
     Html5.(div ~a:[a_class ["several"; "css"; "class"]; a_id "id-of-div"] [
         ul ~a:[a_class ["one-css-class"]; a_id "id-of-ul"] [
           li [
-            button ~a:[a_id "addNumButton"; a_onclick onClickAddNum] [pcdata "Add Num"] 
+            button ~a:[a_class ["btn btn-primary"]; a_id "addNumButton"; a_onclick onClickAddNum] [pcdata "Add Num"] 
           ];
           li [
-            button ~a:[a_id "addArrowButton"; a_onclick onClickAddArrow] [pcdata "Add Arrow"] 
+            button ~a:[a_class ["btn btn-primary"]; a_id "addArrowButton"; a_onclick onClickAddArrow] [pcdata "Add Arrow"] 
           ];
         ]
       ]
@@ -334,7 +349,10 @@ module View = struct
             pcdata "HZ model"
           ] ;
         ] ;
-        div ~a:[a_class ["Model"]]  [ model ] ;
+        div ~a:[a_class ["container"]] [
+          div ~a:[a_class ["Model"]]  [ model ] ;
+        ];
+
         div ~a:[a_class ["Actions"]]  [ actions ];
         div ~a:[a_class ["ActionsLeftPlus"]]  [ mActions ];
         div ~a:[a_class ["ActionsAdd"]]  [ aActions ];
