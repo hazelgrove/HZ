@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>hz - js_of_ocaml</title>
@@ -9,15 +9,12 @@
 		<h2>HZ</h2>
 		<div id="container"></div>
 		<script src="js/hz.js"></script>
-
-		<input type="text" name="inputTextBox2" id="textID">
 	</body>
 	<script type="text/javascript">		
 		function enableAll() {
 			$("button").prop('disabled', false);
-			$( "#numInput" ).keypress(function() {
-  $( "#numInput" ).attr("value",  $( "#numInput" ).prop("value") );
-});	
+			$("#num_input_id").prop('disabled', false);
+			$("#lam_input_id").prop('disabled', false);
 		}
 
 		function disable(button) {
@@ -30,6 +27,20 @@
 			console.log("ENABLE"+button);
 			$("#"+button).prop('enable', true);
 		}	
+
+		$( window ).load(function() {
+			$(num_input_id).change(function (ev) {
+                 $(num_input_id).val('');
+        })
+
+
+		  // $(num_input_id).keypress(function(e) {
+		  //   	if(e.which == 13) {
+		  //       $(num_input_id).text = "";
+		  //   	}
+				// });
+		});
+		
 
 		
 	</script>
