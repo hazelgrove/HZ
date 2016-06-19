@@ -4,6 +4,9 @@ open Hz_semantics
 open Hz_model
 open Hz_model.Model
 
+open React;;
+open Lwt.Infix;; 
+
 module View = struct
 
   let rec stringFromHType (htype : HType.t ) : string = match htype with
@@ -335,12 +338,40 @@ module View = struct
 
 
 
+
+  (* helper for binding an event handler using Lwt *)
+  module Ev = Lwt_js_events
+  let bind_event ev elem handler = 
+    let handler evt _ = handler evt in 
+    Ev.(async @@ (fun () -> ev elem handler))
+
+
+  let alwaysTrue y =  true
+
   let view (rs, rf) =
+
     let model = viewModel (rs, rf) in 
     let actions = viewActions (rs, rf) in 
     let mActions = moveActions (rs, rf) in
     let aActions = addActions (rs, rf) in
     let aTypes = addTypes (rs, rf) in
+    let i_elt = Html5.input ~a:[] () in 
+    let i_dom = To_dom.of_input i_elt in 
+    let i_button = Html5.(button ~a:[
+        (* gets rid of attrib if boolean signal is false *)
+        R.filter_attrib 
+          (a_disabled `Disabled) 
+          (* (S.map (str_eq "") rs) *)
+          (S.map alwaysTrue rs) 
+      ] [pcdata "Test"])
+    in
+    let i_dom_button = To_dom.of_button i_button in
+    (* If i bind this to i_dom it fires on every key stroke  *)
+    let _ = bind_event Ev.inputs i_dom (fun _ -> 
+        Lwt.return @@ (rf 
+                         (Action.performSyn Ctx.empty (Action.Construct (Action.SLam (Js.to_string i_dom##value))) (React.S.value rs))
+                      )) in
+
     calculateActiveButtons (rs, rf);
     Html5.(
       div [
@@ -357,6 +388,8 @@ module View = struct
         div ~a:[a_class ["ActionsLeftPlus"]]  [ mActions ];
         div ~a:[a_class ["ActionsAdd"]]  [ aActions ];
         div ~a:[a_class ["ActionsTypes"]]  [ aTypes ];
+        i_elt;
+        i_button;
       ]
     ) 
 end 
