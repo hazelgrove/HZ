@@ -367,7 +367,7 @@ module View = struct
     in
     let i_dom_button = To_dom.of_button i_button in
     (* If i bind this to i_dom it fires on every key stroke  *)
-    let _ = bind_event Ev.inputs i_dom (fun _ -> 
+    let _ = bind_event Ev.clicks  i_dom_button (fun _ -> 
         Lwt.return @@ (rf 
                          (Action.performSyn Ctx.empty (Action.Construct (Action.SLam (Js.to_string i_dom##value))) (React.S.value rs))
                       )) in
