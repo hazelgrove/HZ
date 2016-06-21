@@ -447,7 +447,7 @@ module View = struct
           i_elt;
           button ~a:[
             a_onclick (fun _ -> 
-              let arg = opt_get (conv (React.S.value i_rs)) in 
+                let arg = opt_get (conv (React.S.value i_rs)) in 
                 rf (
                   Action.performSyn 
                     Ctx.empty
@@ -467,15 +467,54 @@ module View = struct
           ] [pcdata btn_label]
         ]) in 
 
+
+    (* type direction =  
+        | FirstChild 
+        | Parent 
+        | NextSib 
+        | PrevSib
+
+       type shape = 
+        | SArrow
+        | SNum
+        | SAsc
+        | SVar of Var.t
+        | SLam of Var.t
+        | SAp 
+        | SArg
+        | SNumLit of int
+        | SPlus
+
+       type t =
+        | Move of direction
+        | Del 
+        | Construct of shape
+        | Finish *)
+
+
     Html5.(div [
         div ~a:[a_class ["Model"]] [zexp_view];
         div ~a:[a_class ["Actions"]] [
+          (action_button (Action.Del) "del");
+          (action_button (Action.Move (Action.Parent)) "move parent");
+          (action_button (Action.Move (Action.FirstChild)) "move FirstChild");
+          (action_button (Action.Move (Action.NextSib)) "move NextSib");
+          (action_button (Action.Move (Action.PrevSib)) "move PrevSib");
           (action_button (Action.Construct Action.SPlus) "construct plus");
-          (action_button (Action.Move (Action.Parent)) "move parent"); 
+          (action_button (Action.Construct Action.SArrow) "construct SArrow");
+          (action_button (Action.Construct Action.SAsc) "construct SAsc");
+          (action_button (Action.Construct Action.SAp) "construct SAp");
+          (action_button (Action.Construct Action.SArg) "construct SArg");
+          (action_button (Action.Construct Action.SPlus) "construct SPlus");
           (action_input_button 
              (fun n -> Action.Construct (Action.SNumLit n)) 
              (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None) 
+             "construct num");
+          (action_input_button 
+             (fun v -> Action.Construct (Action.SVar v)) 
+             (fun s -> s) 
              "construct num")
+
         ]
       ])
 end
