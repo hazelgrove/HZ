@@ -509,11 +509,17 @@ module View = struct
           (action_input_button 
              (fun n -> Action.Construct (Action.SNumLit n)) 
              (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None) 
-             "construct num");
+             "construct SNumLit");
           (action_input_button 
              (fun v -> Action.Construct (Action.SVar v)) 
-             (fun s -> s) 
-             "construct num")
+             (fun s -> try Some (s) with Failure "int_of_string" -> None) 
+             "construct SVar");
+          (action_input_button 
+             (fun v -> Action.Construct (Action.SLam v)) 
+             (fun s -> try Some (s) with Failure "int_of_string" -> None) 
+             "construct SLam");
+          (action_button (Action.Finish) "Finish")
+
 
         ]
       ])
