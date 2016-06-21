@@ -7,42 +7,45 @@ open Hz_model.Model
 open React;;
 open Lwt.Infix;; 
 
-module View = struct
-
-  let rec stringFromHType (htype : HType.t ) : string = match htype with
+module StringView = struct
+  let rec of_htype (htype : HType.t ) : string = match htype with
     | HType.Num -> "num"
-    | HType.Arrow (fst,snd) -> "(" ^ stringFromHType (fst) ^ "->" ^ stringFromHType (snd) ^ ")"
+    | HType.Arrow (fst,snd) -> "(" ^ of_htype (fst) ^ "->" ^ of_htype (snd) ^ ")"
     | HType.Hole -> "(||)"  
 
-  let rec stringFromHExp (hexp : HExp.t ) : string = match hexp with
-    | HExp.Asc (hexp,htype) -> (stringFromHExp hexp) ^ " : " ^ (stringFromHType htype)
+  let rec of_hexp (hexp : HExp.t ) : string = match hexp with
+    | HExp.Asc (hexp,htype) -> (of_hexp hexp) ^ " : " ^ (of_htype htype)
     | HExp.Var str -> str
-    | HExp.Lam (var,exp) -> "λ" ^  var ^ "." ^ (stringFromHExp exp)
-    | HExp.Ap (e1, e2) -> (stringFromHExp e1) ^ "(" ^ (stringFromHExp e2) ^ ")"
+    | HExp.Lam (var,exp) -> "λ" ^  var ^ "." ^ (of_hexp exp)
+    | HExp.Ap (e1, e2) -> (of_hexp e1) ^ "(" ^ (of_hexp e2) ^ ")"
     | HExp.NumLit num -> string_of_int num
-    | HExp.Plus (n1,n2) -> (stringFromHExp n1) ^ " + " ^ (stringFromHExp n2)
+    | HExp.Plus (n1,n2) -> (of_hexp n1) ^ " + " ^ (of_hexp n2)
     | HExp.EmptyHole ->  "(||)" 
-    | HExp.NonEmptyHole hc -> "(|" ^ (stringFromHExp hc) ^ "|)"
+    | HExp.NonEmptyHole hc -> "(|" ^ (of_hexp hc) ^ "|)"
 
-  let rec stringFromZType (ztype : ZType.t ) : string = match ztype with
-    | ZType.FocusedT htype -> "⊳" ^ stringFromHType htype ^ "⊲"
-    | ZType.LeftArrow  (ztype, htype) -> "(" ^ stringFromZType ztype  ^ " -> " ^ stringFromHType htype ^ ")"
-    | ZType.RightArrow (htype, ztype) -> "(" ^ stringFromHType htype ^ " -> " ^ stringFromZType ztype ^ ")"
+  let rec of_ztype (ztype : ZType.t ) : string = match ztype with
+    | ZType.FocusedT htype -> "⊳" ^ of_htype htype ^ "⊲"
+    | ZType.LeftArrow  (ztype, htype) -> "(" ^ of_ztype ztype  ^ " -> " ^ of_htype htype ^ ")"
+    | ZType.RightArrow (htype, ztype) -> "(" ^ of_htype htype ^ " -> " ^ of_ztype ztype ^ ")"
 
-  let rec stringFromZExp (zexp : ZExp.t ) : string = match zexp with
-    | ZExp.FocusedE hexp -> "⊳" ^ stringFromHExp hexp ^ "⊲"
-    | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  stringFromZExp e ^ " : " ^ stringFromHType asc 
-    | ZExp.RightAsc (e, asc) -> stringFromHExp e ^ " : " ^ stringFromZType asc
-    | ZExp.LamZ (var,exp) -> "λ" ^  var ^ "." ^ (stringFromZExp exp)
-    | ZExp.LeftAp (e1,e2) -> stringFromZExp e1 ^ "(" ^ stringFromHExp e2 ^ ")"
-    | ZExp.RightAp (e1,e2) -> stringFromHExp e1 ^ "(" ^ stringFromZExp e2 ^ ")"
-    | ZExp.LeftPlus (num1,num2) -> stringFromZExp num1 ^ " + " ^ stringFromHExp num2
-    | ZExp.RightPlus (num1,num2) -> stringFromHExp num1  ^ " + " ^ stringFromZExp num2
-    | ZExp.NonEmptyHoleZ e -> "(|" ^ stringFromZExp e ^ "|)"
+  let rec of_zexp (zexp : ZExp.t ) : string = match zexp with
+    | ZExp.FocusedE hexp -> "⊳" ^ of_hexp hexp ^ "⊲"
+    | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  of_zexp e ^ " : " ^ of_htype asc 
+    | ZExp.RightAsc (e, asc) -> of_hexp e ^ " : " ^ of_ztype asc
+    | ZExp.LamZ (var,exp) -> "λ" ^  var ^ "." ^ (of_zexp exp)
+    | ZExp.LeftAp (e1,e2) -> of_zexp e1 ^ "(" ^ of_hexp e2 ^ ")"
+    | ZExp.RightAp (e1,e2) -> of_hexp e1 ^ "(" ^ of_zexp e2 ^ ")"
+    | ZExp.LeftPlus (num1,num2) -> of_zexp num1 ^ " + " ^ of_hexp num2
+    | ZExp.RightPlus (num1,num2) -> of_hexp num1  ^ " + " ^ of_zexp num2
+    | ZExp.NonEmptyHoleZ e -> "(|" ^ of_zexp e ^ "|)"
+end   
 
-  let viewSignal (rs, rf) = (React.S.map (fun ((zexp,htype) : Model.t) -> stringFromZExp zexp) rs)
+(* module View = struct
 
-  let calculateActiveButtons (rs, rf) = 
+   let viewSignal (rs, rf) = React.S.map 
+    (fun ((zexp,htype) : Model.t) -> StringView.of_zexp zexp) rs
+
+   let calculateActiveButtons (rs, rf) = 
     let mOld = React.S.value rs in
     let performSyn = Action.performSyn Ctx.empty in 
     let _ = Js.Unsafe.fun_call (Js.Unsafe.variable "enableAll") [|Js.Unsafe.inject "test"|] in 
@@ -103,32 +106,32 @@ module View = struct
 
 
 
-  let get_value dom = Js.to_string ((Tyxml_js.To_dom.of_input dom)##value)
-  let set_value e s = (Tyxml_js.To_dom.of_input e)##value <- Js.string s
+   let get_value dom = Js.to_string ((Tyxml_js.To_dom.of_input dom)##value)
+   let set_value e s = (Tyxml_js.To_dom.of_input e)##value <- Js.string s
 
 
-  let alert str = Dom_html.window##alert(Js.string str)
+   let alert str = Dom_html.window##alert(Js.string str)
 
-  type handler = (Dom_html.element Js.t, Dom_html.event Js.t) Dom_html.event_listener
+   type handler = (Dom_html.element Js.t, Dom_html.event Js.t) Dom_html.event_listener
 
 
-  (* let get_element_by_id id =
+   (* let get_element_by_id id =
      Js.Opt.get (Dom_html.document##getElementById (Js.string id) : Dom.input)
       (fun _ -> assert false)
   *)
-  let get_el s = Js.Opt.get (Dom_html.document##getElementById(Js.string s))
+   let get_el s = Js.Opt.get (Dom_html.document##getElementById(Js.string s))
       (fun _ -> assert false)
 
-  let get x = Js.Opt.get x (fun _ -> assert false)
+   let get x = Js.Opt.get x (fun _ -> assert false)
 
-  let get_input s = 
+   let get_input s = 
     get (Dom_html.CoerceTo.input (get_el s))
 
 
-  let viewModel (rs, rf) =
+   let viewModel (rs, rf) =
     R.Html5.(pcdata (viewSignal (rs,rf))) 
 
-  let viewActions (rs, rf) =
+   let viewActions (rs, rf) =
     let onClickDel evt =
       Controller.update (Action.Del) (rs, rf); 
       calculateActiveButtons (rs, rf) ;
@@ -148,7 +151,7 @@ module View = struct
 
 
 
-  let moveActions (rs, rf) =
+   let moveActions (rs, rf) =
     let onClickMoveLC evt =
       Controller.update (Action.Move Action.FirstChild) (rs, rf) ;
       calculateActiveButtons  (rs, rf) ;
@@ -187,7 +190,7 @@ module View = struct
       ]
       )
 
-  let addActions (rs, rf) =
+   let addActions (rs, rf) =
     let var_key_handler evt =
       if evt##keyCode = 13 then (
         let tgt = Dom_html.CoerceTo.input(Dom.eventTarget evt) in
@@ -313,7 +316,7 @@ module View = struct
 
 
 
-  let addTypes (rs, rf) =
+   let addTypes (rs, rf) =
     let onClickAddNum evt =
       Controller.update (Action.Construct Action.SNum) (rs, rf) ;
       calculateActiveButtons (rs, rf) ;
@@ -339,16 +342,16 @@ module View = struct
 
 
 
-  (* helper for binding an event handler using Lwt *)
-  module Ev = Lwt_js_events
-  let bind_event ev elem handler = 
+   (* helper for binding an event handler using Lwt *)
+   module Ev = Lwt_js_events
+   let bind_event ev elem handler = 
     let handler evt _ = handler evt in 
     Ev.(async @@ (fun () -> ev elem handler))
 
 
-  let alwaysTrue y =  true
+   let alwaysTrue y =  true
 
-  let view (rs, rf) =
+   let view (rs, rf) =
 
     let model = viewModel (rs, rf) in 
     let actions = viewActions (rs, rf) in 
@@ -392,10 +395,90 @@ module View = struct
         i_button;
       ]
     ) 
-end 
+   end *)
 
-open Lwt.Infix
+(* TODO: put common utils somewhere sensible *)
+exception No_value 
+let opt_get opt = match opt with Some x -> x | _ -> raise No_value
 
+module Ev = Lwt_js_events
+let bind_event ev elem handler = 
+  let handler evt _ = handler evt in 
+  Ev.(async @@ (fun () -> ev elem handler))
+
+(* create an input and a reactive signal tracking its 
+ * string value *)
+let r_input attrs = 
+  let rs, rf = S.create "" in 
+  let i_elt = Html5.input ~a:attrs () in 
+  let i_dom = To_dom.of_input i_elt in 
+  let _ = bind_event Ev.inputs i_dom (fun _ -> 
+      Lwt.return @@ (rf (Js.to_string i_dom##value))) in 
+  (rs, i_elt, i_dom)
+
+module View = struct
+  let view ((rs, rf) : Model.rp) = 
+    (* zexp view *)
+    let zexp_view_rs = React.S.map (fun (zexp, _) -> 
+        StringView.of_zexp zexp) rs in 
+    let zexp_view = Html5.(div [R.Html5.pcdata zexp_view_rs]) in 
+
+    (* helper function for constructing simple action buttons *)
+    let action_button action btn_label = 
+      Html5.(button ~a:[
+          a_onclick (fun _ -> 
+              rf (
+                Action.performSyn Ctx.empty action (React.S.value rs));
+              true); 
+          R.filter_attrib
+            (a_disabled `Disabled)
+            (S.map (fun m -> 
+                 try 
+                   let _ = Action.performSyn Ctx.empty action m in false 
+                 with Action.InvalidAction -> true) rs)
+        ] [pcdata btn_label]) in 
+
+    (* actions that take an input. the conversion function
+     * goes from a string to an arg option where arg is 
+     * the action argument. *)
+    let action_input_button action conv btn_label = 
+      let i_rs, i_elt, _ = r_input [] in 
+      Html5.(div [ 
+          i_elt;
+          button ~a:[
+            a_onclick (fun _ -> 
+              let arg = opt_get (conv (React.S.value i_rs)) in 
+                rf (
+                  Action.performSyn 
+                    Ctx.empty
+                    (action arg)
+                    (React.S.value rs)); 
+                true
+              ); 
+            R.filter_attrib
+              (a_disabled `Disabled)
+              (S.l2 (fun s m -> 
+                   match conv s with 
+                     Some arg -> 
+                     begin try 
+                         let _ = Action.performSyn Ctx.empty (action arg) m in false 
+                       with Action.InvalidAction -> true end 
+                   | _ -> true) i_rs rs)
+          ] [pcdata btn_label]
+        ]) in 
+
+    Html5.(div [
+        div ~a:[a_class ["Model"]] [zexp_view];
+        div ~a:[a_class ["Actions"]] [
+          (action_button (Action.Construct Action.SPlus) "construct plus");
+          (action_button (Action.Move (Action.Parent)) "move parent"); 
+          (action_input_button 
+             (fun n -> Action.Construct (Action.SNumLit n)) 
+             (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None) 
+             "construct num")
+        ]
+      ])
+end
 
 let main _ =
   let doc = Dom_html.document in
@@ -404,13 +487,21 @@ let main _ =
       (fun () -> assert false)
   in
   let m = Model.empty in
-  let rp = React.S.create m in
+  let rs, rf = React.S.create m in
+  (* let test_button = Html5.(div [button ~a:[
+      R.filter_attrib
+        (a_disabled `Disabled)
+        (S.map (fun (zexp, ty) -> 
+             match zexp with 
+             | ZExp.FocusedE (HExp.EmptyHole) -> true
+             | _ -> false) rs)
+     ] [pcdata "Test3"]]) in *)
   (* let input = Dom_html.createInput ~name: (Js.string "inputTextBox") ~_type:(Js.string "text") doc in *)
   (*   let textbox = Dom_html.createTextarea Dom_html.document in
        Dom.appendChild parent textbox; *)
-  Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view rp)) ;
+  Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view (rs, rf))) ;
   (* Dom.appendChild parent input;*)
-  View.calculateActiveButtons (rp);
+  (* View.calculateActiveButtons (rs, rf); *)
   Lwt.return ()
 
 
