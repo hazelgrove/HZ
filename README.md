@@ -54,7 +54,7 @@ An easy way is to use [opam](https://opam.ocaml.org/). After having installed `o
     ```
 
   - We can now install Js_of_ocaml and tyxml, including optional dependencies.
-  - NOTE: currently TyXML 3.6 is supported.  HZ does not currently run under TyXML 4.0
+  NOTE: currently TyXML 3.6 is supported.  HZ does not currently run under TyXML 4.0
 
     ```sh
     > opam install js_of_ocaml tyxml deriving ppx_deriving reactiveData ocp-indent
