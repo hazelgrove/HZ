@@ -47,8 +47,10 @@ end = struct
   let rec lookup ctx x = match ctx with 
     | [] -> None
     | (y, ty) :: ctx' -> 
-      if x == y then Some ty 
-      else lookup ctx' x
+      begin match String.compare x y with 
+        | 0 -> Some ty 
+        | _ -> lookup ctx' x 
+      end 
 end
 
 module HExp = struct
@@ -248,6 +250,23 @@ module Action = struct
       ZExp.NonEmptyHoleZ (ZExp.FocusedE e)
     | (Parent, ZExp.NonEmptyHoleZ (ZExp.FocusedE e)) -> 
       ZExp.FocusedE (HExp.NonEmptyHole e)
+    (* Zipper Cases *)
+    | (_, ZExp.LeftAsc (ze, ty)) -> 
+      ZExp.LeftAsc ((performEMove direction ze), ty)
+    | (_, ZExp.RightAsc (e, zty)) -> 
+      ZExp.RightAsc (e, performTyp (Move direction) zty)
+    | (_, ZExp.LamZ (x, ze)) -> 
+      ZExp.LamZ (x, (performEMove direction ze))
+    | (_, ZExp.LeftAp (ze1, e2)) -> 
+      ZExp.LeftAp ((performEMove direction ze1), e2)
+    | (_, ZExp.RightAp (e1, ze2)) -> 
+      ZExp.RightAp (e1, (performEMove direction ze2))
+    | (_, ZExp.LeftPlus (ze1, e2)) -> 
+      ZExp.LeftPlus ((performEMove direction ze1), e2)
+    | (_, ZExp.RightPlus (e1, ze2)) -> 
+      ZExp.RightPlus (e1, (performEMove direction ze2))
+    | (_, ZExp.NonEmptyHoleZ (ze)) -> 
+      ZExp.NonEmptyHoleZ (performEMove direction ze)
     | _ -> raise InvalidAction
 
   let rec performSyn ctx a (ze, ty) = match (a, (ze, ty)) with 
@@ -306,13 +325,16 @@ module Action = struct
       (ZExp.FocusedE e, ty')
     (* Zipper Cases *)
     | (_, (ZExp.LeftAsc (ze, ty), _)) -> 
-      (performAna ctx a ze ty, ty)
+      (ZExp.LeftAsc ((performAna ctx a ze ty), ty), ty)
     | (_, (ZExp.RightAsc (e, zty), _)) -> 
       let zty' = performTyp a zty in 
       let ty' = ZType.erase zty' in 
-      let _ = HExp.ana ctx e ty' in 
-      (ZExp.RightAsc (e, zty'), 
-       ty')
+      begin try 
+          let _ = HExp.ana ctx e ty' in 
+          (ZExp.RightAsc (e, zty'), ty')
+        with 
+        | HExp.IllTyped -> raise InvalidAction
+      end
     | (_, (ZExp.LeftAp (ze1, e2), _)) -> 
       let e1 = ZExp.erase ze1 in 
       let ty1 = HExp.syn ctx e1 in 
@@ -378,7 +400,7 @@ module Action = struct
             ZExp.FocusedE (HExp.Var x) 
           else
             ZExp.FocusedE (HExp.NonEmptyHole (HExp.Var x))
-        | None -> raise InvalidAction
+        | None -> raise InvalidAction 
       end
     | (Construct (SLam x), ZExp.FocusedE HExp.EmptyHole, HType.Arrow (ty1, ty2)) -> 
       ZExp.LamZ (x, ze)
@@ -400,7 +422,8 @@ module Action = struct
     (* Zipper Cases *)
     | (_, ZExp.LamZ (x, ze'), HType.Arrow (ty1, ty2)) -> 
       let ctx' = Ctx.extend ctx (x, ty1) in 
-      performAna ctx' a ze' ty2
+      let ze'' = performAna ctx' a ze' ty2 in 
+      ZExp.LamZ (x, ze'') 
     (* Subsumption *) 
     | _ -> 
       let e = ZExp.erase ze in 

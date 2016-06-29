@@ -1,36 +1,70 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>hz - js_of_ocaml</title>
-		<link href="css/style.css" type="text/css" rel="style.css" />
+		<!-- <link href="css/style.css" type="text/css" rel="style.css" /> -->
+		
+		 <link rel="stylesheet" href="css/style.css">
 		<script src="js/jquery-2.2.4.min.js"></script>
+
+				<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+
+
 	</head>
 	<body id="body">
-		<h2>HZ</h2>
-		<div id="container"></div>
-		<script src="js/hz.js"></script>
+		<div class="container">
+				<h2>HZ</h2>
+				<div id="container"></div>
+				<script src="js/hz.js"></script>
+		</div>
 
-		<input type="text" name="inputTextBox2" id="textID">
 	</body>
-	<script type="text/javascript">
-		function testFun(str) {
-    	document.getElementById("addArrowButton").disabled = true;
-    	console.log(str);
-		}
-
+	<script type="text/javascript">		
 		function enableAll() {
 			$("button").prop('disabled', false);
+			$("#num_input_id").prop('disabled', false);
+			$("#lam_input_id").prop('disabled', false);
+			$("#var_input_id").prop('disabled', false);
 		}
 
 		function disable(button) {
-			console.log(button);
+			// console.log(button);
 			$("#"+button).prop('disabled', true);
 		}	
 
-		function lambdaName() {
-			console.log("getLambdaName");
-			return "JSName";
-		}		
+		function goodValue(field) {
+			console.log("Good"+field);
+			// $("#"+button).prop('disabled', true);
+			$("#var_input_id").css("background-color","White");
+		}	
+
+		function badValue(field) {
+			 console.log("BAD"+field);
+			// $("#"+button).prop('disabled', true);
+			$("#var_input_id").css("background-color","rgba(170, 34, 34,0.24)");
+		}	
+
+
+		function enable(button) {
+			console.log("ENABLE"+button);
+			$("#"+button).prop('enable', true);
+		}	
+
+		// $( window ).load(function() {
+		// 	$("#num_input_id").change(function (ev) {
+  //                $(num_input_id).val('');
+  //       })
+
+		// });
+		
 
 		
 	</script>

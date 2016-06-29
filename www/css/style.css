@@ -1,0 +1,18 @@
+
+.Model {
+	font-size: xx-large;
+	padding-bottom: 20px;
+}
+
+#numLabel {
+/*	float:left;*/
+}
+
+#num_input_id{
+	width:70%;
+}
+
+button:disabled {
+	border: 3px solid red !important;
+}
+
