@@ -74,7 +74,7 @@ module View = struct
                 Action.performSyn Ctx.empty action (React.S.value rs));
               true); 
           R.filter_attrib
-            (a_disabled `Disabled)
+            (a_disabled ())
             (S.map (fun m -> 
                  try 
                    let _ = Action.performSyn Ctx.empty action m in false 
@@ -99,7 +99,7 @@ module View = struct
                 true
               ); 
             R.filter_attrib
-              (a_disabled `Disabled)
+              (a_disabled ())
               (S.l2 (fun s m -> 
                    match conv s with 
                      Some arg -> 
