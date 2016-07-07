@@ -75,10 +75,11 @@ module View = struct
               true); 
           R.filter_attrib
             (a_disabled ())
-            (S.map (fun m -> 
+            (S.map (fun m ->
                  try 
                    let _ = Action.performSyn Ctx.empty action m in false 
-                 with Action.InvalidAction -> true) rs)
+                 with Action.InvalidAction -> true 
+                    | HExp.IllTyped -> true ) rs) 
         ] [pcdata btn_label]) in 
 
     (* actions that take an input. the conversion function
@@ -105,8 +106,9 @@ module View = struct
                      Some arg -> 
                      begin try 
                          let _ = Action.performSyn Ctx.empty (action arg) m in false 
-                       with Action.InvalidAction -> true end 
-                   | _ -> true) i_rs rs)
+                       with Action.InvalidAction -> true 
+                          | HExp.IllTyped -> true   end 
+                   | _ -> true) i_rs rs) 
           ] [pcdata btn_label]
         ]) in 
 
