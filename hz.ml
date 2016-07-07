@@ -113,30 +113,45 @@ module View = struct
     Html5.(div [
         div ~a:[a_class ["Model"]] [zexp_view];
         div ~a:[a_class ["Actions"]] [
-          (action_button (Action.Del) "del");
+          br ();
+          (action_button (Action.Move (Action.FirstChild)) "move firstChild");
+          br ();
           (action_button (Action.Move (Action.Parent)) "move parent");
-          (action_button (Action.Move (Action.FirstChild)) "move FirstChild");
-          (action_button (Action.Move (Action.NextSib)) "move NextSib");
-          (action_button (Action.Move (Action.PrevSib)) "move PrevSib");
-          (action_button (Action.Construct Action.SNum) "construct SNum");
-          (action_button (Action.Construct Action.SArrow) "construct SArrow");
-          (action_button (Action.Construct Action.SAsc) "construct SAsc");
-          (action_button (Action.Construct Action.SAp) "construct SAp");
-          (action_button (Action.Construct Action.SArg) "construct SArg");
-          (action_button (Action.Construct Action.SPlus) "construct SPlus");
-          (action_input_button 
-             (fun n -> Action.Construct (Action.SNumLit n)) 
-             (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None) 
-             "construct SNumLit");
+          br ();
+          (action_button (Action.Move (Action.NextSib)) "move nextSib");
+          br ();
+          br ();
+          (action_button (Action.Del) "del");
+          br ();
+          br ();
+          (action_button (Action.Construct Action.SArrow) "construct arrow");
+          br ();
+          (action_button (Action.Construct Action.SNum) "construct num");
+          br ();
+          (action_button (Action.Construct Action.SAsc) "construct asc");
+          br ();
           (action_input_button 
              (fun v -> Action.Construct (Action.SVar v)) 
              (fun s -> try Some (s) with Failure "int_of_string" -> None) 
-             "construct SVar");
+             "construct var");                  
           (action_input_button 
              (fun v -> Action.Construct (Action.SLam v)) 
              (fun s -> try Some (s) with Failure "int_of_string" -> None) 
-             "construct SLam");
-          (action_button (Action.Finish) "Finish")
+             "construct lam");
+          (action_button (Action.Construct Action.SAp) "construct ap");
+          br ();
+          (action_button (Action.Construct Action.SArg) "construct arg");
+          br ();
+          (action_input_button 
+             (fun n -> Action.Construct (Action.SNumLit n)) 
+             (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None) 
+             "construct lit");
+          (action_button (Action.Construct Action.SPlus) "construct plus");
+          br ();
+          br ();
+
+
+          (action_button (Action.Finish) "finish")
         ]
       ])
 end

@@ -155,7 +155,7 @@ module ZExp = struct
 end
 
 module Action = struct
-(* we also have PrevSib for possible future use *)
+  (* we also have PrevSib for possible future use *)
   type direction =  
     | FirstChild 
     | Parent 
