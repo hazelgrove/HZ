@@ -2,19 +2,11 @@
 
 > Js_of_ocaml (abbreviated jsoo) is a compiler from OCaml bytecode to Javascript.
 
-## Resources
+# Running HZ
+You can run HZ using the pre-built files by opening /www/hz.html in a browser
 
-- [Website](http://ocsigen.org/js_of_ocaml/)
-- [GitHub](https://github.com/ocsigen/js_of_ocaml)
-- [Try Js_of_ocaml](http://try.ocamlpro.com/js_of_ocaml/)
-
-## Support
-
-Js_of_ocaml is part of the [Ocsigen project](http://ocsigen.org/).
-
-- [Mailing list](https://sympa.inria.fr/sympa/subscribe/ocsigen)
-- IRC : #ocsigen on irc.freenode.net
-
+# Building HZ
+You can build HZ using the following instructions.
 
 ## Installing js_of_ocaml and tyxml
 
@@ -54,6 +46,7 @@ An easy way is to use [opam](https://opam.ocaml.org/). After having installed `o
     ```
 
   - We can now install Js_of_ocaml and tyxml, including optional dependencies.
+  NOTE: Currently HZ only works with TyXML 4.0, which is NOT backwards compatible with TyXML 3.X
  
     ```sh
     > opam install js_of_ocaml tyxml deriving ppx_deriving reactiveData ocp-indent
@@ -73,6 +66,7 @@ An easy way is to use [opam](https://opam.ocaml.org/). After having installed `o
 You can execute build.sh to compile hz.ml.
 
 ```sh
+> cd src/
 > /bin/sh build.sh
 ```
 
@@ -101,6 +95,24 @@ It consists of two steps:
 ## Results
 You can now open hz.html in a browser to see it working.
 
+
+
+
+## Support
+
+Js_of_ocaml is part of the [Ocsigen project](http://ocsigen.org/).
+
+- [Mailing list](https://sympa.inria.fr/sympa/subscribe/ocsigen)
+- IRC : #ocsigen on irc.freenode.net
+
+
+
+## Resources
+
+- [Website](http://ocsigen.org/js_of_ocaml/)
+- [GitHub](https://github.com/ocsigen/js_of_ocaml)
+- [Try Js_of_ocaml](http://try.ocamlpro.com/js_of_ocaml/)
+- 
 ## Credit
 
 Based on the readme.md file for the [TodoMVC example](https://github.com/slegrand45/examples_ocsigen/tree/master/jsoo/todomvc-react) by [Stéphane Legrand](https://github.com/slegrand45).
