@@ -2,9 +2,9 @@ open Hz_semantics
 open Lwt.Infix
 
 module Model = struct
-  type t = ZExp.t * HType.t
+  type t = ZExp.t * HTyp.t
 
-  let empty = ((ZExp.FocusedE HExp.EmptyHole), HType.Hole)
+  let empty = ((ZExp.CursorE HExp.EmptyHole), HTyp.Hole)
   (* let empty = (ZExp.FocusedE (HExp.Plus (HExp.EmptyHole,HExp.EmptyHole)),  *)
   (* HType.Num) *)
 

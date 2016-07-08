@@ -8,10 +8,10 @@ open React;;
 open Lwt.Infix;; 
 
 module StringView = struct
-  let rec of_htype (htype : HType.t ) : string = match htype with
-    | HType.Num -> "num"
-    | HType.Arrow (fst,snd) -> "(" ^ of_htype (fst) ^ "->" ^ of_htype (snd) ^ ")"
-    | HType.Hole -> "(||)"  
+  let rec of_htype (htype : HTyp.t ) : string = match htype with
+    | HTyp.Num -> "num"
+    | HTyp.Arrow (fst,snd) -> "(" ^ of_htype (fst) ^ "->" ^ of_htype (snd) ^ ")"
+    | HTyp.Hole -> "(||)"  
 
   let rec of_hexp (hexp : HExp.t ) : string = match hexp with
     | HExp.Asc (hexp,htype) -> (of_hexp hexp) ^ " : " ^ (of_htype htype)
@@ -23,13 +23,13 @@ module StringView = struct
     | HExp.EmptyHole ->  "(||)" 
     | HExp.NonEmptyHole hc -> "(|" ^ (of_hexp hc) ^ "|)"
 
-  let rec of_ztype (ztype : ZType.t ) : string = match ztype with
-    | ZType.FocusedT htype -> "⊳" ^ of_htype htype ^ "⊲"
-    | ZType.LeftArrow  (ztype, htype) -> "(" ^ of_ztype ztype  ^ " -> " ^ of_htype htype ^ ")"
-    | ZType.RightArrow (htype, ztype) -> "(" ^ of_htype htype ^ " -> " ^ of_ztype ztype ^ ")"
+  let rec of_ztype (ztype : ZTyp.t ) : string = match ztype with
+    | ZTyp.CursorT htype -> "⊳" ^ of_htype htype ^ "⊲"
+    | ZTyp.LeftArrow  (ztype, htype) -> "(" ^ of_ztype ztype  ^ " -> " ^ of_htype htype ^ ")"
+    | ZTyp.RightArrow (htype, ztype) -> "(" ^ of_htype htype ^ " -> " ^ of_ztype ztype ^ ")"
 
   let rec of_zexp (zexp : ZExp.t ) : string = match zexp with
-    | ZExp.FocusedE hexp -> "⊳" ^ of_hexp hexp ^ "⊲"
+    | ZExp.CursorE hexp -> "⊳" ^ of_hexp hexp ^ "⊲"
     | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  of_zexp e ^ " : " ^ of_htype asc 
     | ZExp.RightAsc (e, asc) -> of_hexp e ^ " : " ^ of_ztype asc
     | ZExp.LamZ (var,exp) -> "λ" ^  var ^ "." ^ (of_zexp exp)
@@ -145,7 +145,7 @@ module View = struct
           (action_button (Action.Construct Action.SArg) "construct arg");
           br ();
           (action_input_button 
-             (fun n -> Action.Construct (Action.SNumLit n)) 
+             (fun n -> Action.Construct (Action.SLit n)) 
              (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None) 
              "construct lit");
           (action_button (Action.Construct Action.SPlus) "construct plus");
