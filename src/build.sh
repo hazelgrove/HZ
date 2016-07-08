@@ -12,4 +12,5 @@ ocamlbuild -use-ocamlfind \
 	-syntax camlp4o \
    hz.byte;
 
-js_of_ocaml +weak.js --opt 3 -o www/js/hz.js hz.byte
+js_of_ocaml +weak.js --opt 3 -o www/hz.js hz.byte
+
