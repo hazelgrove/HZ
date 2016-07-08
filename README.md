@@ -1,9 +1,9 @@
-# Js_of_ocaml HZ (Holes and Zippers)
+# HZ
 
-> Js_of_ocaml (abbreviated jsoo) is a compiler from OCaml bytecode to Javascript.
+> HZ is a reference implementation of Hazelnut, a bidirectionally typed structure editor calculus (see POPL 2017 draft)
 
 # Running HZ
-You can run HZ using the pre-built files by opening /www/hz.html in a browser
+You can run HZ using the pre-built files by opening /src/www/hz.html in a browser
 
 # Building HZ
 You can build HZ using the following instructions.
