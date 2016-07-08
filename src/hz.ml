@@ -134,11 +134,11 @@ module View = struct
           br ();
           (action_input_button 
              (fun v -> Action.Construct (Action.SVar v)) 
-             (fun s -> try Some (s) with Failure "int_of_string" -> None) 
+             (fun s -> match String.compare s "" with 0 -> None | _ -> Some s) 
              "construct var");                  
           (action_input_button 
              (fun v -> Action.Construct (Action.SLam v)) 
-             (fun s -> try Some (s) with Failure "int_of_string" -> None) 
+             (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
              "construct lam");
           (action_button (Action.Construct Action.SAp) "construct ap");
           br ();
