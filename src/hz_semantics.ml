@@ -411,11 +411,9 @@ module Action = struct
           HExp.Lam (x, HExp.EmptyHole),
           ZType.LeftArrow (ZType.FocusedT HType.Hole, HType.Hole)
         ))
-    | (Construct (SNumLit n), ZExp.FocusedE HExp.EmptyHole, HType.Num) -> 
-      ZExp.FocusedE (HExp.NumLit n)
-    | (Construct (SNumLit n), ZExp.FocusedE HExp.EmptyHole, _) -> 
-      ZExp.NonEmptyHoleZ (
-        ZExp.FocusedE (HExp.NumLit n))
+    | (Construct (SNumLit n), ZExp.FocusedE HExp.EmptyHole, ty) 
+      when HType.incompat ty HType.Num -> 
+      ZExp.NonEmptyHoleZ (ZExp.FocusedE (HExp.NumLit n))
     (* Finishing *)
     | (Finish, ZExp.FocusedE (HExp.NonEmptyHole e), _) -> 
       let _ = HExp.ana ctx e ty in 
