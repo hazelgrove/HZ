@@ -5,13 +5,13 @@ open Hz_model
 open Hz_model.Model
 
 open React;;
-open Lwt.Infix;; 
+open Lwt.Infix;;
 
 module StringView = struct
   let rec of_htype (htype : HTyp.t ) : string = match htype with
     | HTyp.Num -> "num"
     | HTyp.Arrow (fst,snd) -> "(" ^ of_htype (fst) ^ "->" ^ of_htype (snd) ^ ")"
-    | HTyp.Hole -> "(||)"  
+    | HTyp.Hole -> "(||)"
 
   let rec of_hexp (hexp : HExp.t ) : string = match hexp with
     | HExp.Asc (hexp,htype) -> (of_hexp hexp) ^ " : " ^ (of_htype htype)
@@ -20,7 +20,7 @@ module StringView = struct
     | HExp.Ap (e1, e2) -> (of_hexp e1) ^ "(" ^ (of_hexp e2) ^ ")"
     | HExp.NumLit num -> string_of_int num
     | HExp.Plus (n1,n2) -> (of_hexp n1) ^ " + " ^ (of_hexp n2)
-    | HExp.EmptyHole ->  "(||)" 
+    | HExp.EmptyHole ->  "(||)"
     | HExp.NonEmptyHole hc -> "(|" ^ (of_hexp hc) ^ "|)"
 
   let rec of_ztype (ztype : ZTyp.t ) : string = match ztype with
@@ -30,7 +30,7 @@ module StringView = struct
 
   let rec of_zexp (zexp : ZExp.t ) : string = match zexp with
     | ZExp.CursorE hexp -> "⊳" ^ of_hexp hexp ^ "⊲"
-    | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  of_zexp e ^ " : " ^ of_htype asc 
+    | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  of_zexp e ^ " : " ^ of_htype asc
     | ZExp.RightAsc (e, asc) -> of_hexp e ^ " : " ^ of_ztype asc
     | ZExp.LamZ (var,exp) -> "λ" ^  var ^ "." ^ (of_zexp exp)
     | ZExp.LeftAp (e1,e2) -> of_zexp e1 ^ "(" ^ of_hexp e2 ^ ")"
@@ -38,79 +38,79 @@ module StringView = struct
     | ZExp.LeftPlus (num1,num2) -> of_zexp num1 ^ " + " ^ of_hexp num2
     | ZExp.RightPlus (num1,num2) -> of_hexp num1  ^ " + " ^ of_zexp num2
     | ZExp.NonEmptyHoleZ e -> "(|" ^ of_zexp e ^ "|)"
-end   
+end
 
 (* TODO: put common utils somewhere sensible *)
-exception No_value 
+exception No_value
 let opt_get opt = match opt with Some x -> x | _ -> raise No_value
 
 module Ev = Lwt_js_events
-let bind_event ev elem handler = 
-  let handler evt _ = handler evt in 
+let bind_event ev elem handler =
+  let handler evt _ = handler evt in
   Ev.(async @@ (fun () -> ev elem handler))
 
-(* create an input and a reactive signal tracking its 
+(* create an input and a reactive signal tracking its
  * string value *)
-let r_input attrs = 
-  let rs, rf = S.create "" in 
-  let i_elt = Html5.input ~a:attrs () in 
-  let i_dom = To_dom.of_input i_elt in 
-  let _ = bind_event Ev.inputs i_dom (fun _ -> 
-      Lwt.return @@ (rf (Js.to_string i_dom##value))) in 
+let r_input attrs =
+  let rs, rf = S.create "" in
+  let i_elt = Html5.input ~a:attrs () in
+  let i_dom = To_dom.of_input i_elt in
+  let _ = bind_event Ev.inputs i_dom (fun _ ->
+      Lwt.return @@ (rf (Js.to_string i_dom##value))) in
   (rs, i_elt, i_dom)
 
 module View = struct
-  let view ((rs, rf) : Model.rp) = 
+  let view ((rs, rf) : Model.rp) =
     (* zexp view *)
-    let zexp_view_rs = React.S.map (fun (zexp, _) -> 
-        StringView.of_zexp zexp) rs in 
-    let zexp_view = Html5.(div [R.Html5.pcdata zexp_view_rs]) in 
+    let zexp_view_rs = React.S.map (fun (zexp, _) ->
+        StringView.of_zexp zexp) rs in
+    let zexp_view = Html5.(div [R.Html5.pcdata zexp_view_rs]) in
 
     (* helper function for constructing simple action buttons *)
-    let action_button action btn_label = 
+    let action_button action btn_label =
       Html5.(button ~a:[
-          a_onclick (fun _ -> 
+          a_onclick (fun _ ->
               rf (
                 Action.performSyn Ctx.empty action (React.S.value rs));
-              true); 
+              true);
           R.filter_attrib
             (a_disabled ())
             (S.map (fun m ->
-                 try 
-                   let _ = Action.performSyn Ctx.empty action m in false 
-                 with Action.InvalidAction -> true 
-                    | HExp.IllTyped -> true ) rs) 
-        ] [pcdata btn_label]) in 
+                 try
+                   let _ = Action.performSyn Ctx.empty action m in false
+                 with Action.InvalidAction -> true
+                    | HExp.IllTyped -> true ) rs)
+        ] [pcdata btn_label]) in
 
     (* actions that take an input. the conversion function
-     * goes from a string to an arg option where arg is 
+     * goes from a string to an arg option where arg is
      * the action argument. *)
-    let action_input_button action conv btn_label = 
-      let i_rs, i_elt, _ = r_input [] in 
-      Html5.(div [ 
+    let action_input_button action conv btn_label =
+      let i_rs, i_elt, _ = r_input [] in
+      Html5.(div [
           i_elt;
           button ~a:[
-            a_onclick (fun _ -> 
-                let arg = opt_get (conv (React.S.value i_rs)) in 
+            a_onclick (fun _ ->
+                let arg = opt_get (conv (React.S.value i_rs)) in
                 rf (
-                  Action.performSyn 
+                  Action.performSyn
                     Ctx.empty
                     (action arg)
-                    (React.S.value rs)); 
+                    (React.S.value rs));
                 true
-              ); 
+              );
             R.filter_attrib
               (a_disabled ())
-              (S.l2 (fun s m -> 
-                   match conv s with 
-                     Some arg -> 
-                     begin try 
-                         let _ = Action.performSyn Ctx.empty (action arg) m in false 
-                       with Action.InvalidAction -> true 
-                          | HExp.IllTyped -> true   end 
-                   | _ -> true) i_rs rs) 
+              (S.l2 (fun s m ->
+                   match conv s with
+                     Some arg ->
+                     begin try
+                         let _ = Action.performSyn Ctx.empty (action arg) m in false
+                       with Action.InvalidAction -> true
+                          | HExp.IllTyped -> true   end
+                   | _ -> true) i_rs rs)
           ] [pcdata btn_label]
-        ]) in 
+        ]) in
 
     Html5.(div [
         div ~a:[a_class ["Model"]] [zexp_view];
@@ -132,21 +132,21 @@ module View = struct
           br ();
           (action_button (Action.Construct Action.SAsc) "construct asc");
           br ();
-          (action_input_button 
-             (fun v -> Action.Construct (Action.SVar v)) 
-             (fun s -> match String.compare s "" with 0 -> None | _ -> Some s) 
-             "construct var");                  
-          (action_input_button 
-             (fun v -> Action.Construct (Action.SLam v)) 
+          (action_input_button
+             (fun v -> Action.Construct (Action.SVar v))
+             (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+             "construct var");
+          (action_input_button
+             (fun v -> Action.Construct (Action.SLam v))
              (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
              "construct lam");
           (action_button (Action.Construct Action.SAp) "construct ap");
           br ();
           (action_button (Action.Construct Action.SArg) "construct arg");
           br ();
-          (action_input_button 
-             (fun n -> Action.Construct (Action.SLit n)) 
-             (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None) 
+          (action_input_button
+             (fun n -> Action.Construct (Action.SLit n))
+             (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None)
              "construct lit");
           (action_button (Action.Construct Action.SPlus) "construct plus");
           br ();
