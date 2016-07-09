@@ -7,7 +7,43 @@ open Hz_model.Model
 open React;;
 open Lwt.Infix;;
 
+
 module StringView = struct
+  let rec of_htype (htype : HTyp.t ) : string = match htype with
+    | HTyp.Num -> "num"
+    | HTyp.Arrow (fst,snd) -> "(" ^ of_htype (fst) ^ "->" ^ of_htype (snd) ^ ")"
+    | HTyp.Hole -> "(||)"
+
+  let rec of_hexp (hexp : HExp.t ) : string = match hexp with
+    | HExp.Asc (hexp,htype) -> (of_hexp hexp) ^ " : " ^ (of_htype htype)
+    | HExp.Var str -> str
+    | HExp.Lam (var,exp) -> "λ" ^  var ^ "." ^ (of_hexp exp)
+    | HExp.Ap (e1, e2) -> (of_hexp e1) ^ "(" ^ (of_hexp e2) ^ ")"
+    | HExp.NumLit num -> string_of_int num
+    | HExp.Plus (n1,n2) -> (of_hexp n1) ^ " + " ^ (of_hexp n2)
+    | HExp.EmptyHole ->  "(||)"
+    | HExp.NonEmptyHole hc -> "(|" ^ (of_hexp hc) ^ "|)"
+
+  let rec of_ztype (ztype : ZTyp.t ) : string = match ztype with
+    | ZTyp.CursorT htype -> "⊳" ^ of_htype htype ^ "⊲"
+    | ZTyp.LeftArrow  (ztype, htype) -> "(" ^ of_ztype ztype  ^ " -> " ^ of_htype htype ^ ")"
+    | ZTyp.RightArrow (htype, ztype) -> "(" ^ of_htype htype ^ " -> " ^ of_ztype ztype ^ ")"
+
+  let rec of_zexp (zexp : ZExp.t ) : string = match zexp with
+    | ZExp.CursorE hexp -> "⊳" ^ of_hexp hexp ^ "⊲"
+    | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  of_zexp e ^ " : " ^ of_htype asc
+    | ZExp.RightAsc (e, asc) -> of_hexp e ^ " : " ^ of_ztype asc
+    | ZExp.LamZ (var,exp) -> "λ" ^  var ^ "." ^ (of_zexp exp)
+    | ZExp.LeftAp (e1,e2) -> of_zexp e1 ^ "(" ^ of_hexp e2 ^ ")"
+    | ZExp.RightAp (e1,e2) -> of_hexp e1 ^ "(" ^ of_zexp e2 ^ ")"
+    | ZExp.LeftPlus (num1,num2) -> of_zexp num1 ^ " + " ^ of_hexp num2
+    | ZExp.RightPlus (num1,num2) -> of_hexp num1  ^ " + " ^ of_zexp num2
+    | ZExp.NonEmptyHoleZ e -> "(|" ^ of_zexp e ^ "|)"
+end
+
+
+module HTMLView = struct
+  open Html
   let rec of_htype (htype : HTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     Html.(div [pcdata "div"])
   (* match htype with
@@ -35,19 +71,24 @@ module StringView = struct
      | ZTyp.RightArrow (htype, ztype) -> "(" ^ of_htype htype ^ " -> " ^ of_ztype ztype ^ ")" *)
 
   let rec of_zexp (zexp : ZExp.t ) :  [> Html_types.div ] Tyxml_js.Html.elt  =
-    Html.(div [pcdata "div"])
+    (* Html.(div [pcdata "div"]) *)
 
-  (* match zexp with
-     | ZExp.CursorE hexp -> "⊳" ^ of_hexp hexp ^ "⊲"
-     | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  of_zexp e ^ " : " ^ of_htype asc
-     | ZExp.RightAsc (e, asc) -> of_hexp e ^ " : " ^ of_ztype asc
-     | ZExp.LamZ (var,exp) -> "λ" ^  var ^ "." ^ (of_zexp exp)
-     | ZExp.LeftAp (e1,e2) -> of_zexp e1 ^ "(" ^ of_hexp e2 ^ ")"
-     | ZExp.RightAp (e1,e2) -> of_hexp e1 ^ "(" ^ of_zexp e2 ^ ")"
-     | ZExp.LeftPlus (num1,num2) -> of_zexp num1 ^ " + " ^ of_hexp num2
-     | ZExp.RightPlus (num1,num2) -> of_hexp num1  ^ " + " ^ of_zexp num2
-     | ZExp.NonEmptyHoleZ e -> "(|" ^ of_zexp e ^ "|)" *)
+    match zexp with
+    | ZExp.RightAsc (e, asc) ->   div [(of_hexp e) ; pcdata  " : " ; (of_ztype asc)] 
+    | ZExp.LeftAsc (e, asc) ->   div [(of_zexp e) ; pcdata  " : " ; (of_htype asc)]
+    | _ -> Html.(div [pcdata (StringView.of_zexp zexp)])
+    (* | ZExp.CursorE hexp -> "⊳" ^ of_hexp hexp ^ "⊲"
+       | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  of_zexp e ^ " : " ^ of_htype asc
+       | ZExp.RightAsc (e, asc) -> of_hexp e ^ " : " ^ of_ztype asc
+       | ZExp.LamZ (var,exp) -> "λ" ^  var ^ "." ^ (of_zexp exp)
+       | ZExp.LeftAp (e1,e2) -> of_zexp e1 ^ "(" ^ of_hexp e2 ^ ")"
+       | ZExp.RightAp (e1,e2) -> of_hexp e1 ^ "(" ^ of_zexp e2 ^ ")"
+       | ZExp.LeftPlus (num1,num2) -> of_zexp num1 ^ " + " ^ of_hexp num2
+       | ZExp.RightPlus (num1,num2) -> of_hexp num1  ^ " + " ^ of_zexp num2
+       | ZExp.NonEmptyHoleZ e -> "(|" ^ of_zexp e ^ "|)"  *)
 end
+
+
 
 (* TODO: put common utils somewhere sensible *)
 exception No_value
@@ -72,7 +113,7 @@ module View = struct
   let view ((rs, rf) : Model.rp) =
     (* zexp view *)
     let zexp_view_rs = React.S.map (fun (zexp, _) ->
-        [StringView.of_zexp zexp]) rs in
+        [HTMLView.of_zexp zexp]) rs in
     let zexp_view = Html5.(R.Html5.div (ReactiveData.RList.from_signal zexp_view_rs)) in
 
     (* helper function for constructing simple action buttons *)
