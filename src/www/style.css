@@ -16,3 +16,6 @@ button:disabled {
 	border: 3px solid red !important;
 }
 
+.HZElem{
+	float: left;
+}

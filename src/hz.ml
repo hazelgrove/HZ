@@ -45,14 +45,19 @@ end
 module HTMLView = struct
   open Html
   let rec of_htype (htype : HTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
-    Html.(div [pcdata "div"])
-  (* match htype with
-     | HTyp.Num -> "num"
-     | HTyp.Arrow (fst,snd) -> "(" ^ of_htype (fst) ^ "->" ^ of_htype (snd) ^ ")"
-     | HTyp.Hole -> "(||)" *)
+    (* Html.(div [pcdata "of_htype"]) *)
+    (* match htype with
+       | HTyp.Num -> "num"
+       | HTyp.Arrow (fst,snd) -> "(" ^ of_htype (fst) ^ "->" ^ of_htype (snd) ^ ")"
+       | HTyp.Hole -> "(||)" *)
+    match htype with
+    | HTyp.Num ->  Html.(div ~a:[a_class ["HZElem";"num"]] [pcdata "num"])
+    | HTyp.Arrow (fst,snd) -> Html.(div ~a:[a_class ["HZElem";"arrow"]] [of_htype (fst); pcdata "->" ;of_htype (snd)])
+    | HTyp.Hole ->  Html.(div ~a:[a_class ["HZElem";"hotdog"]] [pcdata "(||)"])
+
 
   let rec of_hexp (hexp : HExp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
-    Html.(div [pcdata "div"])
+    Html.(div [pcdata "of_hexp"])
   (* match hexp with
      | HExp.Asc (hexp,htype) -> (of_hexp hexp) ^ " : " ^ (of_htype htype)
      | HExp.Var str -> str
@@ -64,17 +69,22 @@ module HTMLView = struct
      | HExp.NonEmptyHole hc -> "(|" ^ (of_hexp hc) ^ "|)" *)
 
   let rec of_ztype (ztype : ZTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
-    Html.(div [pcdata "div"])
-  (* = match ztype with
-     | ZTyp.CursorT htype -> "⊳" ^ of_htype htype ^ "⊲"
-     | ZTyp.LeftArrow  (ztype, htype) -> "(" ^ of_ztype ztype  ^ " -> " ^ of_htype htype ^ ")"
-     | ZTyp.RightArrow (htype, ztype) -> "(" ^ of_htype htype ^ " -> " ^ of_ztype ztype ^ ")" *)
+    (* Html.(div [pcdata "of_ztype"]) *)
+    (* = match ztype with
+       | ZTyp.CursorT htype -> "⊳" ^ of_htype htype ^ "⊲"
+       | ZTyp.LeftArrow  (ztype, htype) -> "(" ^ of_ztype ztype  ^ " -> " ^ of_htype htype ^ ")"
+       | ZTyp.RightArrow (htype, ztype) -> "(" ^ of_htype htype ^ " -> " ^ of_ztype ztype ^ ")" *)
+    match ztype with
+    | ZTyp.CursorT htype ->  Html.(div [pcdata "⊳" ; (of_htype htype) ;pcdata "⊲" ])
+    (* "⊳" ^ of_htype htype ^ "⊲" *)
+    | ZTyp.LeftArrow  (ztype, htype) ->  Html.(div ~a:[a_class ["HZElem"]] [div ~a:[a_class ["HZElem"]] [pcdata "("] ;  (of_ztype ztype) ; div ~a:[a_class ["HZElem"]] [pcdata " -> "]; (of_htype htype) ; div ~a:[a_class ["HZElem"]] [pcdata ")"]])
+    | ZTyp.RightArrow (htype, ztype) -> Html.(div [pcdata "(" ; (of_htype htype) ; pcdata " -> "  ; (of_ztype ztype) ; pcdata ")" ]) (* "(" ^ of_htype htype ^ " -> " ^ of_ztype ztype ^ ")" *)
 
   let rec of_zexp (zexp : ZExp.t ) :  [> Html_types.div ] Tyxml_js.Html.elt  =
     (* Html.(div [pcdata "div"]) *)
 
     match zexp with
-    | ZExp.RightAsc (e, asc) ->   div [(of_hexp e) ; pcdata  " : " ; (of_ztype asc)] 
+    | ZExp.RightAsc (e, asc) ->   div [(of_hexp e) ; pcdata  " : " ; (of_ztype asc)]
     | ZExp.LeftAsc (e, asc) ->   div [(of_zexp e) ; pcdata  " : " ; (of_htype asc)]
     | _ -> Html.(div [pcdata (StringView.of_zexp zexp)])
     (* | ZExp.CursorE hexp -> "⊳" ^ of_hexp hexp ^ "⊲"
