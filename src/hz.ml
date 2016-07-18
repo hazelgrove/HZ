@@ -44,6 +44,12 @@ end
 
 module HTMLView = struct
   open Html
+  let lhd =  img ~alt:("left hot dog") ~src:("imgs/l-hot-dog.svg") ()
+  let rhd =  img ~alt:("right hot dog") ~src:("imgs/r-hot-dog.svg") ()
+  let arrow =  img ~alt:("arrow") ~src:("imgs/arrow.svg") ()
+  let larrow = img ~alt:("left arrow") ~src:("imgs/l-triangle.svg") ()
+  let rarrow = img ~alt:("right arrow") ~src:("imgs/r-triangle.svg") ()
+
   let rec of_htype (htype : HTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     (* Html.(div [pcdata "of_htype"]) *)
     (* match htype with
@@ -52,8 +58,8 @@ module HTMLView = struct
        | HTyp.Hole -> "(||)" *)
     match htype with
     | HTyp.Num ->  Html.(div ~a:[a_class ["HZElem";"num"]] [pcdata "num"])
-    | HTyp.Arrow (fst,snd) -> Html.(div ~a:[a_class ["HZElem";"arrow"]] [of_htype (fst); pcdata "->" ;of_htype (snd)])
-    | HTyp.Hole ->  Html.(div ~a:[a_class ["HZElem";"hotdog"]] [pcdata "(||)"])
+    | HTyp.Arrow (fst,snd) -> Html.(div ~a:[a_class ["HZElem";"arrow"]] [of_htype (fst); arrow ;of_htype (snd)])
+    | HTyp.Hole ->  Html.(div ~a:[a_class ["HZElem";"hotdog"]] [lhd;rhd])
 
 
   let rec of_hexp (hexp : HExp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
@@ -77,8 +83,8 @@ module HTMLView = struct
     match ztype with
     | ZTyp.CursorT htype ->  Html.(div [pcdata "⊳" ; (of_htype htype) ;pcdata "⊲" ])
     (* "⊳" ^ of_htype htype ^ "⊲" *)
-    | ZTyp.LeftArrow  (ztype, htype) ->  Html.(div ~a:[a_class ["HZElem"]] [div ~a:[a_class ["HZElem"]] [pcdata "("] ;  (of_ztype ztype) ; div ~a:[a_class ["HZElem"]] [pcdata " -> "]; (of_htype htype) ; div ~a:[a_class ["HZElem"]] [pcdata ")"]])
-    | ZTyp.RightArrow (htype, ztype) -> Html.(div [pcdata "(" ; (of_htype htype) ; pcdata " -> "  ; (of_ztype ztype) ; pcdata ")" ]) (* "(" ^ of_htype htype ^ " -> " ^ of_ztype ztype ^ ")" *)
+    | ZTyp.LeftArrow  (ztype, htype) ->  Html.(div ~a:[a_class ["HZElem"]] [div ~a:[a_class ["HZElem"]] [pcdata "("] ;  (of_ztype ztype) ; div ~a:[a_class ["HZElem"]] [arrow]; (of_htype htype) ; div ~a:[a_class ["HZElem"]] [pcdata ")"]])
+    | ZTyp.RightArrow (htype, ztype) -> Html.(div [pcdata "(" ; (of_htype htype) ; arrow  ; (of_ztype ztype) ; pcdata ")" ]) (* "(" ^ of_htype htype ^ " -> " ^ of_ztype ztype ^ ")" *)
 
   let rec of_zexp (zexp : ZExp.t ) :  [> Html_types.div ] Tyxml_js.Html.elt  =
     (* Html.(div [pcdata "div"]) *)
