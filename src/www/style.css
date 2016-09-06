@@ -2,6 +2,7 @@
 .Model {
 	font-size: xx-large;
 	padding-bottom: 20px;
+	width:100%;
 }
 
 #numLabel {
@@ -17,6 +18,10 @@ button:disabled {
 }
 
 .HZElem{
+	float: left;
+}
+
+.HZElem img{
 	float: left;
 }
 
