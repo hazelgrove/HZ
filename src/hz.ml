@@ -45,107 +45,61 @@ open Lwt.Infix;;
 module HTMLView = struct
   open Html
   (* let lhd =  img ~alt:("left hot dog") ~src:("imgs/l-hot-dog.svg") ()
-  let rhd =  img ~alt:("right hot dog") ~src:("imgs/r-hot-dog.svg") ()
-  let arrow =  div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"]
+     let rhd =  img ~alt:("right hot dog") ~src:("imgs/r-hot-dog.svg") ()
+     let arrow =  div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"]
+     let larrow = img ~alt:("left arrow") ~src:("imgs/l-triangle.svg") ()
+     let rarrow = img ~alt:("right arrow") ~src:("imgs/r-triangle.svg") ()
+     let hotdog =  Html.(div ~a:[a_class ["HZElem";"hotdog"]] [lhd;rhd]) *)
   let larrow = img ~alt:("left arrow") ~src:("imgs/l-triangle.svg") ()
   let rarrow = img ~alt:("right arrow") ~src:("imgs/r-triangle.svg") ()
-  let hotdog =  Html.(div ~a:[a_class ["HZElem";"hotdog"]] [lhd;rhd]) *)
-  let larrow = img ~alt:("left arrow") ~src:("imgs/l-triangle.svg") ()
-  let rarrow = img ~alt:("right arrow") ~src:("imgs/r-triangle.svg") ()
+
+
+  let hzdiv str contents =  Html.(div ~a:[a_class ["HZElem";str]] contents)
+
+  let hotdog = hzdiv  "hotdog" [pcdata "(||)"]
+  let ascChar = hzdiv "asc" [pcdata ":"]
+  let plusChar = hzdiv "lPlus" [pcdata "+"]
+  let lParensChar = hzdiv "lParens" [pcdata "("]
+  let rParensChar = hzdiv "rParens" [pcdata ")"]
+  let dotChar =   hzdiv "dot" [pcdata "."]
+  let lambdaChar = hzdiv "lambda" [pcdata "λ"]
+  let lAscChar =  hzdiv "lAsc" [pcdata "⊳"]
+  let rAscChar =  hzdiv "rAsc" [pcdata "⊲"]
+  let arrowChar = hzdiv "arrow" [pcdata "->"]
 
   let rec of_htype (htype : HTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match htype with
-    | HTyp.Num ->  Html.(div ~a:[a_class ["HZElem";"num"]] [pcdata "num"])
-    | HTyp.Arrow (fst,snd) ->
-      Html.(div ~a:[a_class ["HZElem";"arrowType"]] [of_htype (fst);
-                                                     div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"];
-                                                     of_htype (snd)])
-    | HTyp.Hole -> Html.(div ~a:[a_class ["HZElem";"hotdog"]] [div ~a:[a_class ["HZElem";"(||)"]] [pcdata "(||)"]])
+    | HTyp.Num -> hzdiv "num" [pcdata "num"]
+    | HTyp.Arrow (fst,snd) -> hzdiv "arrowType" [of_htype (fst); arrowChar; of_htype (snd)]
+    | HTyp.Hole ->  hotdog
 
   let rec of_hexp (hexp : HExp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match hexp with
-    (* | HExp.EmptyHole -> hotdog *)
-    (* |  HExp.Lam (var,exp) -> Html.(div [pcdata "λ"; pcdata "var"; pcdata "."; (of_hexp exp)]) *)
-    |  HExp.Lam (var,exp) -> Html.(div ~a:[a_class ["HZElem";"lambdaExp"]] [
-        div ~a:[a_class ["HZElem";"lambda"]] [pcdata "λ"];
-        div ~a:[a_class ["HZElem";"hexp"]] [pcdata "var"];
-        div ~a:[a_class ["HZElem";"dot"]] [pcdata "."];
-        div ~a:[a_class ["HZElem";"hexp"]] [of_hexp exp]
-      ])
-    | HExp.Asc (hexp,htype) -> Html.(div ~a:[a_class ["HZElem";"Asc"]] [
-        div ~a:[a_class ["HZElem";"hexp"]] [of_hexp hexp];
-        div ~a:[a_class ["HZElem";"hexp"]] [pcdata ":"];
-        div ~a:[a_class ["HZElem";"hexp"]] [of_htype htype]
-      ])
-
-
-    | HExp.Var str -> Html.(div ~a:[a_class ["HZElem";"var"]] [pcdata str])
-    | HExp.Ap (e1, e2) -> Html.(div  ~a:[a_class ["HZElem";"Ap"]]
-                                  [ of_hexp e1;
-                                    div ~a:[a_class ["HZElem";"lParens"]] [pcdata "("];
-                                    of_hexp e2;
-                                    div ~a:[a_class ["HZElem";"rParens"]] [pcdata ")"];
-                                  ])
-
-    | HExp.NumLit num -> Html.(div ~a:[a_class ["HZElem";"numLit"]] [pcdata (string_of_int num)])
-    | HExp.Plus (n1,n2) ->   div ~a:[a_class ["HZElem";"plus"]] [(of_hexp n1) ;
-                                                                 div ~a:[a_class ["HZElem";"lPlus"]] [pcdata "+"] ;
-                                                                 (of_hexp n2)]
-    | HExp.EmptyHole ->  Html.(div ~a:[a_class ["HZElem";"hotDog"]] [pcdata "(||)"])
+    |  HExp.Lam (var,exp) -> hzdiv "lambdaExp" [lambdaChar; hzdiv "hexp" [pcdata "var"]; dotChar; hzdiv "hexp" [of_hexp exp]]
+    | HExp.Asc (hexp,htype) -> hzdiv "Asc" [hzdiv "hexp" [of_hexp hexp]; ascChar; hzdiv "hexp" [of_htype htype]]
+    | HExp.Var str -> hzdiv "var" [pcdata str]
+    | HExp.Ap (e1, e2) -> hzdiv "Ap" [of_hexp e1; lParensChar; of_hexp e2; rParensChar]
+    | HExp.NumLit num -> hzdiv "numLit" [pcdata (string_of_int num)]
+    | HExp.Plus (n1,n2) -> hzdiv "plus" [(of_hexp n1); plusChar; (of_hexp n2)]
+    | HExp.EmptyHole ->  hotdog
     | HExp.NonEmptyHole hc -> Html.(div [pcdata "NonEmptyHole Not Implemented"])
 
   let rec of_ztype (ztype : ZTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match ztype with
-    | ZTyp.CursorT htype ->  Html.(div ~a:[a_class ["HZElem";"CursorT"]] [rarrow ; (of_htype htype) ;larrow ])
-    | ZTyp.LeftArrow  (ztype, htype) ->  Html.(div ~a:[a_class ["HZElem";"leftArrow"]] [
-        (of_ztype ztype) ;
-        div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"];
-        (of_htype htype);
-      ])
-    | ZTyp.RightArrow (htype, ztype) -> Html.(
-        div ~a:[a_class ["HZElem";"RightArrow"]] [
-          (of_htype htype) ;
-          div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"];
-          (of_ztype ztype) ;
-        ])
+    | ZTyp.CursorT htype ->  hzdiv "CursorT" [rarrow ; (of_htype htype) ;larrow]
+    | ZTyp.LeftArrow  (ztype, htype) ->  hzdiv "leftArrow" [(of_ztype ztype); arrowChar; (of_htype htype)]
+    | ZTyp.RightArrow (htype, ztype) -> hzdiv "rightArrow" [(of_htype htype); arrowChar; (of_ztype ztype)]
 
   let rec of_zexp (zexp : ZExp.t ) :  [> Html_types.div ] Tyxml_js.Html.elt  =
     match zexp with
-    | ZExp.RightAsc (e, asc) ->  div [(of_hexp e) ; div ~a:[a_class ["HZElem";"rAsc"]] [pcdata ":"] ; (of_ztype asc)]
-    | ZExp.LeftAsc (e, asc) ->   div [(of_zexp e) ; div ~a:[a_class ["HZElem";"lAsc"]] [pcdata ":"] ; (of_htype asc)]
-    (* | ZExp.CursorE hexp -> "⊳" ^ of_hexp hexp ^ "⊲" *)
-    | ZExp.CursorE hexp -> div ~a:[a_class ["HZElem";"CursorE"]] [
-        div ~a:[a_class ["HZElem";"lAsc"]] [pcdata "⊳"] ;
-        (of_hexp hexp);
-        div ~a:[a_class ["HZElem";"lAsc"]] [pcdata "⊲"]
-      ]
-    | ZExp.LamZ (var,exp) ->
-      Html.(div ~a:[a_class ["HZElem";"lambdaExp"]] [
-          div ~a:[a_class ["HZElem";"lambda"]] [pcdata "λ"];
-          div ~a:[a_class ["HZElem";"hexp"]] [pcdata "var"];
-          div ~a:[a_class ["HZElem";"dot"]] [pcdata "."];
-          div ~a:[a_class ["HZElem";"hexp"]] [of_zexp exp]
-        ])
-    | ZExp.LeftAp (e1,e2) -> Html.(div ~a:[a_class ["HZElem";"lAp"]] [
-        of_zexp e1;
-        div ~a:[a_class ["HZElem";"lParens"]] [pcdata "("];
-        of_hexp e2;
-        div ~a:[a_class ["HZElem";"rParens"]] [pcdata ")"];
-      ])
-    | ZExp.RightAp (e1,e2) -> Html.(div ~a:[a_class ["HZElem";"rAp"]] [
-        of_hexp e1;
-        div ~a:[a_class ["HZElem";"lParens"]] [pcdata "("];
-        of_zexp e2;
-        div ~a:[a_class ["HZElem";"rParens"]] [pcdata ")"];
-      ])
-    | ZExp.LeftPlus (num1,num2) ->
-      div [(of_zexp num1) ;
-           div ~a:[a_class ["HZElem";"lPlus"]] [pcdata "+"] ;
-           (of_hexp num2)]
-    | ZExp.RightPlus (num1,num2) ->
-      div [(of_hexp num1) ;
-           div ~a:[a_class ["HZElem";"rPlus"]] [pcdata "+"] ;
-           (of_zexp num2)]
+    | ZExp.RightAsc (e, asc) ->  hzdiv "rAsc" [(of_hexp e) ; ascChar; (of_ztype asc)]
+    | ZExp.LeftAsc (e, asc) ->   hzdiv "lAsc" [(of_zexp e) ; ascChar; (of_htype asc)]
+    | ZExp.CursorE hexp -> hzdiv "CursorE" [lAscChar; (of_hexp hexp); rAscChar]
+    | ZExp.LamZ (var,exp) -> hzdiv "lambdaExp" [lambdaChar;hzdiv "var" [pcdata "TODO"];dotChar; hzdiv "hexp" [of_zexp exp]]
+    | ZExp.LeftAp (e1,e2) -> hzdiv "lAp" [of_zexp e1; lParensChar; of_hexp e2; rParensChar]
+    | ZExp.RightAp (e1,e2) ->  hzdiv "rAp" [of_hexp e1; lParensChar; of_zexp e2; rParensChar]
+    | ZExp.LeftPlus (num1,num2) -> hzdiv "lPlus" [(of_zexp num1); plusChar; (of_hexp num2)]
+    | ZExp.RightPlus (num1,num2) -> hzdiv "rPlus" [(of_hexp num1); plusChar; (of_zexp num2)]
     | ZExp.NonEmptyHoleZ e -> Html.(div [pcdata "NonEmptyHoleZ Not Implemented"])
 end
 
