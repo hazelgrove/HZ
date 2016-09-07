@@ -46,7 +46,7 @@ module HTMLView = struct
   open Html
   let lhd =  img ~alt:("left hot dog") ~src:("imgs/l-hot-dog.svg") ()
   let rhd =  img ~alt:("right hot dog") ~src:("imgs/r-hot-dog.svg") ()
-  let arrow =  img ~alt:("arrow") ~src:("imgs/arrow.svg") ()
+  let arrow =  div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"]
   let larrow = img ~alt:("left arrow") ~src:("imgs/l-triangle.svg") ()
   let rarrow = img ~alt:("right arrow") ~src:("imgs/r-triangle.svg") ()
   let hotdog =  Html.(div ~a:[a_class ["HZElem";"hotdog"]] [lhd;rhd])
@@ -54,7 +54,9 @@ module HTMLView = struct
   let rec of_htype (htype : HTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match htype with
     | HTyp.Num ->  Html.(div ~a:[a_class ["HZElem";"num"]] [pcdata "num"])
-    | HTyp.Arrow (fst,snd) -> Html.(div ~a:[a_class ["HZElem";"arrow"]] [of_htype (fst); arrow ;of_htype (snd)])
+    | HTyp.Arrow (fst,snd) -> Html.(div ~a:[a_class ["HZElem";"arrowType"]] [of_htype (fst);
+                                                                             div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"]; 
+                                                                             of_htype (snd)])
     (* | HTyp.Hole ->  hotdog *)
     (* | _ ->  hotdog *)
     | HTyp.Hole -> Html.(div ~a:[a_class ["HZElem";"hotdog"]] [div ~a:[a_class ["HZElem";"(||)"]] [pcdata "(||)"]])
@@ -89,7 +91,9 @@ module HTMLView = struct
     | ZTyp.LeftArrow  (ztype, htype) ->  Html.(div ~a:[a_class ["HZElem";"leftArrow"]] [
         (* div ~a:[a_class ["HZElem"]] [pcdata "("] ;   *)
         (of_ztype ztype) ;
-        div ~a:[a_class ["HZElem";"arrow"]] [arrow];
+        (* arrow; *)
+        (* pcdata "->"; *)
+        div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"];
         (* img ~alt:("left hot dog") ~src:("imgs/l-hot-dog.svg") ();  *)
         (of_htype htype);
         (* div ~a:[a_class ["HZElem"]] [pcdata ")"] *)
@@ -98,7 +102,8 @@ module HTMLView = struct
         div ~a:[a_class ["HZElem";"RightArrow"]] [
           (* pcdata "(" ;  *)
           (of_htype htype) ;
-          arrow  ;
+          (* arrow ; *)
+          div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"];
           (of_ztype ztype) ;
           (* pcdata ")"  *)
         ]) (* "(" ^ of_htype htype ^ " -> " ^ of_ztype ztype ^ ")" *)
