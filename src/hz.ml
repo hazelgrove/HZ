@@ -55,10 +55,8 @@ module HTMLView = struct
     match htype with
     | HTyp.Num ->  Html.(div ~a:[a_class ["HZElem";"num"]] [pcdata "num"])
     | HTyp.Arrow (fst,snd) -> Html.(div ~a:[a_class ["HZElem";"arrowType"]] [of_htype (fst);
-                                                                             div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"]; 
+                                                                             div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"];
                                                                              of_htype (snd)])
-    (* | HTyp.Hole ->  hotdog *)
-    (* | _ ->  hotdog *)
     | HTyp.Hole -> Html.(div ~a:[a_class ["HZElem";"hotdog"]] [div ~a:[a_class ["HZElem";"(||)"]] [pcdata "(||)"]])
 
   let rec of_hexp (hexp : HExp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
@@ -72,6 +70,13 @@ module HTMLView = struct
         div ~a:[a_class ["HZElem";"dot"]] [pcdata "."];
         div ~a:[a_class ["HZElem";"hexp"]] [of_hexp exp]
       ])
+    | HExp.Asc (hexp,htype) -> Html.(div ~a:[a_class ["HZElem";"Asc"]] [
+        div ~a:[a_class ["HZElem";"hexp"]] [of_hexp hexp];
+        div ~a:[a_class ["HZElem";"hexp"]] [pcdata ":"];
+        div ~a:[a_class ["HZElem";"hexp"]] [of_htype htype]
+      ])
+    (* Html.(div [pcdata "Asc"]) *)
+    (* (of_hexp hexp) ^ " : " ^ (of_htype htype) *)
     | _ -> Html.(div [pcdata "of_hexp"])
   (* match hexp with
      | HExp.Asc (hexp,htype) -> (of_hexp hexp) ^ " : " ^ (of_htype htype)
@@ -86,32 +91,33 @@ module HTMLView = struct
   let rec of_ztype (ztype : ZTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match ztype with
     | ZTyp.CursorT htype ->  Html.(div ~a:[a_class ["HZElem";"CursorT"]] [rarrow ; (of_htype htype) ;larrow ])
-    (* | ZTyp.LeftArrow  (ztype, htype) -> "(" ^ of_ztype ztype  ^ " -> " ^ of_htype htype ^ ")" *)
-    (* | ZTyp.LeftArrow  (ztype, htype) ->  Html.(div ~a:[a_class ["HZElem"]] [div ~a:[a_class ["HZElem"]] [pcdata "("] ;  (of_ztype ztype) ; div ~a:[a_class ["HZElem"]] [arrow]; img ~alt:("left hot dog") ~src:("imgs/l-hot-dog.svg") (); (of_htype htype) ; div ~a:[a_class ["HZElem"]] [pcdata ")"]]) *)
     | ZTyp.LeftArrow  (ztype, htype) ->  Html.(div ~a:[a_class ["HZElem";"leftArrow"]] [
-        (* div ~a:[a_class ["HZElem"]] [pcdata "("] ;   *)
         (of_ztype ztype) ;
-        (* arrow; *)
-        (* pcdata "->"; *)
         div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"];
-        (* img ~alt:("left hot dog") ~src:("imgs/l-hot-dog.svg") ();  *)
         (of_htype htype);
-        (* div ~a:[a_class ["HZElem"]] [pcdata ")"] *)
       ])
     | ZTyp.RightArrow (htype, ztype) -> Html.(
         div ~a:[a_class ["HZElem";"RightArrow"]] [
-          (* pcdata "(" ;  *)
           (of_htype htype) ;
-          (* arrow ; *)
           div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"];
           (of_ztype ztype) ;
-          (* pcdata ")"  *)
-        ]) (* "(" ^ of_htype htype ^ " -> " ^ of_ztype ztype ^ ")" *)
+        ])
 
   let rec of_zexp (zexp : ZExp.t ) :  [> Html_types.div ] Tyxml_js.Html.elt  =
     match zexp with
     | ZExp.RightAsc (e, asc) ->   div [(of_hexp e) ; div ~a:[a_class ["HZElem";"rAsc"]] [pcdata ":"] ; (of_ztype asc)]
     | ZExp.LeftAsc (e, asc) ->   div [(of_zexp e) ; div ~a:[a_class ["HZElem";"lAsc"]] [pcdata ":"] ; (of_htype asc)]
+    (* | ZExp.CursorE hexp -> "⊳" ^ of_hexp hexp ^ "⊲" *)
+    | ZExp.CursorE hexp -> div ~a:[a_class ["HZElem";"CursorE"]] [
+        div ~a:[a_class ["HZElem";"lAsc"]] [pcdata "⊳"] ;
+        (of_hexp hexp);
+        div ~a:[a_class ["HZElem";"lAsc"]] [pcdata "⊲"]
+      ]
+    (* | ZExp.CursorE hexp -> div [~a:[a_class ["HZElem";"CursorE"]]
+       [div ~a:[a_class ["HZElem";"lAsc"]] [pcdata "⊳"] ;
+       of_hexp hexp;
+       div ~a:[a_class ["HZElem";"lAsc"]] [pcdata "⊲"] ] *)
+
     | _ -> Html.(div [pcdata (StringView.of_zexp zexp)])
     (* | ZExp.CursorE hexp -> "⊳" ^ of_hexp hexp ^ "⊲"
        | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  of_zexp e ^ " : " ^ of_htype asc
