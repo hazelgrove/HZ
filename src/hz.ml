@@ -8,13 +8,13 @@ open React;;
 open Lwt.Infix;;
 
 
-module StringView = struct
-  let rec of_htype (htype : HTyp.t ) : string = match htype with
+(* module StringView = struct
+   let rec of_htype (htype : HTyp.t ) : string = match htype with
     | HTyp.Num -> "num"
     | HTyp.Arrow (fst,snd) -> "(" ^ of_htype (fst) ^ "->" ^ of_htype (snd) ^ ")"
     | HTyp.Hole -> "(||)"
 
-  let rec of_hexp (hexp : HExp.t ) : string = match hexp with
+   let rec of_hexp (hexp : HExp.t ) : string = match hexp with
     | HExp.Asc (hexp,htype) -> (of_hexp hexp) ^ " : " ^ (of_htype htype)
     | HExp.Var str -> str
     | HExp.Lam (var,exp) -> "λ" ^  var ^ "." ^ (of_hexp exp)
@@ -24,12 +24,12 @@ module StringView = struct
     | HExp.EmptyHole ->  "(||)"
     | HExp.NonEmptyHole hc -> "(|" ^ (of_hexp hc) ^ "|)"
 
-  let rec of_ztype (ztype : ZTyp.t ) : string = match ztype with
+   let rec of_ztype (ztype : ZTyp.t ) : string = match ztype with
     | ZTyp.CursorT htype -> "⊳" ^ of_htype htype ^ "⊲"
     | ZTyp.LeftArrow  (ztype, htype) -> "(" ^ of_ztype ztype  ^ " -> " ^ of_htype htype ^ ")"
     | ZTyp.RightArrow (htype, ztype) -> "(" ^ of_htype htype ^ " -> " ^ of_ztype ztype ^ ")"
 
-  let rec of_zexp (zexp : ZExp.t ) : string = match zexp with
+   let rec of_zexp (zexp : ZExp.t ) : string = match zexp with
     | ZExp.CursorE hexp -> "⊳" ^ of_hexp hexp ^ "⊲"
     | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  of_zexp e ^ " : " ^ of_htype asc
     | ZExp.RightAsc (e, asc) -> of_hexp e ^ " : " ^ of_ztype asc
@@ -39,7 +39,7 @@ module StringView = struct
     | ZExp.LeftPlus (num1,num2) -> of_zexp num1 ^ " + " ^ of_hexp num2
     | ZExp.RightPlus (num1,num2) -> of_hexp num1  ^ " + " ^ of_zexp num2
     | ZExp.NonEmptyHoleZ e -> "(|" ^ of_zexp e ^ "|)"
-end
+   end *)
 
 
 module HTMLView = struct
@@ -54,9 +54,10 @@ module HTMLView = struct
   let rec of_htype (htype : HTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match htype with
     | HTyp.Num ->  Html.(div ~a:[a_class ["HZElem";"num"]] [pcdata "num"])
-    | HTyp.Arrow (fst,snd) -> Html.(div ~a:[a_class ["HZElem";"arrowType"]] [of_htype (fst);
-                                                                             div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"];
-                                                                             of_htype (snd)])
+    | HTyp.Arrow (fst,snd) ->
+      Html.(div ~a:[a_class ["HZElem";"arrowType"]] [of_htype (fst);
+                                                     div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"];
+                                                     of_htype (snd)])
     | HTyp.Hole -> Html.(div ~a:[a_class ["HZElem";"hotdog"]] [div ~a:[a_class ["HZElem";"(||)"]] [pcdata "(||)"]])
 
   let rec of_hexp (hexp : HExp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
@@ -75,9 +76,17 @@ module HTMLView = struct
         div ~a:[a_class ["HZElem";"hexp"]] [pcdata ":"];
         div ~a:[a_class ["HZElem";"hexp"]] [of_htype htype]
       ])
+
+
+      | HExp.Var str -> Html.(div [pcdata "Var Not Implemented"])
+      | HExp.Ap (e1, e2) -> Html.(div [pcdata "Ap Not Implemented"])
+      | HExp.NumLit num -> Html.(div [pcdata "NumLit Not Implemented"])
+      | HExp.Plus (n1,n2) -> Html.(div [pcdata "Plus Not Implemented"])
+      | HExp.EmptyHole ->  Html.(div [pcdata "(||)"])
+      | HExp.NonEmptyHole hc -> Html.(div [pcdata "NonEmptyHole Not Implemented"])
     (* Html.(div [pcdata "Asc"]) *)
     (* (of_hexp hexp) ^ " : " ^ (of_htype htype) *)
-    | _ -> Html.(div [pcdata "of_hexp"])
+    (* | _ -> Html.(div [pcdata "of_hexp"]) *)
   (* match hexp with
      | HExp.Asc (hexp,htype) -> (of_hexp hexp) ^ " : " ^ (of_htype htype)
      | HExp.Var str -> str
@@ -105,7 +114,7 @@ module HTMLView = struct
 
   let rec of_zexp (zexp : ZExp.t ) :  [> Html_types.div ] Tyxml_js.Html.elt  =
     match zexp with
-    | ZExp.RightAsc (e, asc) ->   div [(of_hexp e) ; div ~a:[a_class ["HZElem";"rAsc"]] [pcdata ":"] ; (of_ztype asc)]
+    | ZExp.RightAsc (e, asc) ->  div [(of_hexp e) ; div ~a:[a_class ["HZElem";"rAsc"]] [pcdata ":"] ; (of_ztype asc)]
     | ZExp.LeftAsc (e, asc) ->   div [(of_zexp e) ; div ~a:[a_class ["HZElem";"lAsc"]] [pcdata ":"] ; (of_htype asc)]
     (* | ZExp.CursorE hexp -> "⊳" ^ of_hexp hexp ^ "⊲" *)
     | ZExp.CursorE hexp -> div ~a:[a_class ["HZElem";"CursorE"]] [
@@ -118,16 +127,37 @@ module HTMLView = struct
        of_hexp hexp;
        div ~a:[a_class ["HZElem";"lAsc"]] [pcdata "⊲"] ] *)
 
-    | _ -> Html.(div [pcdata (StringView.of_zexp zexp)])
-    (* | ZExp.CursorE hexp -> "⊳" ^ of_hexp hexp ^ "⊲"
-       | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  of_zexp e ^ " : " ^ of_htype asc
-       | ZExp.RightAsc (e, asc) -> of_hexp e ^ " : " ^ of_ztype asc
-       | ZExp.LamZ (var,exp) -> "λ" ^  var ^ "." ^ (of_zexp exp)
-       | ZExp.LeftAp (e1,e2) -> of_zexp e1 ^ "(" ^ of_hexp e2 ^ ")"
-       | ZExp.RightAp (e1,e2) -> of_hexp e1 ^ "(" ^ of_zexp e2 ^ ")"
-       | ZExp.LeftPlus (num1,num2) -> of_zexp num1 ^ " + " ^ of_hexp num2
-       | ZExp.RightPlus (num1,num2) -> of_hexp num1  ^ " + " ^ of_zexp num2
-       | ZExp.NonEmptyHoleZ e -> "(|" ^ of_zexp e ^ "|)"  *)
+    (* | _ -> Html.(div [pcdata (StringView.of_zexp zexp)]) *)
+    (* | ZExp.LamZ (var,exp) -> Html.(div [pcdata "LamZ Not Implemented"]) *)
+    | ZExp.LamZ (var,exp) ->
+      Html.(div ~a:[a_class ["HZElem";"lambdaExp"]] [
+          div ~a:[a_class ["HZElem";"lambda"]] [pcdata "λ"];
+          div ~a:[a_class ["HZElem";"hexp"]] [pcdata "var"];
+          div ~a:[a_class ["HZElem";"dot"]] [pcdata "."];
+          div ~a:[a_class ["HZElem";"hexp"]] [of_zexp exp]
+        ])
+    | ZExp.LeftAp (e1,e2) -> Html.(div [pcdata "LeftAp Not Implemented"])
+    | ZExp.RightAp (e1,e2) -> Html.(div [pcdata "RightAp Not Implemented"])
+    | ZExp.LeftPlus (num1,num2) ->
+      div [(of_zexp num1) ;
+           div ~a:[a_class ["HZElem";"lPlus"]] [pcdata "+"] ;
+           (of_hexp num2)]
+    | ZExp.RightPlus (num1,num2) ->
+      div [(of_hexp num1) ;
+           div ~a:[a_class ["HZElem";"rPlus"]] [pcdata "+"] ;
+           (of_zexp num2)]
+    | ZExp.NonEmptyHoleZ e -> Html.(div [pcdata "NonEmptyHoleZ Not Implemented"])
+
+  (* | _ -> Html.(div [pcdata "Not Implemented"]) *)
+  (* | ZExp.CursorE hexp -> "⊳" ^ of_hexp hexp ^ "⊲"
+     | ZExp.LeftAsc (e, asc) -> (* "LA" ^ *)  of_zexp e ^ " : " ^ of_htype asc
+     | ZExp.RightAsc (e, asc) -> of_hexp e ^ " : " ^ of_ztype asc
+     | ZExp.LamZ (var,exp) -> "λ" ^  var ^ "." ^ (of_zexp exp)
+     | ZExp.LeftAp (e1,e2) -> of_zexp e1 ^ "(" ^ of_hexp e2 ^ ")"
+     | ZExp.RightAp (e1,e2) -> of_hexp e1 ^ "(" ^ of_zexp e2 ^ ")"
+     | ZExp.LeftPlus (num1,num2) -> of_zexp num1 ^ " + " ^ of_hexp num2
+     | ZExp.RightPlus (num1,num2) -> of_hexp num1  ^ " + " ^ of_zexp num2
+     | ZExp.NonEmptyHoleZ e -> "(|" ^ of_zexp e ^ "|)"  *)
 end
 
 
