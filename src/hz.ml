@@ -44,12 +44,6 @@ open Lwt.Infix;;
 
 module HTMLView = struct
   open Html
-  (* let lhd =  img ~alt:("left hot dog") ~src:("imgs/l-hot-dog.svg") ()
-     let rhd =  img ~alt:("right hot dog") ~src:("imgs/r-hot-dog.svg") ()
-     let arrow =  div ~a:[a_class ["HZElem";"arrowType"]] [pcdata "->"]
-     let larrow = img ~alt:("left arrow") ~src:("imgs/l-triangle.svg") ()
-     let rarrow = img ~alt:("right arrow") ~src:("imgs/r-triangle.svg") ()
-     let hotdog =  Html.(div ~a:[a_class ["HZElem";"hotdog"]] [lhd;rhd]) *)
   let larrow = img ~alt:("left arrow") ~src:("imgs/l-triangle.svg") ()
   let rarrow = img ~alt:("right arrow") ~src:("imgs/r-triangle.svg") ()
 
