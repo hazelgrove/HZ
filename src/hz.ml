@@ -78,8 +78,14 @@ module HTMLView = struct
       ])
 
 
-    | HExp.Var str -> Html.(div [pcdata "Var Not Implemented"])
-    | HExp.Ap (e1, e2) -> Html.(div [pcdata "Ap Not Implemented"])
+    | HExp.Var str -> Html.(div ~a:[a_class ["HZElem";"var"]] [pcdata str])
+    | HExp.Ap (e1, e2) -> Html.(div  ~a:[a_class ["HZElem";"Ap"]]
+                                  [ of_hexp e1;
+                                    div ~a:[a_class ["HZElem";"lParens"]] [pcdata "("];
+                                    of_hexp e2;
+                                    div ~a:[a_class ["HZElem";"rParens"]] [pcdata ")"];
+                                  ])
+
     | HExp.NumLit num -> Html.(div ~a:[a_class ["HZElem";"numLit"]] [pcdata (string_of_int num)])
     | HExp.Plus (n1,n2) ->   div ~a:[a_class ["HZElem";"plus"]] [(of_hexp n1) ;
                                                                  div ~a:[a_class ["HZElem";"lPlus"]] [pcdata "+"] ;
@@ -138,8 +144,19 @@ module HTMLView = struct
           div ~a:[a_class ["HZElem";"dot"]] [pcdata "."];
           div ~a:[a_class ["HZElem";"hexp"]] [of_zexp exp]
         ])
-    | ZExp.LeftAp (e1,e2) -> Html.(div [pcdata "LeftAp Not Implemented"])
-    | ZExp.RightAp (e1,e2) -> Html.(div [pcdata "RightAp Not Implemented"])
+    | ZExp.LeftAp (e1,e2) -> Html.(div ~a:[a_class ["HZElem";"lAp"]] [
+        of_zexp e1;
+        div ~a:[a_class ["HZElem";"lParens"]] [pcdata "("];
+        of_hexp e2;
+        div ~a:[a_class ["HZElem";"rParens"]] [pcdata ")"];
+      ])
+    | ZExp.RightAp (e1,e2) -> Html.(div ~a:[a_class ["HZElem";"rAp"]] [
+        of_hexp e1;
+        div ~a:[a_class ["HZElem";"lParens"]] [pcdata "("];
+        of_zexp e2;
+        div ~a:[a_class ["HZElem";"rParens"]] [pcdata ")"];
+      ])
+    (* | ZExp.RightAp (e1,e2) -> Html.(div [pcdata "RightAp Not Implemented"]) *)
     | ZExp.LeftPlus (num1,num2) ->
       div [(of_zexp num1) ;
            div ~a:[a_class ["HZElem";"lPlus"]] [pcdata "+"] ;
