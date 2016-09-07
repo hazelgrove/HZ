@@ -63,7 +63,7 @@ module HTMLView = struct
   let rec of_hexp (hexp : HExp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     (* Html.(div [pcdata "of_hexp"]); *)
     match hexp with
-    | HExp.EmptyHole -> hotdog
+    (* | HExp.EmptyHole -> hotdog *)
     (* |  HExp.Lam (var,exp) -> Html.(div [pcdata "λ"; pcdata "var"; pcdata "."; (of_hexp exp)]) *)
     |  HExp.Lam (var,exp) -> Html.(div ~a:[a_class ["HZElem";"lambdaExp"]] [
         div ~a:[a_class ["HZElem";"lambda"]] [pcdata "λ"];
@@ -78,15 +78,17 @@ module HTMLView = struct
       ])
 
 
-      | HExp.Var str -> Html.(div [pcdata "Var Not Implemented"])
-      | HExp.Ap (e1, e2) -> Html.(div [pcdata "Ap Not Implemented"])
-      | HExp.NumLit num -> Html.(div [pcdata "NumLit Not Implemented"])
-      | HExp.Plus (n1,n2) -> Html.(div [pcdata "Plus Not Implemented"])
-      | HExp.EmptyHole ->  Html.(div [pcdata "(||)"])
-      | HExp.NonEmptyHole hc -> Html.(div [pcdata "NonEmptyHole Not Implemented"])
-    (* Html.(div [pcdata "Asc"]) *)
-    (* (of_hexp hexp) ^ " : " ^ (of_htype htype) *)
-    (* | _ -> Html.(div [pcdata "of_hexp"]) *)
+    | HExp.Var str -> Html.(div [pcdata "Var Not Implemented"])
+    | HExp.Ap (e1, e2) -> Html.(div [pcdata "Ap Not Implemented"])
+    | HExp.NumLit num -> Html.(div ~a:[a_class ["HZElem";"numLit"]] [pcdata (string_of_int num)])
+    | HExp.Plus (n1,n2) ->   div ~a:[a_class ["HZElem";"plus"]] [(of_hexp n1) ;
+                                                                 div ~a:[a_class ["HZElem";"lPlus"]] [pcdata "+"] ;
+                                                                 (of_hexp n2)]
+    | HExp.EmptyHole ->  Html.(div ~a:[a_class ["HZElem";"hotDog"]] [pcdata "(||)"])
+    | HExp.NonEmptyHole hc -> Html.(div [pcdata "NonEmptyHole Not Implemented"])
+  (* Html.(div [pcdata "Asc"]) *)
+  (* (of_hexp hexp) ^ " : " ^ (of_htype htype) *)
+  (* | _ -> Html.(div [pcdata "of_hexp"]) *)
   (* match hexp with
      | HExp.Asc (hexp,htype) -> (of_hexp hexp) ^ " : " ^ (of_htype htype)
      | HExp.Var str -> str
