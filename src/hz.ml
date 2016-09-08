@@ -171,50 +171,53 @@ module View = struct
           ] [pcdata btn_label]
         ]) in
 
-    Html5.(div [
-        div ~a:[a_class ["Model"]] [zexp_view];
-        div ~a:[a_class ["Actions"]] [
-          br ();
-          (action_button (Action.Move (Action.FirstChild)) "move firstChild");
-          br ();
-          (action_button (Action.Move (Action.Parent)) "move parent");
-          br ();
-          (action_button (Action.Move (Action.NextSib)) "move nextSib");
-          br ();
-          br ();
-          (action_button (Action.Del) "del");
-          br ();
-          br ();
-          (action_button (Action.Construct Action.SArrow) "construct arrow");
-          br ();
-          (action_button (Action.Construct Action.SNum) "construct num");
-          br ();
-          (action_button (Action.Construct Action.SAsc) "construct asc");
-          br ();
-          (action_input_button
-             (fun v -> Action.Construct (Action.SVar v))
-             (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-             "construct var");
-          (action_input_button
-             (fun v -> Action.Construct (Action.SLam v))
-             (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-             "construct lam");
-          (action_button (Action.Construct Action.SAp) "construct ap");
-          br ();
-          (action_button (Action.Construct Action.SArg) "construct arg");
-          br ();
-          (action_input_button
-             (fun n -> Action.Construct (Action.SLit n))
-             (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None)
-             "construct lit");
-          (action_button (Action.Construct Action.SPlus) "construct plus");
-          br ();
-          br ();
-
-
-          (action_button (Action.Finish) "finish")
-        ]
-      ])
+    Html5.(
+      div [ div  ~a:[a_class ["jumbotron"]] [
+          div  ~a:[a_class ["display-3"]] [pcdata "HZ"];
+          div  ~a:[a_class ["subtext"]] [pcdata "(a reference implementation of Hazelnut)"];
+          div ~a:[a_class ["Model"]] [zexp_view];];
+          div ~a:[a_class ["row";"marketing"]] [
+            div ~a:[a_class ["col-lg-3"]] [
+              (action_button (Action.Move (Action.FirstChild)) "move firstChild");
+              br ();
+              (action_button (Action.Move (Action.Parent)) "move parent");
+              br ();
+              (action_button (Action.Move (Action.NextSib)) "move nextSib");
+              br ();
+              (action_button (Action.Del) "del");
+            ];
+            div ~a:[a_class ["col-lg-3"]] [
+              (action_button (Action.Construct Action.SArrow) "construct arrow");
+              br ();
+              (action_button (Action.Construct Action.SNum) "construct num");
+              br ();
+            ];
+            div ~a:[a_class ["col-lg-6"]] [
+              (action_button (Action.Construct Action.SAsc) "construct asc");
+              br ();
+              (action_input_button
+                 (fun v -> Action.Construct (Action.SVar v))
+                 (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+                 "construct var");
+              (action_input_button
+                 (fun v -> Action.Construct (Action.SLam v))
+                 (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+                 "construct lam");
+              (action_button (Action.Construct Action.SAp) "construct ap");
+              br ();
+              (action_button (Action.Construct Action.SArg) "construct arg");
+              br ();
+              (action_input_button
+                 (fun n -> Action.Construct (Action.SLit n))
+                 (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None)
+                 "construct lit");
+              (action_button (Action.Construct Action.SPlus) "construct plus");
+              br ();
+              br ();
+              (action_button (Action.Finish) "finish")
+            ]
+          ];
+        ])
 end
 
 let main _ =
