@@ -65,7 +65,7 @@ module HTMLView = struct
     match htype with
     | HTyp.Num -> hzdiv "num" [pcdata "num"]
     | HTyp.Arrow (fst,snd) -> hzdiv "arrowType" [of_htype (fst); arrowChar; of_htype (snd)]
-    | HTyp.Hole ->  hotdog
+    | HTyp.Hole ->  hzdiv  "hotdog" [pcdata "(||)"]
 
   let rec of_hexp (hexp : HExp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match hexp with
@@ -75,7 +75,7 @@ module HTMLView = struct
     | HExp.Ap (e1, e2) -> hzdiv "Ap" [of_hexp e1; lParensChar; of_hexp e2; rParensChar]
     | HExp.NumLit num -> hzdiv "numLit" [pcdata (string_of_int num)]
     | HExp.Plus (n1,n2) -> hzdiv "plus" [(of_hexp n1); plusChar; (of_hexp n2)]
-    | HExp.EmptyHole ->  hotdog
+    | HExp.EmptyHole ->  hzdiv  "hotdog" [pcdata "(||)"]
     | HExp.NonEmptyHole hc -> Html.(div [pcdata "NonEmptyHole Not Implemented"])
 
   let rec of_ztype (ztype : ZTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
