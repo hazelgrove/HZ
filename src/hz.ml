@@ -121,22 +121,37 @@ let r_input attrs =
 
 module View = struct
 
+  (* (action_input_button
+     (fun v -> Action.Construct (Action.SVar v))
+     (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+     "construct var");
+     (action_input_button
+     (fun v -> Action.Construct (Action.SLam v))
+     (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+     "construct lam");
+     (action_button (Action.Construct Action.SAp) "construct ap");
+     (action_input_button
+     (fun n -> Action.Construct (Action.SLit n))
+     (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None)
+     "construct lit"); *)
 
-  (* let key_handler evt =  raise NotImplemented;
-     (* if evt##keyCode = 13 then (
-       raise NotImplemented;
-       true)
 
-       else if evt##keyCode = 27 then (
-       (* Controller.update (Action.Escape todo.id) (r, f) ; *)
-       (* focus_task_input () ; *)
-       true
-       )
-       else true *)
-       in *)
-(*
-  let  key_handler(rs, rf) =
-    Action.performSyn Ctx.empty (Action.Move (Action.FirstChild)) (React.S.value rs); () *)
+
+  let keyActions (event) =
+    match  char_of_int event##keyCode with
+    | 'w' -> Action.performSyn Ctx.empty (Action.Move (Action.Parent))
+    | 'a' -> Action.performSyn Ctx.empty (Action.Move (Action.FirstChild))
+    | 'd' -> Action.performSyn Ctx.empty (Action.Move (Action.NextSib))
+    | 's' -> Action.performSyn Ctx.empty (Action.Del)
+    | 'j' -> Action.performSyn Ctx.empty (Action.Construct Action.SArrow)
+    | 'k' -> Action.performSyn Ctx.empty (Action.Construct Action.SNum)
+    |  'l' -> Action.performSyn Ctx.empty (Action.Construct Action.SAsc)
+    |  'm' -> Action.performSyn Ctx.empty  (Action.Construct Action.SAp)
+    | ',' -> Action.performSyn Ctx.empty (Action.Construct Action.SArg)
+    |  ',' -> Action.performSyn Ctx.empty (Action.Construct Action.SPlus)
+    |  '.' -> Action.performSyn Ctx.empty (Action.Finish)
+    | _ -> raise NotImplemented
+  (* |  -> Action.performSyn Ctx.empty *)
 
   let view ((rs, rf) : Model.rp) =
     (* zexp view *)
@@ -190,16 +205,8 @@ module View = struct
           ] [pcdata btn_label]
         ]) in
 
-
-
-
-
     Html5.(
-      div [ div  ~a:[a_class ["jumbotron"];
-                     (* a_onkeypress (fun evt -> key_handler evt) ;
-                        a_onkeydown (fun evt -> key_handler evt) *)
-                    ]
-
+      div [ div  ~a:[a_class ["jumbotron"]]
               [ div  ~a:[a_class ["display-3"]] [pcdata "HZ"];
                 div  ~a:[a_class ["subtext"]] [pcdata "(a reference implementation of Hazelnut)"];
                 div ~a:[a_class ["Model"]] [zexp_view];];
@@ -245,6 +252,9 @@ module View = struct
               ]
             ];
           ])
+
+
+
 end
 
 let main _ =
@@ -257,12 +267,7 @@ let main _ =
   let rs, rf = React.S.create m in
   Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view (rs, rf))) ;
   bind_event Ev.keypresses doc (fun evt ->
-      Lwt.return @@ rf (Action.performSyn Ctx.empty (Action.Move (Action.Parent)) (React.S.value rs))
-    );
-  (* Lwt.return @@ if evt##keyCode = 13 then rf (
-      Action.performSyn Ctx.empty (Action.Move (Action.Parent))  (React.S.value rs));
-     true); *)
-
-
+      Lwt.return @@ rf (View.keyActions (evt) (React.S.value rs) ) );
+  (* Lwt.return @@ rf (Action.performSyn Ctx.empty (Action.Move (Action.Parent)) (React.S.value rs)) *)
   Lwt.return ()
 let _ = Lwt_js_events.onload () >>= main
