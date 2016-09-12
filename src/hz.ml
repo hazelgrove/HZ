@@ -7,6 +7,7 @@ open Hz_model.Model
 open React;;
 open Lwt.Infix;;
 
+exception NotImplemented
 
 (* module StringView = struct
    let rec of_htype (htype : HTyp.t ) : string = match htype with
@@ -119,6 +120,24 @@ let r_input attrs =
   (rs, i_elt, i_dom)
 
 module View = struct
+
+
+  (* let key_handler evt =  raise NotImplemented;
+     (* if evt##keyCode = 13 then (
+       raise NotImplemented;
+       true)
+
+       else if evt##keyCode = 27 then (
+       (* Controller.update (Action.Escape todo.id) (r, f) ; *)
+       (* focus_task_input () ; *)
+       true
+       )
+       else true *)
+       in *)
+(*
+  let  key_handler(rs, rf) =
+    Action.performSyn Ctx.empty (Action.Move (Action.FirstChild)) (React.S.value rs); () *)
+
   let view ((rs, rf) : Model.rp) =
     (* zexp view *)
     let zexp_view_rs = React.S.map (fun (zexp, _) ->
@@ -171,53 +190,61 @@ module View = struct
           ] [pcdata btn_label]
         ]) in
 
+
+
+
+
     Html5.(
-      div [ div  ~a:[a_class ["jumbotron"]] [
-          div  ~a:[a_class ["display-3"]] [pcdata "HZ"];
-          div  ~a:[a_class ["subtext"]] [pcdata "(a reference implementation of Hazelnut)"];
-          div ~a:[a_class ["Model"]] [zexp_view];];
-          div ~a:[a_class ["row";"marketing"]] [
-            div ~a:[a_class ["col-lg-3"]] [
-              (action_button (Action.Move (Action.FirstChild)) "move firstChild");
-              br ();
-              (action_button (Action.Move (Action.Parent)) "move parent");
-              br ();
-              (action_button (Action.Move (Action.NextSib)) "move nextSib");
-              br ();
-              (action_button (Action.Del) "del");
+      div [ div  ~a:[a_class ["jumbotron"];
+                     (* a_onkeypress (fun evt -> key_handler evt) ;
+                        a_onkeydown (fun evt -> key_handler evt) *)
+                    ]
+
+              [ div  ~a:[a_class ["display-3"]] [pcdata "HZ"];
+                div  ~a:[a_class ["subtext"]] [pcdata "(a reference implementation of Hazelnut)"];
+                div ~a:[a_class ["Model"]] [zexp_view];];
+            div ~a:[a_class ["row";"marketing"]] [
+              div ~a:[a_class ["col-lg-3"]] [
+                (action_button (Action.Move (Action.FirstChild)) "move firstChild");
+                br ();
+                (action_button (Action.Move (Action.Parent)) "move parent");
+                br ();
+                (action_button (Action.Move (Action.NextSib)) "move nextSib");
+                br ();
+                (action_button (Action.Del) "del");
+              ];
+              div ~a:[a_class ["col-lg-3"]] [
+                (action_button (Action.Construct Action.SArrow) "construct arrow");
+                br ();
+                (action_button (Action.Construct Action.SNum) "construct num");
+                br ();
+              ];
+              div ~a:[a_class ["col-lg-6"]] [
+                (action_button (Action.Construct Action.SAsc) "construct asc");
+                br ();
+                (action_input_button
+                   (fun v -> Action.Construct (Action.SVar v))
+                   (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+                   "construct var");
+                (action_input_button
+                   (fun v -> Action.Construct (Action.SLam v))
+                   (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+                   "construct lam");
+                (action_button (Action.Construct Action.SAp) "construct ap");
+                br ();
+                (action_button (Action.Construct Action.SArg) "construct arg");
+                br ();
+                (action_input_button
+                   (fun n -> Action.Construct (Action.SLit n))
+                   (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None)
+                   "construct lit");
+                (action_button (Action.Construct Action.SPlus) "construct plus");
+                br ();
+                br ();
+                (action_button (Action.Finish) "finish")
+              ]
             ];
-            div ~a:[a_class ["col-lg-3"]] [
-              (action_button (Action.Construct Action.SArrow) "construct arrow");
-              br ();
-              (action_button (Action.Construct Action.SNum) "construct num");
-              br ();
-            ];
-            div ~a:[a_class ["col-lg-6"]] [
-              (action_button (Action.Construct Action.SAsc) "construct asc");
-              br ();
-              (action_input_button
-                 (fun v -> Action.Construct (Action.SVar v))
-                 (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                 "construct var");
-              (action_input_button
-                 (fun v -> Action.Construct (Action.SLam v))
-                 (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                 "construct lam");
-              (action_button (Action.Construct Action.SAp) "construct ap");
-              br ();
-              (action_button (Action.Construct Action.SArg) "construct arg");
-              br ();
-              (action_input_button
-                 (fun n -> Action.Construct (Action.SLit n))
-                 (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None)
-                 "construct lit");
-              (action_button (Action.Construct Action.SPlus) "construct plus");
-              br ();
-              br ();
-              (action_button (Action.Finish) "finish")
-            ]
-          ];
-        ])
+          ])
 end
 
 let main _ =
@@ -229,7 +256,13 @@ let main _ =
   let m = Model.empty in
   let rs, rf = React.S.create m in
   Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view (rs, rf))) ;
+  bind_event Ev.keypresses doc (fun evt ->
+      Lwt.return @@ rf (Action.performSyn Ctx.empty (Action.Move (Action.Parent)) (React.S.value rs))
+    );
+  (* Lwt.return @@ if evt##keyCode = 13 then rf (
+      Action.performSyn Ctx.empty (Action.Move (Action.Parent))  (React.S.value rs));
+     true); *)
+
+
   Lwt.return ()
-
-
 let _ = Lwt_js_events.onload () >>= main
