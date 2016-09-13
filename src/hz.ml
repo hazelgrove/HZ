@@ -121,22 +121,6 @@ let r_input attrs =
 
 module View = struct
 
-  (* (action_input_button
-     (fun v -> Action.Construct (Action.SVar v))
-     (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-     "construct var");
-     (action_input_button
-     (fun v -> Action.Construct (Action.SLam v))
-     (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-     "construct lam");
-     (action_button (Action.Construct Action.SAp) "construct ap");
-     (action_input_button
-     (fun n -> Action.Construct (Action.SLit n))
-     (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None)
-     "construct lit"); *)
-
-
-
   let keyActions (event) =
     match  char_of_int event##keyCode with
     | 'w' -> Action.performSyn Ctx.empty (Action.Move (Action.Parent))
@@ -148,7 +132,7 @@ module View = struct
     |  'l' -> Action.performSyn Ctx.empty (Action.Construct Action.SAsc)
     |  'm' -> Action.performSyn Ctx.empty  (Action.Construct Action.SAp)
     | ',' -> Action.performSyn Ctx.empty (Action.Construct Action.SArg)
-    |  ',' -> Action.performSyn Ctx.empty (Action.Construct Action.SPlus)
+    |  ';' -> Action.performSyn Ctx.empty (Action.Construct Action.SPlus)
     |  '.' -> Action.performSyn Ctx.empty (Action.Finish)
     | _ -> raise NotImplemented
   (* |  -> Action.performSyn Ctx.empty *)
@@ -212,22 +196,22 @@ module View = struct
                 div ~a:[a_class ["Model"]] [zexp_view];];
             div ~a:[a_class ["row";"marketing"]] [
               div ~a:[a_class ["col-lg-3"]] [
-                (action_button (Action.Move (Action.FirstChild)) "move firstChild");
+                (action_button (Action.Move (Action.FirstChild)) "move firstChild (a)");
                 br ();
-                (action_button (Action.Move (Action.Parent)) "move parent");
+                (action_button (Action.Move (Action.Parent)) "move parent (w)");
                 br ();
-                (action_button (Action.Move (Action.NextSib)) "move nextSib");
+                (action_button (Action.Move (Action.NextSib)) "move nextSib (s)");
                 br ();
-                (action_button (Action.Del) "del");
+                (action_button (Action.Del) "del (s)");
               ];
               div ~a:[a_class ["col-lg-3"]] [
-                (action_button (Action.Construct Action.SArrow) "construct arrow");
+                (action_button (Action.Construct Action.SArrow) "construct arrow (j)");
                 br ();
-                (action_button (Action.Construct Action.SNum) "construct num");
+                (action_button (Action.Construct Action.SNum) "construct num (k)");
                 br ();
               ];
               div ~a:[a_class ["col-lg-6"]] [
-                (action_button (Action.Construct Action.SAsc) "construct asc");
+                (action_button (Action.Construct Action.SAsc) "construct asc (l)");
                 br ();
                 (action_input_button
                    (fun v -> Action.Construct (Action.SVar v))
@@ -237,18 +221,18 @@ module View = struct
                    (fun v -> Action.Construct (Action.SLam v))
                    (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
                    "construct lam");
-                (action_button (Action.Construct Action.SAp) "construct ap");
+                (action_button (Action.Construct Action.SAp) "construct ap (m)");
                 br ();
-                (action_button (Action.Construct Action.SArg) "construct arg");
+                (action_button (Action.Construct Action.SArg) "construct arg (,)");
                 br ();
                 (action_input_button
                    (fun n -> Action.Construct (Action.SLit n))
                    (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None)
                    "construct lit");
-                (action_button (Action.Construct Action.SPlus) "construct plus");
+                (action_button (Action.Construct Action.SPlus) "construct plus (;)");
                 br ();
                 br ();
-                (action_button (Action.Finish) "finish")
+                (action_button (Action.Finish) "finish (.)")
               ]
             ];
           ])
