@@ -45,8 +45,9 @@ exception NotImplemented
 
 module HTMLView = struct
   open Html
-  let larrow = img ~alt:("left arrow") ~src:("imgs/l-triangle.svg") ()
-  let rarrow = img ~alt:("right arrow") ~src:("imgs/r-triangle.svg") ()
+  (* let larrow = img ~alt:("left arrow") ~src:("imgs/l-triangle.svg") () *)
+  (* let larrow = div ~a:[a_class ["HZElem";"lTri"]] []
+     let rarrow = img ~alt:("right arrow") ~src:("imgs/r-triangle.svg") () *)
 
 
   let hzdiv str contents =  Html.(div ~a:[a_class ["HZElem";str]] contents)
@@ -70,7 +71,7 @@ module HTMLView = struct
 
   let rec of_hexp (hexp : HExp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match hexp with
-    |  HExp.Lam (var,exp) -> hzdiv "lambdaExp" [lambdaChar; hzdiv "hexp" [pcdata "var"]; dotChar; hzdiv "hexp" [of_hexp exp]]
+    |  HExp.Lam (var,exp) -> hzdiv "lambdaExp" [lambdaChar; hzdiv "hexp" [pcdata "TODO"]; dotChar; hzdiv "hexp" [of_hexp exp]]
     | HExp.Asc (hexp,htype) -> hzdiv "Asc" [hzdiv "hexp" [of_hexp hexp]; ascChar; hzdiv "hexp" [of_htype htype]]
     | HExp.Var str -> hzdiv "var" [pcdata str]
     | HExp.Ap (e1, e2) -> hzdiv "Ap" [of_hexp e1; lParensChar; of_hexp e2; rParensChar]
@@ -81,7 +82,7 @@ module HTMLView = struct
 
   let rec of_ztype (ztype : ZTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match ztype with
-    | ZTyp.CursorT htype ->  hzdiv "CursorT" [rarrow ; (of_htype htype) ;larrow]
+    | ZTyp.CursorT htype ->  hzdiv "CursorT" [lAscChar ; (of_htype htype) ;rAscChar]
     | ZTyp.LeftArrow  (ztype, htype) ->  hzdiv "leftArrow" [(of_ztype ztype); hzdiv "arrow" [pcdata "->"]; (of_htype htype)]
     | ZTyp.RightArrow (htype, ztype) -> hzdiv "rightArrow" [(of_htype htype); hzdiv "arrow" [pcdata "->"]; (of_ztype ztype)]
 
