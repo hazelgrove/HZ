@@ -71,7 +71,7 @@ module HTMLView = struct
 
   let rec of_hexp (hexp : HExp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match hexp with
-    |  HExp.Lam (var,exp) -> hzdiv "lambdaExp" [lambdaChar; hzdiv "hexp" [pcdata "TODO"]; dotChar; hzdiv "hexp" [of_hexp exp]]
+    |  HExp.Lam (var,exp) -> hzdiv "lambdaExp" [lambdaChar; hzdiv "hexp" [pcdata var]; dotChar; hzdiv "hexp" [of_hexp exp]]
     | HExp.Asc (hexp,htype) -> hzdiv "Asc" [hzdiv "hexp" [of_hexp hexp]; ascChar; hzdiv "hexp" [of_htype htype]]
     | HExp.Var str -> hzdiv "var" [pcdata str]
     | HExp.Ap (e1, e2) -> hzdiv "Ap" [of_hexp e1; lParensChar; of_hexp e2; rParensChar]
@@ -91,7 +91,7 @@ module HTMLView = struct
     | ZExp.RightAsc (e, asc) ->  hzdiv "rAsc" [(of_hexp e) ; ascChar; (of_ztype asc)]
     | ZExp.LeftAsc (e, asc) ->   hzdiv "lAsc" [(of_zexp e) ; ascChar; (of_htype asc)]
     | ZExp.CursorE hexp -> hzdiv "CursorE" [lAscChar; (of_hexp hexp); rAscChar]
-    | ZExp.LamZ (var,exp) -> hzdiv "lambdaExp" [lambdaChar;hzdiv "var" [pcdata "TODO"];dotChar; hzdiv "hexp" [of_zexp exp]]
+    | ZExp.LamZ (var,exp) -> hzdiv "lambdaExp" [lambdaChar;hzdiv "var" [pcdata var];dotChar; hzdiv "hexp" [of_zexp exp]]
     | ZExp.LeftAp (e1,e2) -> hzdiv "lAp" [of_zexp e1; lParensChar; of_hexp e2; rParensChar]
     | ZExp.RightAp (e1,e2) ->  hzdiv "rAp" [of_hexp e1; lParensChar; of_zexp e2; rParensChar]
     | ZExp.LeftPlus (num1,num2) -> hzdiv "lPlus" [(of_zexp num1); plusChar; (of_hexp num2)]
