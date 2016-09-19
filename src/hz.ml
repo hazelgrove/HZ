@@ -116,9 +116,7 @@ let r_input attrs =
   let i_dom = To_dom.of_input i_elt in
   let _ = bind_event Ev.inputs i_dom (fun _ ->
       Lwt.return @@ 
-      (rf 
-         (Js.to_string 
-            (i_dom##.value)))) in
+      (rf (Js.to_string (i_dom##.value)))) in
   (rs, i_elt, i_dom)
 
 module View = struct

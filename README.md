@@ -57,7 +57,7 @@ An easy way is to use [opam](https://opam.ocaml.org/). After having installed `o
     ```sh
     > opam update
     > opam upgrade
-    ````
+    ```
 
   Congratulations, you now have all the required packages! We can now build the application.
 
