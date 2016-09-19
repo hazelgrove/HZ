@@ -58,7 +58,7 @@ module HTMLView = struct
   let dotChar =   hzdiv "dot" [pcdata "."]
   let lambdaChar = hzdiv "lambda" [pcdata "λ"]
   let lAscChar =  hzdiv "lAsc" [pcdata "⊳"]
-  let rAscChar =  hzdiv "rAsc" [pcdata "⊲"]
+  let rAscChar =  hzdiv "rAsc" [pcdata "⊲"] 
   let arrowChar = hzdiv "arrow" [pcdata "->"]
 
   let rec of_htype (htype : HTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
@@ -115,7 +115,10 @@ let r_input attrs =
   let i_elt = Html5.input ~a:attrs () in
   let i_dom = To_dom.of_input i_elt in
   let _ = bind_event Ev.inputs i_dom (fun _ ->
-      Lwt.return @@ (rf (Js.to_string i_dom##value))) in
+      Lwt.return @@ 
+      (rf 
+         (Js.to_string 
+            (i_dom##.value)))) in
   (rs, i_elt, i_dom)
 
 module View = struct
@@ -205,7 +208,7 @@ module View = struct
           br ();
           (action_input_button
              (fun n -> Action.Construct (Action.SLit n))
-             (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None)
+             (fun s -> try Some (int_of_string s) with Failure _ -> None)
              "construct lit");
           (action_button (Action.Construct Action.SPlus) "construct plus");
           br ();
