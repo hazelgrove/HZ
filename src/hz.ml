@@ -203,7 +203,7 @@ module View = struct
                 br ();
                 (action_button (Action.Move (Action.Parent)) "move parent (w)");
                 br ();
-                (action_button (Action.Move (Action.NextSib)) "move nextSib (s)");
+                (action_button (Action.Move (Action.NextSib)) "move nextSib (d)");
                 br ();
                 (action_button (Action.Del) "del (s)");
               ];
