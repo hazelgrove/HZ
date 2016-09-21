@@ -167,7 +167,12 @@ module View = struct
      * goes from a string to an arg option where arg is
      * the action argument. *)
     let action_input_button action conv btn_label =
-      let i_rs, i_elt, _ = r_input [] in
+      let i_rs, i_elt, _ = r_input [Html.a_id btn_label] in
+      bind_event Ev.keypresses Dom_html.document (fun evt ->
+          let e = Dom_html.getElementById(btn_label) in
+          Js.Opt.case (Dom_html.CoerceTo.input e)
+            (fun e -> ()) (fun e -> e##focus);
+          Lwt.return @@ rf ( (React.S.value rs) ) );
       Html5.(div [
           i_elt;
           button ~a:[
@@ -254,8 +259,8 @@ let main _ =
   let m = Model.empty in
   let rs, rf = React.S.create m in
   Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view (rs, rf))) ;
-  bind_event Ev.keypresses doc (fun evt ->
-      Lwt.return @@ rf (View.keyActions evt (React.S.value rs) ) );
+  (* bind_event Ev.keypresses doc (fun evt ->
+      Lwt.return @@ rf (View.keyActions evt (React.S.value rs) ) ); *)
   (* Lwt.return @@ rf (Action.performSyn Ctx.empty (Action.Move (Action.Parent)) (React.S.value rs)) *)
   Lwt.return ()
 let _ = Lwt_js_events.onload () >>= main
