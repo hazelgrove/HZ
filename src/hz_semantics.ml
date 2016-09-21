@@ -86,13 +86,10 @@ module HExp = struct
       end
     | Ap (e1, e2) (* 5c *) -> 
       let ty1 = syn ctx e1 in 
-      begin match ty1 with 
-        | HTyp.Arrow (ty1_left, ty1_right) -> 
+      begin match HTyp.matched_arrow ty1 with 
+        | Some (ty1_left, ty1_right) -> 
           let _ = ana ctx e2 ty1_left in 
           ty1_right
-        | HTyp.Hole -> 
-          let _ = ana ctx e2 HTyp.Hole in 
-          HTyp.Hole
         | _ -> raise IllTyped
       end
     | NumLit _ (* 5d *) -> HTyp.Num
@@ -107,8 +104,8 @@ module HExp = struct
     | _ -> raise IllTyped
   and ana ctx e ty = match e with 
     | Lam (x, e') (* 4a *) -> 
-      begin match ty with 
-        | HTyp.Arrow (ty1, ty2) -> 
+      begin match HTyp.matched_arrow ty with 
+        | Some (ty1, ty2) -> 
           let ctx' = Ctx.extend ctx (x, ty1) in 
           ana ctx' e' ty2
         | _ -> raise IllTyped
