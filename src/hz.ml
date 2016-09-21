@@ -141,6 +141,14 @@ module View = struct
     | _ -> raise NotImplemented
   (* |  -> Action.performSyn Ctx.empty *)
 
+  let keyAction event rf rs =
+    match  char_of_int event##.keyCode with
+    | '\\' -> let e = Dom_html.getElementById("lam_input") in
+      Js.Opt.case (Dom_html.CoerceTo.input e)
+        (fun e -> ()) (fun e -> e##focus);
+      Lwt.return @@ rf ( (React.S.value rs) )
+    | _ -> raise NotImplemented
+
   let view ((rs, rf) : Model.rp) =
     (* zexp view *)
     let zexp_view_rs = React.S.map (fun (zexp, _) ->
@@ -166,12 +174,10 @@ module View = struct
     (* actions that take an input. the conversion function
      * goes from a string to an arg option where arg is
      * the action argument. *)
-    let action_input_button action conv btn_label =
-      let i_rs, i_elt, _ = r_input [Html.a_id btn_label] in
+    let action_input_button action conv btn_label hotkey input_id =
+      let i_rs, i_elt, _ = r_input [Html.a_id input_id] in
       bind_event Ev.keypresses Dom_html.document (fun evt ->
-          let e = Dom_html.getElementById(btn_label) in
-          Js.Opt.case (Dom_html.CoerceTo.input e)
-            (fun e -> ()) (fun e -> e##focus);
+          keyAction evt rf rs;
           Lwt.return @@ rf ( (React.S.value rs) ) );
       Html5.(div [
           i_elt;
@@ -225,11 +231,11 @@ module View = struct
                 (action_input_button
                    (fun v -> Action.Construct (Action.SVar v))
                    (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                   "construct var");
+                   "construct var" 'v' "var_input");
                 (action_input_button
                    (fun v -> Action.Construct (Action.SLam v))
                    (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                   "construct lam");
+                   "construct lam" '\\' "lam_input");
                 (action_button (Action.Construct Action.SAp) "construct ap (m)");
                 br ();
                 (action_button (Action.Construct Action.SArg) "construct arg (,)");
@@ -237,7 +243,7 @@ module View = struct
                 (action_input_button
                    (fun n -> Action.Construct (Action.SLit n))
                    (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None)
-                   "construct lit");
+                   "construct lit" 'o' "lit_input");
                 (action_button (Action.Construct Action.SPlus) "construct plus (;)");
                 br ();
                 br ();
