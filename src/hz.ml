@@ -262,7 +262,7 @@ module View = struct
                 br ();
                 (action_input_button
                    (fun n -> Action.Construct (Action.SLit n))
-                   (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None)
+                   (fun s -> try Some (int_of_string s) with Failure _ -> None)
                    "construct lit" "lit_input" (fun evt ->
                        (match  char_of_int evt##.keyCode with
                         | 'l' -> focus_on_id "lit_input"
