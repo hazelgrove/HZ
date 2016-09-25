@@ -141,13 +141,15 @@ module View = struct
     | _ -> raise NotImplemented
   (* |  -> Action.performSyn Ctx.empty *)
 
-  let keyAction event rf rs =
-    match  char_of_int event##.keyCode with
-    | '\\' -> let e = Dom_html.getElementById("lam_input") in
-      Js.Opt.case (Dom_html.CoerceTo.input e)
-        (fun e -> ()) (fun e -> e##focus);
+  let focus_on_id id =
+    let e = Dom_html.getElementById(id) in
+    Js.Opt.case (Dom_html.CoerceTo.input e)
+      (fun e -> ()) (fun e -> e##focus)
+  (* let keyAction event rf rs =
+     match  char_of_int event##.keyCode with
+     | '\\' -> focus_on_id "lam_id";
       Lwt.return @@ rf ( (React.S.value rs) )
-    | _ -> raise NotImplemented
+     | _ -> raise NotImplemented *)
 
   let view ((rs, rf) : Model.rp) =
     (* zexp view *)
@@ -174,11 +176,21 @@ module View = struct
     (* actions that take an input. the conversion function
      * goes from a string to an arg option where arg is
      * the action argument. *)
-    let action_input_button action conv btn_label hotkey input_id =
+    let action_input_button action conv btn_label input_id match_function =
       let i_rs, i_elt, _ = r_input [Html.a_id input_id] in
-      bind_event Ev.keypresses Dom_html.document (fun evt ->
-          keyAction evt rf rs;
-          Lwt.return @@ rf ( (React.S.value rs) ) );
+      (* let keyAction event rf rs =
+         match  char_of_int event##.keyCode with
+         | '\\' -> focus_on_id "lam_id";
+          Lwt.return @@ rf ( (React.S.value rs) )
+         | _ -> raise NotImplemented
+         in *)
+      (* bind_event Ev.keypresses Dom_html.document (fun evt ->
+          match  char_of_int evt##.keyCode with
+          | hotkey -> focus_on_id input_id;
+          ;
+          (* | _ -> raise NotImplemented ; *)
+            Lwt.return @@ rf ( (React.S.value rs) ) ); *)
+      bind_event Ev.keypresses Dom_html.document match_function;
       Html5.(div [
           i_elt;
           button ~a:[
@@ -231,11 +243,19 @@ module View = struct
                 (action_input_button
                    (fun v -> Action.Construct (Action.SVar v))
                    (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                   "construct var" 'v' "var_input");
+                   "construct var" "var_input" (fun evt ->
+                       (match  char_of_int evt##.keyCode with
+                        | 'v' -> focus_on_id "var_input"
+                        | _ -> raise NotImplemented );
+                       Lwt.return @@ rf ((React.S.value rs))));
                 (action_input_button
                    (fun v -> Action.Construct (Action.SLam v))
                    (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                   "construct lam" '\\' "lam_input");
+                   "construct lam" "lam_input" (fun evt ->
+                       (match  char_of_int evt##.keyCode with
+                        | '\\' -> focus_on_id "lam_input"
+                        | _ -> raise NotImplemented );
+                       Lwt.return @@ rf ((React.S.value rs))));
                 (action_button (Action.Construct Action.SAp) "construct ap (m)");
                 br ();
                 (action_button (Action.Construct Action.SArg) "construct arg (,)");
@@ -243,7 +263,11 @@ module View = struct
                 (action_input_button
                    (fun n -> Action.Construct (Action.SLit n))
                    (fun s -> try Some (int_of_string s) with Failure "int_of_string" -> None)
-                   "construct lit" 'o' "lit_input");
+                   "construct lit" "lit_input" (fun evt ->
+                       (match  char_of_int evt##.keyCode with
+                        | 'l' -> focus_on_id "lit_input"
+                        | _ -> raise NotImplemented );
+                       Lwt.return @@ rf ((React.S.value rs))));
                 (action_button (Action.Construct Action.SPlus) "construct plus (;)");
                 br ();
                 br ();
