@@ -116,7 +116,14 @@ let bind_event ev elem handler =
  * string value *)
 let r_input attrs =
   let rs, rf = S.create "" in
-  let i_elt = Html5.input ~a:attrs () in
+  let key_handler evt =
+    if evt##.keyCode = 13 then (
+      (* Firebug.console##log(Js.string "test"); *)
+      false
+    ) else (Dom_html.stopPropagation evt; true)
+  in
+
+  let i_elt = Html5.input ~a:[attrs; Html.a_onkeypress key_handler] () in
   let i_dom = To_dom.of_input i_elt in
   let _ = bind_event Ev.inputs i_dom (fun _ ->
       Lwt.return @@
@@ -177,19 +184,7 @@ module View = struct
      * goes from a string to an arg option where arg is
      * the action argument. *)
     let action_input_button action conv btn_label input_id match_function =
-      let i_rs, i_elt, _ = r_input [Html.a_id input_id] in
-      (* let keyAction event rf rs =
-         match  char_of_int event##.keyCode with
-         | '\\' -> focus_on_id "lam_id";
-          Lwt.return @@ rf ( (React.S.value rs) )
-         | _ -> raise NotImplemented
-         in *)
-      (* bind_event Ev.keypresses Dom_html.document (fun evt ->
-          match  char_of_int evt##.keyCode with
-          | hotkey -> focus_on_id input_id;
-          ;
-          (* | _ -> raise NotImplemented ; *)
-            Lwt.return @@ rf ( (React.S.value rs) ) ); *)
+      let i_rs, i_elt, _ = r_input (Html.a_id input_id) in
       bind_event Ev.keypresses Dom_html.document match_function;
       Html5.(div [
           i_elt;
