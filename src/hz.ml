@@ -119,6 +119,7 @@ let r_input attrs =
   let key_handler evt =
     if evt##.keyCode = 13 then (
       (* Firebug.console##log(Js.string "test"); *)
+
       false
     ) else (Dom_html.stopPropagation evt; true)
   in
@@ -166,19 +167,22 @@ module View = struct
 
     (* helper function for constructing simple action buttons *)
     let action_button action btn_label =
-      Html5.(button ~a:[
-          a_onclick (fun _ ->
-              rf (
-                Action.performSyn Ctx.empty action (React.S.value rs));
-              true);
-          R.filter_attrib
-            (a_disabled ())
-            (S.map (fun m ->
-                 try
-                   let _ = Action.performSyn Ctx.empty action m in false
-                 with Action.InvalidAction -> true
-                    | HExp.IllTyped -> true ) rs)
-        ] [pcdata btn_label]) in
+      Html5.(button ~a:[a_class ["btn";"btn-outline-primary"];
+
+                        (* btn btn-primary *)
+
+                        a_onclick (fun _ ->
+                            rf (
+                              Action.performSyn Ctx.empty action (React.S.value rs));
+                            true);
+                        R.filter_attrib
+                          (a_disabled ())
+                          (S.map (fun m ->
+                               try
+                                 let _ = Action.performSyn Ctx.empty action m in false
+                               with Action.InvalidAction -> true
+                                  | HExp.IllTyped -> true ) rs)
+                       ] [pcdata btn_label]) in
 
     (* actions that take an input. the conversion function
      * goes from a string to an arg option where arg is
@@ -188,27 +192,27 @@ module View = struct
       bind_event Ev.keypresses Dom_html.document match_function;
       Html5.(div [
           i_elt;
-          button ~a:[
-            a_onclick (fun _ ->
-                let arg = opt_get (conv (React.S.value i_rs)) in
-                rf (
-                  Action.performSyn
-                    Ctx.empty
-                    (action arg)
-                    (React.S.value rs));
-                true
-              );
-            R.filter_attrib
-              (a_disabled ())
-              (S.l2 (fun s m ->
-                   match conv s with
-                     Some arg ->
-                     begin try
-                         let _ = Action.performSyn Ctx.empty (action arg) m in false
-                       with Action.InvalidAction -> true
-                          | HExp.IllTyped -> true   end
-                   | _ -> true) i_rs rs)
-          ] [pcdata btn_label]
+          button ~a:[Html.a_id "btn_label";
+                     a_onclick (fun _ ->
+                         let arg = opt_get (conv (React.S.value i_rs)) in
+                         rf (
+                           Action.performSyn
+                             Ctx.empty
+                             (action arg)
+                             (React.S.value rs));
+                         true
+                       );
+                     R.filter_attrib
+                       (a_disabled ())
+                       (S.l2 (fun s m ->
+                            match conv s with
+                              Some arg ->
+                              begin try
+                                  let _ = Action.performSyn Ctx.empty (action arg) m in false
+                                with Action.InvalidAction -> true
+                                   | HExp.IllTyped -> true   end
+                            | _ -> true) i_rs rs)
+                    ] [pcdata btn_label]
         ]) in
 
     Html5.(
@@ -217,56 +221,71 @@ module View = struct
                 div  ~a:[a_class ["subtext"]] [pcdata "(a reference implementation of Hazelnut)"];
                 div ~a:[a_class ["Model"]] [zexp_view];];
             div ~a:[a_class ["row";"marketing"]] [
-              div ~a:[a_class ["col-lg-3"]] [
-                (action_button (Action.Move (Action.FirstChild)) "move firstChild (a)");
-                br ();
-                (action_button (Action.Move (Action.Parent)) "move parent (w)");
-                br ();
-                (action_button (Action.Move (Action.NextSib)) "move nextSib (d)");
-                br ();
-                (action_button (Action.Del) "del (s)");
+              div ~a:[a_class ["col-lg-3"; "col-md-3" ; "col-sm-3"]] [
+                div ~a:[a_class ["panel";"panel-default"]] [
+                  div ~a:[a_class ["panel-title"]] [pcdata "Movement"];
+                  div ~a:[a_class ["panel-body"]] [
+                    (action_button (Action.Move (Action.FirstChild)) "move firstChild (a)");
+                    br ();
+                    (action_button (Action.Move (Action.Parent)) "move parent (w)");
+                    br ();
+                    (action_button (Action.Move (Action.NextSib)) "move nextSib (d)");
+                    br ();
+                    (action_button (Action.Del) "del (s)");
+                  ]
+                ]
               ];
-              div ~a:[a_class ["col-lg-3"]] [
-                (action_button (Action.Construct Action.SArrow) "construct arrow (j)");
-                br ();
-                (action_button (Action.Construct Action.SNum) "construct num (k)");
-                br ();
+              div ~a:[a_class ["col-lg-3"; "col-md-3" ; "col-sm-3"]] [
+                div ~a:[a_class ["panel";"panel-default"]] [
+                  div ~a:[a_class ["panel-title"]] [pcdata "Types"];
+                  div ~a:[a_class ["panel-body"]] [
+                    (action_button (Action.Construct Action.SArrow) "construct arrow (j)");
+                    br ();
+                    (action_button (Action.Construct Action.SNum) "construct num (k)");
+                    br ();
+                  ]
+                ]
               ];
-              div ~a:[a_class ["col-lg-6"]] [
-                (action_button (Action.Construct Action.SAsc) "construct asc (l)");
-                br ();
-                (action_input_button
-                   (fun v -> Action.Construct (Action.SVar v))
-                   (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                   "construct var" "var_input" (fun evt ->
-                       (match  char_of_int evt##.keyCode with
-                        | 'v' -> focus_on_id "var_input"
-                        | _ -> raise NotImplemented );
-                       Lwt.return @@ rf ((React.S.value rs))));
-                (action_input_button
-                   (fun v -> Action.Construct (Action.SLam v))
-                   (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                   "construct lam" "lam_input" (fun evt ->
-                       (match  char_of_int evt##.keyCode with
-                        | '\\' -> focus_on_id "lam_input"
-                        | _ -> raise NotImplemented );
-                       Lwt.return @@ rf ((React.S.value rs))));
-                (action_button (Action.Construct Action.SAp) "construct ap (m)");
-                br ();
-                (action_button (Action.Construct Action.SArg) "construct arg (,)");
-                br ();
-                (action_input_button
-                   (fun n -> Action.Construct (Action.SLit n))
-                   (fun s -> try Some (int_of_string s) with Failure _ -> None)
-                   "construct lit" "lit_input" (fun evt ->
-                       (match  char_of_int evt##.keyCode with
-                        | 'l' -> focus_on_id "lit_input"
-                        | _ -> raise NotImplemented );
-                       Lwt.return @@ rf ((React.S.value rs))));
-                (action_button (Action.Construct Action.SPlus) "construct plus (;)");
-                br ();
-                br ();
-                (action_button (Action.Finish) "finish (.)")
+              div ~a:[a_class ["col-lg-6"; "col-md-6" ; "col-sm-6"]] [
+                div ~a:[a_class ["panel";"panel-default"]] [
+                  div ~a:[a_class ["panel-title"]] [pcdata "Constructs"];
+                  div ~a:[a_class ["panel-body"]] [
+                    (action_button (Action.Construct Action.SAsc) "construct asc (l)");
+                    br ();
+                    (action_input_button
+                       (fun v -> Action.Construct (Action.SVar v))
+                       (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+                       "construct var" "var_input" (fun evt ->
+                           (match  char_of_int evt##.keyCode with
+                            | 'v' -> focus_on_id "var_input"
+                            | _ -> raise NotImplemented );
+                           Lwt.return @@ rf ((React.S.value rs))));
+                    (action_input_button
+                       (fun v -> Action.Construct (Action.SLam v))
+                       (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+                       "construct lam" "lam_input" (fun evt ->
+                           (match  char_of_int evt##.keyCode with
+                            | '\\' -> focus_on_id "lam_input"
+                            | _ -> raise NotImplemented );
+                           Lwt.return @@ rf ((React.S.value rs))));
+                    (action_button (Action.Construct Action.SAp) "construct ap (m)");
+                    br ();
+                    (action_button (Action.Construct Action.SArg) "construct arg (,)");
+                    br ();
+                    (action_input_button
+                       (fun n -> Action.Construct (Action.SLit n))
+                       (fun s -> try Some (int_of_string s) with Failure _ -> None)
+                       "construct lit" "lit_input" (fun evt ->
+                           (match  char_of_int evt##.keyCode with
+                            | 'l' -> focus_on_id "lit_input"
+                            | _ -> raise NotImplemented );
+                           Lwt.return @@ rf ((React.S.value rs))));
+                    (action_button (Action.Construct Action.SPlus) "construct plus (;)");
+                    br ();
+                    br ();
+                    (action_button (Action.Finish) "finish (.)")
+                  ]
+                ]
               ]
             ];
           ])
