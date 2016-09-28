@@ -17,7 +17,8 @@ button:disabled {
 	/*border: 3px solid red !important;*/
 	/*background-color:gray;*/
 	background-color: #9d9d9d;
-    color: #083d6b;
+    color: #27160d;
+		border-color:#27160d;
 }
 
 .HZElem{
@@ -41,10 +42,10 @@ button:disabled {
 
 
 .btn-outline-primary {
-    color: #0275d8;
+    color: #975633;
     background-image: none;
     background-color: transparent;
-    border-color: #0275d8;
+    border-color: #975633;
 		margin-bottom: 10px;
 		margin-right:20px;
 	}
