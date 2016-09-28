@@ -188,31 +188,36 @@ module View = struct
      * goes from a string to an arg option where arg is
      * the action argument. *)
     let action_input_button action conv btn_label input_id match_function =
-      let i_rs, i_elt, _ = r_input (Html.a_id input_id) in
+      let i_rs, i_elt, _ = r_input (Html.a_id input_id;Html5.a_class ["form-control"]) in
       bind_event Ev.keypresses Dom_html.document match_function;
-      Html5.(div [
+      Html5.(div  ~a:[a_class ["input-group"]] [
           i_elt;
-          button ~a:[Html.a_id "btn_label";
-                     a_onclick (fun _ ->
-                         let arg = opt_get (conv (React.S.value i_rs)) in
-                         rf (
-                           Action.performSyn
-                             Ctx.empty
-                             (action arg)
-                             (React.S.value rs));
-                         true
-                       );
-                     R.filter_attrib
-                       (a_disabled ())
-                       (S.l2 (fun s m ->
-                            match conv s with
-                              Some arg ->
-                              begin try
-                                  let _ = Action.performSyn Ctx.empty (action arg) m in false
-                                with Action.InvalidAction -> true
-                                   | HExp.IllTyped -> true   end
-                            | _ -> true) i_rs rs)
-                    ] [pcdata btn_label]
+          span ~a:[a_class ["input-group-btn"]] [
+            button ~a:[Html.a_class ["btn";"btn-default"];
+                       a_onclick (fun _ ->
+                           let arg = opt_get (conv (React.S.value i_rs)) in
+                           rf (
+                             Action.performSyn
+                               Ctx.empty
+                               (action arg)
+                               (React.S.value rs));
+                           true
+                         );
+                       R.filter_attrib
+                         (a_disabled ())
+                         (S.l2 (fun s m ->
+                              match conv s with
+                                Some arg ->
+                                begin try
+                                    let _ = Action.performSyn Ctx.empty (action arg) m in false
+                                  with Action.InvalidAction -> true
+                                     | HExp.IllTyped -> true   end
+                              | _ -> true) i_rs rs)
+                      ] [pcdata btn_label]
+          ]
+          (* <button class="btn btn-default" type="button">Go!</button> *)
+
+
         ]) in
 
     Html5.(
