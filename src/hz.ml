@@ -68,7 +68,7 @@ module HTMLView = struct
   let rec of_htype (htype : HTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match htype with
     | HTyp.Num -> hzdiv "Num" [pcdata "num"]
-    | HTyp.Arrow (fst,snd) -> hzdiv "Arrow" [of_htype (fst); hzdiv "arrow" [pcdata "->"]; of_htype (snd)]
+    | HTyp.Arrow (fst,snd) -> hzdiv "Arrow" [hzdiv "leftBracket" [pcdata "["];of_htype (fst); hzdiv "arrow" [pcdata "->"]; of_htype (snd);hzdiv "rightBracket" [pcdata "]"]]
     | HTyp.Hole ->  hzdiv  "Hole" [pcdata "(||)"]
 
   let rec of_hexp (hexp : HExp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
@@ -86,8 +86,8 @@ module HTMLView = struct
   let rec of_ztype (ztype : ZTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match ztype with
     | ZTyp.CursorT htype ->  hzdiv "CursorT" [lAscChar ; (of_htype htype) ;rAscChar]
-    | ZTyp.LeftArrow  (ztype, htype) ->  hzdiv "LeftArrow" [(of_ztype ztype); hzdiv "arrow" [pcdata "->"]; (of_htype htype)]
-    | ZTyp.RightArrow (htype, ztype) -> hzdiv "RightArrow" [(of_htype htype); hzdiv "arrow" [pcdata "->"]; (of_ztype ztype)]
+    | ZTyp.LeftArrow  (ztype, htype) ->  hzdiv "LeftArrow"  [hzdiv "leftBracket" [pcdata "["];(of_ztype ztype); hzdiv "arrow" [pcdata "->"]; (of_htype htype);hzdiv "rightBracket" [pcdata "]"];]
+    | ZTyp.RightArrow (htype, ztype) ->  hzdiv "RightArrow" [hzdiv "leftBracket" [pcdata "["];(of_htype htype); hzdiv "arrow" [pcdata "->"]; (of_ztype ztype);hzdiv "rightBracket" [pcdata "]"];]
 
   let rec of_zexp (zexp : ZExp.t ) :  [> Html_types.div ] Tyxml_js.Html.elt  =
     match zexp with
