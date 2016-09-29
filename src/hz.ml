@@ -68,7 +68,7 @@ module HTMLView = struct
   let rec of_htype (htype : HTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match htype with
     | HTyp.Num -> hzdiv "Num" [pcdata "num"]
-    | HTyp.Arrow (fst,snd) -> hzdiv "Arrow" [hzdiv "leftBracket" [pcdata "["];of_htype (fst); hzdiv "arrow" [pcdata "->"]; of_htype (snd);hzdiv "rightBracket" [pcdata "]"]]
+    | HTyp.Arrow (fst,snd) -> hzdiv "Arrow" [hzdiv "leftParens" [pcdata "("];of_htype (fst); hzdiv "arrow" [pcdata "->"]; of_htype (snd);hzdiv "rightParens" [pcdata ")"]]
     | HTyp.Hole ->  hzdiv  "Hole" [pcdata "(||)"]
 
   let rec of_hexp (hexp : HExp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
@@ -76,9 +76,9 @@ module HTMLView = struct
     | HExp.Lam (var,exp) -> hzdiv "Lam" [(div ~a:[a_class ["HZElem";"lambda"]] [pcdata "λ"]) ; hzdiv "hexp" [pcdata var]; (div ~a:[a_class ["HZElem";"dot"]] [pcdata "."]); hzdiv "hexp" [of_hexp exp]]
     | HExp.Asc (hexp,htype) -> hzdiv "Asc" [hzdiv "hexp" [of_hexp hexp]; ascChar; hzdiv "hexp" [of_htype htype]]
     | HExp.Var str -> hzdiv "Var" [pcdata str]
-    | HExp.Ap (e1, e2) -> hzdiv "Ap" [of_hexp e1; (div ~a:[a_class ["HZElem";"lparens"]] [pcdata "("]); of_hexp e2; (div ~a:[a_class ["HZElem";"rParens"]] [pcdata ")"])]
+    | HExp.Ap (e1, e2) -> hzdiv "Ap" [of_hexp e1; hzdiv "leftParens" [pcdata "("]; of_hexp e2; hzdiv "rightParens" [pcdata ")"]]
     | HExp.NumLit num -> hzdiv "NumLit" [pcdata (string_of_int num)]
-    | HExp.Plus (n1,n2) -> hzdiv "Plus" [(of_hexp n1); (div ~a:[a_class ["HZElem";"plus"]] [pcdata "+"]); (of_hexp n2)]
+    | HExp.Plus (n1,n2) -> hzdiv "Plus" [hzdiv "leftParens" [pcdata "("];(of_hexp n1); (div ~a:[a_class ["HZElem";"plus"]] [pcdata "+"]); (of_hexp n2);hzdiv "rightParens" [pcdata ")"]]
     | HExp.EmptyHole ->  hzdiv  "EmptyHole" [pcdata "(||)"]
     (* | HExp.NonEmptyHole hc -> Html.(div [pcdata "NonEmptyHole Not Implemented"]) *)
     | HExp.NonEmptyHole hc -> hzdiv  "NonEmptyHole" [hzdiv "lNE" [pcdata "(|"]; of_hexp hc ;hzdiv "rNE" [pcdata "|)"]]
@@ -86,8 +86,8 @@ module HTMLView = struct
   let rec of_ztype (ztype : ZTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match ztype with
     | ZTyp.CursorT htype ->  hzdiv "CursorT" [lAscChar ; (of_htype htype) ;rAscChar]
-    | ZTyp.LeftArrow  (ztype, htype) ->  hzdiv "LeftArrow"  [hzdiv "leftBracket" [pcdata "["];(of_ztype ztype); hzdiv "arrow" [pcdata "->"]; (of_htype htype);hzdiv "rightBracket" [pcdata "]"];]
-    | ZTyp.RightArrow (htype, ztype) ->  hzdiv "RightArrow" [hzdiv "leftBracket" [pcdata "["];(of_htype htype); hzdiv "arrow" [pcdata "->"]; (of_ztype ztype);hzdiv "rightBracket" [pcdata "]"];]
+    | ZTyp.LeftArrow  (ztype, htype) ->  hzdiv "LeftArrow"  [hzdiv "leftParens" [pcdata "("];(of_ztype ztype); hzdiv "arrow" [pcdata "->"]; (of_htype htype);hzdiv "rightParens" [pcdata ")"];]
+    | ZTyp.RightArrow (htype, ztype) ->  hzdiv "RightArrow" [hzdiv "leftParens" [pcdata "("];(of_htype htype); hzdiv "arrow" [pcdata "->"]; (of_ztype ztype);hzdiv "rightParens" [pcdata ")"];]
 
   let rec of_zexp (zexp : ZExp.t ) :  [> Html_types.div ] Tyxml_js.Html.elt  =
     match zexp with
@@ -161,7 +161,7 @@ module View = struct
     Js.Opt.case (Dom_html.CoerceTo.input element)
       (fun e -> ())
       (fun e -> e##.value := (Js.string "") )
-  
+
 
   let view ((rs, rf) : Model.rp) =
     (* zexp view *)
@@ -189,12 +189,23 @@ module View = struct
      * goes from a string to an arg option where arg is
      * the action argument. *)
     let action_input_button action conv btn_label input_id match_function =
-      let i_rs, i_elt, _ = r_input (Html.a_id input_id) in
+      let i_rs, i_elt, i_dom = r_input (Html.a_id input_id) in
       bind_event Ev.keypresses Dom_html.document match_function;
+      bind_event Ev.keypresses i_dom (fun e ->
+          begin match  e##.keyCode with
+            | _ -> begin
+                let e = Dom_html.getElementById(btn_label) in
+                Js.Opt.case (Dom_html.CoerceTo.input e)
+                  (fun e -> ()) (fun e -> e##click)
+              end
+            (* | _ ->  *)
+            (* raise NotImplemented *)
+          end
+        ; Lwt.return @@ ());
       Html5.(div  ~a:[a_class ["input-group"]] [
           i_elt;
           span ~a:[a_class ["input-group-btn"]] [
-            button ~a:[Html.a_class ["btn";"btn-default"];
+            button ~a:[Html.a_class ["btn";"btn-default"];  a_id btn_label;
                        a_onclick (fun _ ->
                            let arg = opt_get (conv (React.S.value i_rs)) in
                            rf (
@@ -262,7 +273,7 @@ module View = struct
                        "construct var" "var_input" (fun evt ->
                            (match  char_of_int evt##.keyCode with
                             | 'v' ->focus_on_id "var_input";Dom_html.stopPropagation evt;
-                            | _ -> raise NotImplemented );
+                            | _ -> () );
                            Lwt.return @@ rf ((React.S.value rs))));
                     (action_input_button
                        (fun v -> Action.Construct (Action.SLam v))
@@ -270,7 +281,7 @@ module View = struct
                        "construct lam" "lam_input" (fun evt ->
                            (match  char_of_int evt##.keyCode with
                             | '\\' -> Dom_html.stopPropagation evt; focus_on_id "lam_input";
-                            | _ -> raise NotImplemented );
+                            | _ -> () );
                            Lwt.return @@ rf ((React.S.value rs))));
                     (action_button (Action.Construct Action.SAp) "construct ap (m)");
                     br ();
@@ -282,7 +293,7 @@ module View = struct
                        "construct lit" "lit_input" (fun evt ->
                            (match  char_of_int evt##.keyCode with
                             | 'l' -> Dom_html.stopPropagation evt;focus_on_id "lit_input";
-                            | _ -> raise NotImplemented );
+                            | _ -> () );
                            Lwt.return @@ rf ((React.S.value rs))));
                     (action_button (Action.Construct Action.SPlus) "construct plus (;)");
                     br ();
@@ -307,8 +318,8 @@ let main _ =
   let m = Model.empty in
   let rs, rf = React.S.create m in
   Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view (rs, rf))) ;
-  bind_event Ev.keypresses doc (fun evt ->
-      Lwt.return @@ rf (View.keyActions evt (React.S.value rs) ) );
+  (* bind_event Ev.keypresses doc (fun evt ->
+      Lwt.return @@ rf (View.keyActions evt (React.S.value rs) ) ); *)
   (* Lwt.return @@ rf (Action.performSyn Ctx.empty (Action.Move (Action.Parent)) (React.S.value rs)) *)
   Lwt.return ()
 let _ = Lwt_js_events.onload () >>= main
