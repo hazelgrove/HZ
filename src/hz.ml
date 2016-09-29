@@ -81,7 +81,7 @@ module HTMLView = struct
     | HExp.Plus (n1,n2) -> hzdiv "Plus" [(of_hexp n1); (div ~a:[a_class ["HZElem";"plus"]] [pcdata "+"]); (of_hexp n2)]
     | HExp.EmptyHole ->  hzdiv  "EmptyHole" [pcdata "(||)"]
     (* | HExp.NonEmptyHole hc -> Html.(div [pcdata "NonEmptyHole Not Implemented"]) *)
-    | HExp.NonEmptyHole hc -> hzdiv  "NonEmptyHole" [hzdiv "lN2" [pcdata "(N2|"]; of_hexp hc ;hzdiv "rN2" [pcdata "|N2)"]]
+    | HExp.NonEmptyHole hc -> hzdiv  "NonEmptyHole" [hzdiv "lNE" [pcdata "(|"]; of_hexp hc ;hzdiv "rNE" [pcdata "|)"]]
 
   let rec of_ztype (ztype : ZTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match ztype with
@@ -91,8 +91,8 @@ module HTMLView = struct
 
   let rec of_zexp (zexp : ZExp.t ) :  [> Html_types.div ] Tyxml_js.Html.elt  =
     match zexp with
-    | ZExp.RightAsc (e, asc) ->  hzdiv "RightAsc" [(of_hexp e) ; ascChar; (of_ztype asc)]
-    | ZExp.LeftAsc (e, asc) ->   hzdiv "LeftAsc" [(of_zexp e) ; ascChar; (of_htype asc)]
+    | ZExp.RightAsc (e, asc) ->  hzdiv "RightAsc" [(of_hexp e) ; hzdiv "asc" [pcdata ":"]; (of_ztype asc)]
+    | ZExp.LeftAsc (e, asc) ->   hzdiv "LeftAsc" [(of_zexp e) ; hzdiv "asc" [pcdata ":"]; (of_htype asc)]
     | ZExp.CursorE hexp -> hzdiv "CursorE" [lAscChar; (of_hexp hexp); rAscChar]
     | ZExp.LamZ (var,exp) -> hzdiv "LamZ" [(div ~a:[a_class ["HZElem";"lambda"]] [pcdata "λ"]) ;hzdiv "var" [pcdata var];(div ~a:[a_class ["HZElem";"dot"]] [pcdata "."]); hzdiv "hexp" [of_zexp exp]]
     | ZExp.LeftAp (e1,e2) -> hzdiv "LeftAp" [of_zexp e1; (div ~a:[a_class ["HZElem";"lparens"]] [pcdata "("]); of_hexp e2; (div ~a:[a_class ["HZElem";"rParens"]] [pcdata ")"])]
@@ -100,7 +100,7 @@ module HTMLView = struct
     | ZExp.LeftPlus (num1,num2) -> hzdiv "LeftPlus" [(of_zexp num1); (div ~a:[a_class ["HZElem";"plus"]] [pcdata "+"]); (of_hexp num2)]
     | ZExp.RightPlus (num1,num2) -> hzdiv "RightPlus" [(of_hexp num1); (div ~a:[a_class ["HZElem";"plus"]] [pcdata "+"]); (of_zexp num2)]
     (* | ZExp.NonEmptyHoleZ e -> Html.(div [pcdata "NonEmptyHoleZ Not Implemented"]) *)
-    | ZExp.NonEmptyHoleZ e ->  hzdiv  "NonEmptyHoleZ" [hzdiv "lN2" [pcdata "(N2|"]; of_zexp e ;hzdiv "rN2" [pcdata "|N2)"]]
+    | ZExp.NonEmptyHoleZ e ->  hzdiv  "NonEmptyHoleZ" [hzdiv "lNZ" [pcdata "(|"]; of_zexp e ;hzdiv "rNZ" [pcdata "|)"]]
 
 end
 
