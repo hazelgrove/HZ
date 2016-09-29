@@ -157,22 +157,11 @@ module View = struct
       (fun e -> ()) (fun e -> e##focus)
 
   let clear_input id =
-    (* let by_id_coerce s f  = Js.Opt.get (f (Dom_html.getElementById s)) (fun () -> raise Not_found) in
-       let textbox = by_id_coerce "userinput" Dom_html.CoerceTo.input in
-       textbox##.contents <- Js.string "auto"  *)
-    (* document.getElementById('var_input').value *)
-    (* let e = Dom_html.getElementById("var_input") in *)
-    (* e##value; *)
-    Firebug.console##log(Js.string "clear");
-    let e = Dom_html.getElementById(id) in
-    Js.Opt.case (Dom_html.CoerceTo.input e)
-      (fun e -> ()) (fun e -> e##focus)
-  (* by_id_coerce "userinput" Dom_html.CoerceTo.textarea in
-
-     let e = Dom_html.getElementById(id) in
-     Js.Opt.case (Dom_html.CoerceTo.input e)
+    let element = Dom_html.getElementById(id) in
+    Js.Opt.case (Dom_html.CoerceTo.input element)
       (fun e -> ())
-     (fun e -> e##.value <- Js.string "" ) *)
+      (fun e -> e##.value := (Js.string "") )
+  
 
   let view ((rs, rf) : Model.rp) =
     (* zexp view *)
@@ -213,7 +202,7 @@ module View = struct
                                Ctx.empty
                                (action arg)
                                (React.S.value rs));
-                           clear_input "lam_input";
+                           clear_input input_id;
                            true
                          );
                        R.filter_attrib
@@ -280,7 +269,7 @@ module View = struct
                        (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
                        "construct lam" "lam_input" (fun evt ->
                            (match  char_of_int evt##.keyCode with
-                            | '\\' -> focus_on_id "lam_input";
+                            | '\\' -> Dom_html.stopPropagation evt; focus_on_id "lam_input";
                             | _ -> raise NotImplemented );
                            Lwt.return @@ rf ((React.S.value rs))));
                     (action_button (Action.Construct Action.SAp) "construct ap (m)");
