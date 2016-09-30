@@ -394,7 +394,7 @@ module Action = struct
       match Ctx.lookup ctx x with
       | Some xty -> HTyp.incompat ty xty
       | None -> false end (* 13e *) ->
-      ZExp.CursorE (HExp.NonEmptyHole (HExp.Var x))
+      ZExp.NonEmptyHoleZ (ZExp.CursorE (HExp.Var x))
     | (Construct (SLam x), ZExp.CursorE HExp.EmptyHole, ty) ->
       begin match HTyp.matched_arrow ty with
         | Some _ (* 13f *) -> ZExp.LamZ (x, ze)

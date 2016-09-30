@@ -161,7 +161,7 @@ module View = struct
     Js.Opt.case (Dom_html.CoerceTo.input element)
       (fun e -> ())
       (fun e -> e##.value := (Js.string "") )
-  
+
 
   let view ((rs, rf) : Model.rp) =
     (* zexp view *)
