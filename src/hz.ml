@@ -138,8 +138,8 @@ module View = struct
   let keyActions (event) =
     match  char_of_int event##.keyCode with
     | 'w' -> Action.performSyn Ctx.empty (Action.Move (Action.Parent))
-    | 'a' -> Action.performSyn Ctx.empty (Action.Move (Action.FirstChild))
-    | 'd' -> Action.performSyn Ctx.empty (Action.Move (Action.NextSib))
+    | 'a' -> Action.performSyn Ctx.empty (Action.Move (Action.Child 1))
+    | 'd' -> Action.performSyn Ctx.empty (Action.Move (Action.Child 2))
     | 's' -> Action.performSyn Ctx.empty (Action.Del)
     | 'j' -> Action.performSyn Ctx.empty (Action.Construct Action.SArrow)
     | 'k' -> Action.performSyn Ctx.empty (Action.Construct Action.SNum)
@@ -161,7 +161,6 @@ module View = struct
     Js.Opt.case (Dom_html.CoerceTo.input element)
       (fun e -> ())
       (fun e -> e##.value := (Js.string "") )
-
 
   let view ((rs, rf) : Model.rp) =
     (* zexp view *)
@@ -240,11 +239,11 @@ module View = struct
                 div ~a:[a_class ["panel";"panel-default"]] [
                   div ~a:[a_class ["panel-title"]] [pcdata "Movement"];
                   div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Move (Action.FirstChild)) "move firstChild (a)");
+                    (action_button (Action.Move (Action.Child 1)) "move child 1 (a)");
+                    br ();
+                    (action_button (Action.Move (Action.Child 2)) "move child 2 (d)");
                     br ();
                     (action_button (Action.Move (Action.Parent)) "move parent (w)");
-                    br ();
-                    (action_button (Action.Move (Action.NextSib)) "move nextSib (d)");
                     br ();
                     (action_button (Action.Del) "del (s)");
                   ]
