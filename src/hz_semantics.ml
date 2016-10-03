@@ -401,6 +401,19 @@ module Action = struct
               HExp.Inj (side, HExp.EmptyHole),
               ZTyp.LeftSum (ZTyp.CursorT HTyp.Hole, HTyp.Hole)),
            HTyp.Sum (HTyp.Hole, HTyp.Hole))
+        | (Construct (SCase (x, y)), ((ZExp.CursorE e), ty)) -> 
+          begin match HTyp.matched_sum ty with 
+            | Some _ -> (ZExp.LeftAsc (
+                (ZExp.CaseZ2 (e, 
+                              (x, ZExp.CursorE HExp.EmptyHole),
+                              (y, HExp.EmptyHole))), 
+                HTyp.Hole), HTyp.Hole)
+            | None -> (ZExp.LeftAsc (
+                (ZExp.CaseZ1 (ZExp.NonEmptyHoleZ (ZExp.CursorE e), 
+                              (x, HExp.EmptyHole), 
+                              (y, HExp.EmptyHole))), 
+                HTyp.Hole), HTyp.Hole)
+          end
         | (Construct SNEHole, (ZExp.CursorE e', ty)) (* 12l *) ->
           (ZExp.NonEmptyHoleZ (ZExp.CursorE e'), HTyp.Hole)
         (* Finish *)
