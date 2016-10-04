@@ -35,7 +35,7 @@ module HTMLView = struct
     | HExp.Plus (n1,n2) -> hzdiv "Plus" [hzdiv "leftParens" [pcdata "("];(of_hexp n1); (div ~a:[a_class ["HZElem";"plus"]] [pcdata "+"]); (of_hexp n2);hzdiv "rightParens" [pcdata ")"]]
     | HExp.EmptyHole ->  hzdiv  "EmptyHole" [pcdata "(||)"]
     | HExp.NonEmptyHole hc -> hzdiv  "NonEmptyHole" [hzdiv "lNE" [pcdata "(|"]; of_hexp hc ;hzdiv "rNE" [pcdata "|)"]]
-    | HExp.Inj (c1,c2) -> raise NotImplemented (*inj(H):>()<+()*)
+    | HExp.Inj (side,exp) -> hzdiv  "Inj" [hzdiv  "inj" [pcdata "inj"]; hzdiv "leftParens" [pcdata "("]; of_hexp exp; hzdiv "rightParens" [pcdata ")"]]
     | HExp.Case (s,c2,c3) -> raise NotImplemented
 
   let rec of_ztype (ztype : ZTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
@@ -57,7 +57,7 @@ module HTMLView = struct
     | ZExp.LeftPlus (num1,num2) -> hzdiv "LeftPlus" [(of_zexp num1); (div ~a:[a_class ["HZElem";"plus"]] [pcdata "+"]); (of_hexp num2)]
     | ZExp.RightPlus (num1,num2) -> hzdiv "RightPlus" [(of_hexp num1); (div ~a:[a_class ["HZElem";"plus"]] [pcdata "+"]); (of_zexp num2)]
     | ZExp.NonEmptyHoleZ e ->  hzdiv  "NonEmptyHoleZ" [hzdiv "lNZ" [pcdata "(|"]; of_zexp e ;hzdiv "rNZ" [pcdata "|)"]]
-    | ZExp.InjZ (arg1,arg2) -> raise NotImplemented
+    | ZExp.InjZ (side,exp) -> hzdiv  "Inj" [hzdiv  "inj" [pcdata "inj"]; hzdiv "leftParens" [pcdata "("]; of_zexp exp; hzdiv "rightParens" [pcdata ")"]]
     | ZExp.CaseZ1 (s,c1,c2) -> raise NotImplemented
     | ZExp.CaseZ2 (s,c1,c2) -> raise NotImplemented
     | ZExp.CaseZ3 (s,c1,c2) -> raise NotImplemented
@@ -256,8 +256,13 @@ module View = struct
                            Lwt.return @@ rf ((React.S.value rs))));
                     (action_button (Action.Construct Action.SPlus) "construct plus (;)");
                     br ();
+                    (action_button (Action.Construct (Action.SInj HExp.L)) "construct Inj L (?)");
+                    br ();
+                    (action_button (Action.Construct (Action.SInj HExp.R)) "construct Inj R (?)");
+                    br ();
                     br ();
                     (action_button (Action.Finish) "finish (.)")
+
                   ]
                 ]
               ]
