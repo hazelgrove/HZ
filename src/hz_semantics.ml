@@ -38,12 +38,12 @@ module HTyp = struct
     | Some _ -> true
     | None -> false
 
-  let matched_sum ty = match ty with 
+  let matched_sum ty = match ty with
     | Sum (ty1, ty2) -> Some (ty1, ty2)
     | Hole -> Some (Hole, Hole)
     | _ -> None
 
-  let has_matched_sum ty = match matched_sum ty with 
+  let has_matched_sum ty = match matched_sum ty with
     | Some _ -> true
     | None -> false
 
@@ -81,7 +81,7 @@ end
 
 module HExp = struct
   type inj_side = L | R
-  let pick_side side l r = match side with 
+  let pick_side side l r = match side with
     | L -> l
     | R -> r
 
@@ -127,24 +127,24 @@ module HExp = struct
   and ana ctx e ty = match e with
     | Lam (x, e') (* 4a *) ->
       begin match HTyp.matched_arrow ty with
-        | Some (ty1, ty2) -> 
+        | Some (ty1, ty2) ->
           let ctx' = Ctx.extend ctx (x, ty1) in
           ana ctx' e' ty2
         | _ -> raise IllTyped
       end
-    | Inj (side, e') -> 
-      begin match HTyp.matched_sum ty with 
-        | Some (ty1, ty2) -> 
+    | Inj (side, e') ->
+      begin match HTyp.matched_sum ty with
+        | Some (ty1, ty2) ->
           ana ctx e' (pick_side side ty1 ty2)
         | None -> raise IllTyped
       end
-    | Case (e', (x, e1), (y, e2)) -> 
-      let e'_ty = syn ctx e' in 
-      begin match HTyp.matched_sum e'_ty with 
-        | Some (ty1, ty2) -> 
-          let ctx1 = Ctx.extend ctx (x, ty1) in 
-          let () = ana ctx1 e1 ty in 
-          let ctx2 = Ctx.extend ctx (y, ty2) in 
+    | Case (e', (x, e1), (y, e2)) ->
+      let e'_ty = syn ctx e' in
+      begin match HTyp.matched_sum e'_ty with
+        | Some (ty1, ty2) ->
+          let ctx1 = Ctx.extend ctx (x, ty1) in
+          let () = ana ctx1 e1 ty in
+          let ctx2 = Ctx.extend ctx (y, ty2) in
           ana ctx2 e2 ty
         | _ -> raise IllTyped
       end
@@ -268,7 +268,7 @@ module Action = struct
     | (Construct SArrow, ZTyp.CursorT ty) (* 10f *) ->
       ZTyp.RightArrow (ty, ZTyp.CursorT HTyp.Hole)
     | (Construct SSum, ZTyp.CursorT ty) (* 10f *) ->
-      ZTyp.RightArrow (ty, ZTyp.CursorT HTyp.Hole)
+      ZTyp.RightSum (ty, ZTyp.CursorT HTyp.Hole)
     | (Construct SNum, ZTyp.CursorT HTyp.Hole) (* 10g *) ->
       ZTyp.CursorT HTyp.Num
     (* Zipper Rules *)
@@ -293,7 +293,7 @@ module Action = struct
         (* Ascription *)
         | ((Child 1), ZExp.CursorE (HExp.Asc (e, ty))) (* 11a *) ->
           ZExp.LeftAsc ((ZExp.CursorE e), ty)
-        | ((Child 2), ZExp.CursorE (HExp.Asc (e, ty))) -> 
+        | ((Child 2), ZExp.CursorE (HExp.Asc (e, ty))) ->
           ZExp.RightAsc (e, (ZTyp.CursorT ty))
         | (Parent, ZExp.LeftAsc ((ZExp.CursorE e), ty)) (* 11b *) ->
           ZExp.CursorE (HExp.Asc (e, ty))
@@ -322,23 +322,23 @@ module Action = struct
           ZExp.CursorE (HExp.Plus (e1, e2))
         | (Parent, ZExp.RightPlus (e1, ZExp.CursorE e2)) (* 11m *) ->
           ZExp.CursorE (HExp.Plus (e1, e2))
-        (* Injection *) 
+        (* Injection *)
         | ((Child 1), ZExp.CursorE (HExp.Inj (side, e))) (* 11e *) ->
           ZExp.InjZ (side, (ZExp.CursorE e))
         | (Parent, ZExp.InjZ (side, (ZExp.CursorE e))) (* 11f *) ->
           ZExp.CursorE (HExp.Inj (side, e))
         (* Case *)
-        | ((Child 1), ZExp.CursorE (HExp.Case (e, branch1, branch2))) -> 
+        | ((Child 1), ZExp.CursorE (HExp.Case (e, branch1, branch2))) ->
           ZExp.CaseZ1 ((ZExp.CursorE e), branch1, branch2)
-        | ((Child 2), ZExp.CursorE (HExp.Case (e, (x, e1), branch2))) -> 
+        | ((Child 2), ZExp.CursorE (HExp.Case (e, (x, e1), branch2))) ->
           ZExp.CaseZ2 (e, (x, ZExp.CursorE e1), branch2)
-        | ((Child 3), ZExp.CursorE (HExp.Case (e, branch1, (y, e2)))) -> 
+        | ((Child 3), ZExp.CursorE (HExp.Case (e, branch1, (y, e2)))) ->
           ZExp.CaseZ3 (e, branch1, (y, ZExp.CursorE e2))
-        | (Parent, ZExp.CaseZ1 ((ZExp.CursorE e), branch1, branch2)) -> 
+        | (Parent, ZExp.CaseZ1 ((ZExp.CursorE e), branch1, branch2)) ->
           ZExp.CursorE (HExp.Case (e, branch1, branch2))
-        | (Parent, ZExp.CaseZ2 (e, (x, ZExp.CursorE e1), branch2)) -> 
+        | (Parent, ZExp.CaseZ2 (e, (x, ZExp.CursorE e1), branch2)) ->
           ZExp.CursorE (HExp.Case (e, (x, e1), branch2))
-        | (Parent, ZExp.CaseZ3 (e, branch1, (y, ZExp.CursorE e2))) -> 
+        | (Parent, ZExp.CaseZ3 (e, branch1, (y, ZExp.CursorE e2))) ->
           ZExp.CursorE (HExp.Case (e, branch1, (y, e2)))
         (* Non-Empty Hole *)
         | ((Child 1), ZExp.CursorE (HExp.NonEmptyHole e)) (* 11o *) ->
@@ -396,7 +396,7 @@ module Action = struct
           else (* 12k *)
             (ZExp.RightPlus (HExp.NonEmptyHole e, ZExp.CursorE HExp.EmptyHole),
              HTyp.Num)
-        | (Construct (SInj side), (ZExp.CursorE HExp.EmptyHole, HTyp.Hole)) -> 
+        | (Construct (SInj side), (ZExp.CursorE HExp.EmptyHole, HTyp.Hole)) ->
           (ZExp.RightAsc(
               HExp.Inj (side, HExp.EmptyHole),
               ZTyp.LeftSum (ZTyp.CursorT HTyp.Hole, HTyp.Hole)),
@@ -489,16 +489,16 @@ module Action = struct
       end
     | (Construct SLit n, ZExp.CursorE HExp.EmptyHole, ty) when HTyp.inconsistent ty HTyp.Num (* 13h *) ->
       ZExp.NonEmptyHoleZ (ZExp.CursorE (HExp.NumLit n))
-    | (Construct (SInj side), ZExp.CursorE HExp.EmptyHole, ty) -> 
-      begin match HTyp.matched_sum ty with 
+    | (Construct (SInj side), ZExp.CursorE HExp.EmptyHole, ty) ->
+      begin match HTyp.matched_sum ty with
         | Some _ -> ZExp.InjZ (side, ze)
         | None -> ZExp.NonEmptyHoleZ (
             ZExp.RightAsc (
-              HExp.Inj (side, HExp.EmptyHole), 
+              HExp.Inj (side, HExp.EmptyHole),
               ZTyp.LeftSum (ZTyp.CursorT HTyp.Hole, HTyp.Hole)
             ))
       end
-    | (Construct (SCase (x, y)), ZExp.CursorE e, ty) -> 
+    | (Construct (SCase (x, y)), ZExp.CursorE e, ty) ->
       ZExp.CaseZ1 (
         ZExp.CursorE HExp.EmptyHole,
         (x, HExp.EmptyHole),
@@ -516,41 +516,41 @@ module Action = struct
           ZExp.LamZ (x, ze'')
         | None -> raise InvalidAction
       end
-    | (_, ZExp.InjZ (side, ze), ty) -> 
-      begin match HTyp.matched_sum ty with 
-        | Some (ty1, ty2) -> 
-          ZExp.InjZ (HExp.L, (performAna ctx a ze 
+    | (_, ZExp.InjZ (side, ze), ty) ->
+      begin match HTyp.matched_sum ty with
+        | Some (ty1, ty2) ->
+          ZExp.InjZ (HExp.L, (performAna ctx a ze
                                 (HExp.pick_side side ty1 ty2)))
         | None -> raise InvalidAction
       end
-    | (_, ZExp.CaseZ1 (ze, (x, e1), (y, e2)), ty) -> 
-      let e0 = ZExp.erase ze in 
-      let ty0 = HExp.syn ctx e0 in 
-      let (ze', ty0') = performSyn ctx a (ze, ty0) in 
-      begin match HTyp.matched_sum ty0' with 
-        | Some (ty1, ty2) -> 
-          let ctx1 = Ctx.extend ctx (x, ty1) in 
-          let () = HExp.ana ctx1 e1 ty in 
+    | (_, ZExp.CaseZ1 (ze, (x, e1), (y, e2)), ty) ->
+      let e0 = ZExp.erase ze in
+      let ty0 = HExp.syn ctx e0 in
+      let (ze', ty0') = performSyn ctx a (ze, ty0) in
+      begin match HTyp.matched_sum ty0' with
+        | Some (ty1, ty2) ->
+          let ctx1 = Ctx.extend ctx (x, ty1) in
+          let () = HExp.ana ctx1 e1 ty in
           let ctx2 = Ctx.extend ctx (y, ty2) in
-          let () = HExp.ana ctx2 e2 ty in 
+          let () = HExp.ana ctx2 e2 ty in
           ZExp.CaseZ1 (ze', (x, e1), (y, e2))
         | None -> raise InvalidAction
       end
-    | (_, ZExp.CaseZ2 (e0, (x, ze1), (y, e2)), ty) -> 
-      let ty0 = HExp.syn ctx e0 in 
-      begin match HTyp.matched_sum ty0 with 
-        | Some (ty1, ty2) -> 
-          let ctx1 = Ctx.extend ctx (x, ty1) in 
-          let ze1' = performAna ctx1 a ze1 ty in 
+    | (_, ZExp.CaseZ2 (e0, (x, ze1), (y, e2)), ty) ->
+      let ty0 = HExp.syn ctx e0 in
+      begin match HTyp.matched_sum ty0 with
+        | Some (ty1, ty2) ->
+          let ctx1 = Ctx.extend ctx (x, ty1) in
+          let ze1' = performAna ctx1 a ze1 ty in
           ZExp.CaseZ2 (e0, (x, ze1'), (y, e2))
         | None -> raise InvalidAction
       end
-    | (_, ZExp.CaseZ3 (e0, (x, e1), (y, ze2)), ty) -> 
-      let ty0 = HExp.syn ctx e0 in 
-      begin match HTyp.matched_sum ty0 with 
-        | Some (ty1, ty2) -> 
-          let ctx2 = Ctx.extend ctx (y, ty2) in 
-          let ze2' = performAna ctx2 a ze2 ty in 
+    | (_, ZExp.CaseZ3 (e0, (x, e1), (y, ze2)), ty) ->
+      let ty0 = HExp.syn ctx e0 in
+      begin match HTyp.matched_sum ty0 with
+        | Some (ty1, ty2) ->
+          let ctx2 = Ctx.extend ctx (y, ty2) in
+          let ze2' = performAna ctx2 a ze2 ty in
           ZExp.CaseZ3 (e0, (x, e1), (y, ze2'))
         | None -> raise InvalidAction
       end
