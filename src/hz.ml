@@ -319,7 +319,12 @@ module View = struct
                     (action_button (Action.Move (Action.Child 3)) "move child 3 (?)");
                     br ();
                     (action_button (Action.Move (Action.Parent)) "move parent (w)");
-                    br ();
+                    (* br (); *)
+                  ]
+                ];
+                div ~a:[a_class ["panel";"panel-default"]] [
+                  div ~a:[a_class ["panel-title"]] [pcdata "Deletion"];
+                  div ~a:[a_class ["panel-body"]] [
                     (action_button (Action.Del) "del (s)");
                   ]
                 ]
@@ -333,10 +338,16 @@ module View = struct
                     (action_button (Action.Construct Action.SNum) "construct num (k)");
                     br ();
                     (action_button (Action.Construct Action.SSum) "construct sum (?)");
-                    br ();
+                    br ();  ]
+                ];
+                div ~a:[a_class ["panel";"panel-default"]] [
+                  div ~a:[a_class ["panel-title"]] [pcdata "Finishing"];
+                  div ~a:[a_class ["panel-body"]] [
+                    (action_button (Action.Finish) "finish (.)")
                   ]
                 ]
-              ];
+              ]
+              ;
               div ~a:[a_class ["col-lg-6"; "col-md-6" ; "col-sm-6"]] [
                 div ~a:[a_class ["panel";"panel-default"]] [
                   div ~a:[a_class ["panel-title"]] [pcdata "Constructs"];
@@ -385,14 +396,13 @@ module View = struct
                             | '\\' -> Dom_html.stopPropagation evt; focus_on_id "lam_input";
                             | _ -> () );
                            Lwt.return @@ rf ((React.S.value rs))));
-                    br ();
-                    br ();
-                    (action_button (Action.Finish) "finish (.)")
+
 
                   ]
                 ]
               ]
-            ];
+            ]
+
           ])
 
 
