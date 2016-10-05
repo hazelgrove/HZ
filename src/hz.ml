@@ -144,6 +144,7 @@ let r_input attrs =
       (rf (Js.to_string (i_dom##.value)))) in
   (rs, i_elt, i_dom)
 
+
 module View = struct
 
   let keyActions (event) =
@@ -198,8 +199,9 @@ module View = struct
     (* actions that take an input. the conversion function
      * goes from a string to an arg option where arg is
      * the action argument. *)
-    let action_input_button action conv btn_label input_id match_function =
-      let i_rs, i_elt, i_dom = r_input (Html.a_id input_id) in
+    let action_input_input_button action conv btn_label input_id match_function =
+      let i_rs, i_elt, i_dom = r_input (Html.a_id (input_id^ "_1")) in
+      let i_rs_2, i_elt_2, i_dom = r_input (Html.a_id (input_id^ "_2")) in
       bind_event Ev.keypresses Dom_html.document match_function;
       bind_event Ev.keypresses i_dom (fun e ->
           begin match  e##.keyCode with
@@ -208,35 +210,35 @@ module View = struct
                 Js.Opt.case (Dom_html.CoerceTo.input e)
                   (fun e -> ()) (fun e -> e##click)
               end
-            (* | _ ->  *)
-            (* raise NotImplemented *)
           end
         ; Lwt.return @@ ());
 
-        (* <div class="well">
-      <form class="form-inline">
+      (* <div class="well">
+         <form class="form-inline">
          <div class="form-group">
-            <input type="password" class="form-control input-medium" id="exampleInputPassword1" placeholder="Page path">
-			<input type="password" class="form-control input-medium" id="exampleInputPassword1" placeholder="Name">
+          <input type="password" class="form-control input-medium" id="exampleInputPassword1" placeholder="Page path">
+         			<input type="password" class="form-control input-medium" id="exampleInputPassword1" placeholder="Name">
          </div>
          <div class="form-group">
-            <a href="#" class="btn btn-info">View</a>
-            <a href="#" class="btn btn-primary">Edit</a>
-            <a href="#" class="btn btn-danger">Delete</a>
+          <a href="#" class="btn btn-info">View</a>
+          <a href="#" class="btn btn-primary">Edit</a>
+          <a href="#" class="btn btn-danger">Delete</a>
          </div>
-       </form>
-</div> *)
+         </form>
+         </div> *)
 
       Html5.(div  ~a:[a_class ["input-group"]] [
           i_elt;
+          i_elt_2;
           span ~a:[a_class ["input-group-btn"]] [
             button ~a:[Html.a_class ["btn";"btn-default"];  a_id btn_label;
                        a_onclick (fun _ ->
-                           let arg = opt_get (conv (React.S.value i_rs)) in
+                           let arg_1 = opt_get (conv (React.S.value i_rs)) in
+                           let arg_2 = opt_get (conv (React.S.value i_rs_2)) in
                            rf (
                              Action.performSyn
                                Ctx.empty
-                               (action arg)
+                               (action (arg_1,arg_2))
                                (React.S.value rs));
                            clear_input input_id;
                            true
@@ -247,7 +249,7 @@ module View = struct
                               match conv s with
                                 Some arg ->
                                 begin try
-                                    let _ = Action.performSyn Ctx.empty (action arg) m in false
+                                    let _ = Action.performSyn Ctx.empty (action (arg,arg)) m in false
                                   with Action.InvalidAction -> true
                                      | HExp.IllTyped -> true   end
                               | _ -> true) i_rs rs)
@@ -259,7 +261,7 @@ module View = struct
     (* actions that take an input. the conversion function
      * goes from a string to an arg option where arg is
      * the action argument. *)
-    let action_input_input_button action conv btn_label input_id match_function =
+    let action_input_button action conv btn_label input_id match_function =
       let i_rs, i_elt, i_dom = r_input (Html.a_id input_id) in
       bind_event Ev.keypresses Dom_html.document match_function;
       bind_event Ev.keypresses i_dom (fun e ->
@@ -376,7 +378,7 @@ module View = struct
                     (action_button (Action.Construct (Action.SInj HExp.R)) "construct Inj R (?)");
                     br ();
                     (action_input_input_button
-                       (fun v -> Action.Construct (Action.SCase (v,v)))
+                       (fun (v1,v2) -> Action.Construct (Action.SCase (v1,v2)))
                        (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
                        "construct case" "case_input" (fun evt ->
                            (match  char_of_int evt##.keyCode with
