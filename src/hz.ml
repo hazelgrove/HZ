@@ -36,7 +36,21 @@ module HTMLView = struct
     | HExp.EmptyHole ->  hzdiv  "EmptyHole" [pcdata "(||)"]
     | HExp.NonEmptyHole hc -> hzdiv  "NonEmptyHole" [hzdiv "lNE" [pcdata "(|"]; of_hexp hc ;hzdiv "rNE" [pcdata "|)"]]
     | HExp.Inj (side,exp) -> hzdiv  "Inj" [hzdiv  "inj" [pcdata "inj"]; hzdiv "leftParens" [pcdata "("]; of_hexp exp; hzdiv "rightParens" [pcdata ")"]]
-    | HExp.Case (s,c2,c3) -> raise NotImplemented
+    | HExp.Case (e,(var1,exp1),(var2,exp2)) ->
+      hzdiv  "Case" [
+        hzdiv  "case" [pcdata "case"];
+        hzdiv "leftParens" [pcdata "("];
+        hzdiv "exp" [of_hexp e];
+        hzdiv  "comma" [pcdata ","];
+        hzdiv "var1" [pcdata var1];
+        hzdiv  "dot" [pcdata "."];
+        hzdiv "exp1" [of_hexp exp1];
+        hzdiv  "comma" [pcdata ","];
+        hzdiv "var2" [pcdata var2];
+        hzdiv  "dot" [pcdata "."];
+        hzdiv "exp2" [of_hexp exp2];
+        hzdiv "rightParens" [pcdata ")"]
+      ]  (* case(e ̇, x.e ̇1, y.eˆ2) *)
 
   let rec of_ztype (ztype : ZTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match ztype with
@@ -58,9 +72,48 @@ module HTMLView = struct
     | ZExp.RightPlus (num1,num2) -> hzdiv "RightPlus" [(of_hexp num1); (div ~a:[a_class ["HZElem";"plus"]] [pcdata "+"]); (of_zexp num2)]
     | ZExp.NonEmptyHoleZ e ->  hzdiv  "NonEmptyHoleZ" [hzdiv "lNZ" [pcdata "(|"]; of_zexp e ;hzdiv "rNZ" [pcdata "|)"]]
     | ZExp.InjZ (side,exp) -> hzdiv  "Inj" [hzdiv  "inj" [pcdata "inj"]; hzdiv "leftParens" [pcdata "("]; of_zexp exp; hzdiv "rightParens" [pcdata ")"]]
-    | ZExp.CaseZ1 (s,c1,c2) -> raise NotImplemented
-    | ZExp.CaseZ2 (s,c1,c2) -> raise NotImplemented
-    | ZExp.CaseZ3 (s,c1,c2) -> raise NotImplemented
+    | ZExp.CaseZ1 (e,(var1,exp1) ,(var2,exp2)) -> hzdiv  "Case" [
+        hzdiv  "case" [pcdata "case"];
+        hzdiv "leftParens" [pcdata "("];
+        hzdiv "exp2" [of_zexp e];
+        hzdiv  "comma" [pcdata ","];
+        hzdiv "var1" [pcdata var1];
+        hzdiv  "dot" [pcdata "."];
+        hzdiv "exp1" [of_hexp exp1];
+        hzdiv  "comma" [pcdata ","];
+        hzdiv "var2" [pcdata var2];
+        hzdiv  "dot" [pcdata "."];
+        hzdiv "exp2" [of_hexp exp2];
+        hzdiv "rightParens" [pcdata ")"]
+      ]
+    | ZExp.CaseZ2 (e,(var1,exp1) ,(var2,exp2)) -> hzdiv  "Case" [
+        hzdiv  "case" [pcdata "case"];
+        hzdiv "leftParens" [pcdata "("];
+        hzdiv "exp2" [of_hexp e];
+        hzdiv  "comma" [pcdata ","];
+        hzdiv "var1" [pcdata var1];
+        hzdiv  "dot" [pcdata "."];
+        hzdiv "exp1" [of_zexp exp1];
+        hzdiv  "comma" [pcdata ","];
+        hzdiv "var2" [pcdata var2];
+        hzdiv  "dot" [pcdata "."];
+        hzdiv "exp2" [of_hexp exp2];
+        hzdiv "rightParens" [pcdata ")"]
+      ]
+    | ZExp.CaseZ3 (e,(var1,exp1) ,(var2,exp2)) -> hzdiv  "Case" [
+        hzdiv  "case" [pcdata "case"];
+        hzdiv "leftParens" [pcdata "("];
+        hzdiv "exp2" [of_hexp e];
+        hzdiv  "comma" [pcdata ","];
+        hzdiv "var1" [pcdata var1];
+        hzdiv  "dot" [pcdata "."];
+        hzdiv "exp1" [of_hexp exp1];
+        hzdiv  "comma" [pcdata ","];
+        hzdiv "var2" [pcdata var2];
+        hzdiv  "dot" [pcdata "."];
+        hzdiv "exp2" [of_zexp exp2];
+        hzdiv "rightParens" [pcdata ")"]
+      ]
 
 end
 
@@ -159,6 +212,21 @@ module View = struct
             (* raise NotImplemented *)
           end
         ; Lwt.return @@ ());
+
+        (* <div class="well">
+      <form class="form-inline">
+         <div class="form-group">
+            <input type="password" class="form-control input-medium" id="exampleInputPassword1" placeholder="Page path">
+			<input type="password" class="form-control input-medium" id="exampleInputPassword1" placeholder="Name">
+         </div>
+         <div class="form-group">
+            <a href="#" class="btn btn-info">View</a>
+            <a href="#" class="btn btn-primary">Edit</a>
+            <a href="#" class="btn btn-danger">Delete</a>
+         </div>
+       </form>
+</div> *)
+
       Html5.(div  ~a:[a_class ["input-group"]] [
           i_elt;
           span ~a:[a_class ["input-group-btn"]] [
@@ -186,6 +254,53 @@ module View = struct
                       ] [pcdata btn_label]
           ]
         ]) in
+
+
+    (* actions that take an input. the conversion function
+     * goes from a string to an arg option where arg is
+     * the action argument. *)
+    let action_input_input_button action conv btn_label input_id match_function =
+      let i_rs, i_elt, i_dom = r_input (Html.a_id input_id) in
+      bind_event Ev.keypresses Dom_html.document match_function;
+      bind_event Ev.keypresses i_dom (fun e ->
+          begin match  e##.keyCode with
+            | _ -> begin
+                let e = Dom_html.getElementById(btn_label) in
+                Js.Opt.case (Dom_html.CoerceTo.input e)
+                  (fun e -> ()) (fun e -> e##click)
+              end
+            (* | _ ->  *)
+            (* raise NotImplemented *)
+          end
+        ; Lwt.return @@ ());
+      Html5.(div  ~a:[a_class ["input-group"]] [
+          i_elt;
+          span ~a:[a_class ["input-group-btn"]] [
+            button ~a:[Html.a_class ["btn";"btn-default"];  a_id btn_label;
+                       a_onclick (fun _ ->
+                           let arg = opt_get (conv (React.S.value i_rs)) in
+                           rf (
+                             Action.performSyn
+                               Ctx.empty
+                               (action arg)
+                               (React.S.value rs));
+                           clear_input input_id;
+                           true
+                         );
+                       R.filter_attrib
+                         (a_disabled ())
+                         (S.l2 (fun s m ->
+                              match conv s with
+                                Some arg ->
+                                begin try
+                                    let _ = Action.performSyn Ctx.empty (action arg) m in false
+                                  with Action.InvalidAction -> true
+                                     | HExp.IllTyped -> true   end
+                              | _ -> true) i_rs rs)
+                      ] [pcdata btn_label]
+          ]
+        ]) in
+
 
     Html5.(
       div [ div  ~a:[a_class ["jumbotron"]]
@@ -259,6 +374,15 @@ module View = struct
                     (action_button (Action.Construct (Action.SInj HExp.L)) "construct Inj L (?)");
                     br ();
                     (action_button (Action.Construct (Action.SInj HExp.R)) "construct Inj R (?)");
+                    br ();
+                    (action_input_input_button
+                       (fun v -> Action.Construct (Action.SCase (v,v)))
+                       (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+                       "construct case" "case_input" (fun evt ->
+                           (match  char_of_int evt##.keyCode with
+                            | '\\' -> Dom_html.stopPropagation evt; focus_on_id "lam_input";
+                            | _ -> () );
+                           Lwt.return @@ rf ((React.S.value rs))));
                     br ();
                     br ();
                     (action_button (Action.Finish) "finish (.)")
