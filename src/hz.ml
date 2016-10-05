@@ -212,7 +212,6 @@ module View = struct
               end
           end
         ; Lwt.return @@ ());
-
       (* <div class="well">
          <form class="form-inline">
          <div class="form-group">
@@ -226,7 +225,6 @@ module View = struct
          </div>
          </form>
          </div> *)
-
       Html5.(div  ~a:[a_class ["input-group"]] [
           i_elt;
           i_elt_2;
@@ -317,6 +315,8 @@ module View = struct
                     (action_button (Action.Move (Action.Child 1)) "move child 1 (a)");
                     br ();
                     (action_button (Action.Move (Action.Child 2)) "move child 2 (d)");
+                    br ();
+                    (action_button (Action.Move (Action.Child 3)) "move child 3 (?)");
                     br ();
                     (action_button (Action.Move (Action.Parent)) "move parent (w)");
                     br ();
