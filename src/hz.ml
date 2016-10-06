@@ -181,7 +181,14 @@ module View = struct
     let zexp_view = Html5.(R.Html5.div (ReactiveData.RList.from_signal zexp_view_rs)) in
 
     (* helper function for constructing simple action buttons *)
-    let action_button action btn_label =
+    let action_button action btn_label hot_key=
+      bind_event Ev.keypresses Dom_html.document (fun evt ->
+          Lwt.return @@ rf (
+            Firebug.console##log(evt##.keyCode);
+            Firebug.console##log(Js.string "hot_key");
+            Firebug.console##log(hot_key);
+            (if evt##.keyCode == hot_key then Action.performSyn Ctx.empty action else raise NotImplemented)
+              (React.S.value rs) ) );
       Html5.(button ~a:[a_class ["btn";"btn-outline-primary"];
                         a_onclick (fun _ ->
                             rf (
@@ -255,7 +262,6 @@ module View = struct
           ]
         ]) in
 
-
     (* actions that take an input. the conversion function
      * goes from a string to an arg option where arg is
      * the action argument. *)
@@ -301,7 +307,6 @@ module View = struct
           ]
         ]) in
 
-
     Html5.(
       div [ div  ~a:[a_class ["jumbotron"]]
               [ div  ~a:[a_class ["display-3"]] [pcdata "HZ"];
@@ -312,20 +317,20 @@ module View = struct
                 div ~a:[a_class ["panel";"panel-default"]] [
                   div ~a:[a_class ["panel-title"]] [pcdata "Movement"];
                   div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Move (Action.Child 1)) "move child 1 (a)");
+                    (action_button (Action.Move (Action.Child 1)) "move child 1 (a)" 13);
                     br ();
-                    (action_button (Action.Move (Action.Child 2)) "move child 2 (d)");
+                    (action_button (Action.Move (Action.Child 2)) "move child 2 (d)" 1);
                     br ();
-                    (action_button (Action.Move (Action.Child 3)) "move child 3 (?)");
+                    (action_button (Action.Move (Action.Child 3)) "move child 3 (?)" 1);
                     br ();
-                    (action_button (Action.Move (Action.Parent)) "move parent (w)");
+                    (action_button (Action.Move (Action.Parent)) "move parent" 119);
                     (* br (); *)
                   ]
                 ];
                 div ~a:[a_class ["panel";"panel-default"]] [
                   div ~a:[a_class ["panel-title"]] [pcdata "Deletion"];
                   div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Del) "del (s)");
+                    (action_button (Action.Del) "del (s)" 1);
                   ]
                 ]
               ];
@@ -333,17 +338,17 @@ module View = struct
                 div ~a:[a_class ["panel";"panel-default"]] [
                   div ~a:[a_class ["panel-title"]] [pcdata "Types"];
                   div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Construct Action.SArrow) "construct arrow (j)");
+                    (action_button (Action.Construct Action.SArrow) "construct arrow (j)" 1);
                     br ();
-                    (action_button (Action.Construct Action.SNum) "construct num (k)");
+                    (action_button (Action.Construct Action.SNum) "construct num (k)" 1);
                     br ();
-                    (action_button (Action.Construct Action.SSum) "construct sum (?)");
+                    (action_button (Action.Construct Action.SSum) "construct sum (?)" 1);
                     br ();  ]
                 ];
                 div ~a:[a_class ["panel";"panel-default"]] [
                   div ~a:[a_class ["panel-title"]] [pcdata "Finishing"];
                   div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Finish) "finish (.)")
+                    (action_button (Action.Finish) "finish (.)" 1)
                   ]
                 ]
               ]
@@ -352,7 +357,7 @@ module View = struct
                 div ~a:[a_class ["panel";"panel-default"]] [
                   div ~a:[a_class ["panel-title"]] [pcdata "Constructs"];
                   div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Construct Action.SAsc) "construct asc (l)");
+                    (action_button (Action.Construct Action.SAsc) "construct asc (l)" 1);
                     br ();
                     (action_input_button
                        (fun v -> Action.Construct (Action.SVar v))
@@ -370,9 +375,9 @@ module View = struct
                             | '\\' -> Dom_html.stopPropagation evt; focus_on_id "lam_input";
                             | _ -> () );
                            Lwt.return @@ rf ((React.S.value rs))));
-                    (action_button (Action.Construct Action.SAp) "construct ap (m)");
+                    (action_button (Action.Construct Action.SAp) "construct ap (m)" 1);
                     br ();
-                    (action_button (Action.Construct Action.SArg) "construct arg (,)");
+                    (action_button (Action.Construct Action.SArg) "construct arg (,)" 1);
                     br ();
                     (action_input_button
                        (fun n -> Action.Construct (Action.SLit n))
@@ -382,11 +387,11 @@ module View = struct
                             | 'l' -> Dom_html.stopPropagation evt;focus_on_id "lit_input";
                             | _ -> () );
                            Lwt.return @@ rf ((React.S.value rs))));
-                    (action_button (Action.Construct Action.SPlus) "construct plus (;)");
+                    (action_button (Action.Construct Action.SPlus) "construct plus (;)" 1);
                     br ();
-                    (action_button (Action.Construct (Action.SInj HExp.L)) "construct Inj L (?)");
+                    (action_button (Action.Construct (Action.SInj HExp.L)) "construct Inj L (?)" 1);
                     br ();
-                    (action_button (Action.Construct (Action.SInj HExp.R)) "construct Inj R (?)");
+                    (action_button (Action.Construct (Action.SInj HExp.R)) "construct Inj R (?)" 1);
                     br ();
                     (action_input_input_button
                        (fun (v1,v2) -> Action.Construct (Action.SCase (v1,v2)))
@@ -396,17 +401,11 @@ module View = struct
                             | '\\' -> Dom_html.stopPropagation evt; focus_on_id "lam_input";
                             | _ -> () );
                            Lwt.return @@ rf ((React.S.value rs))));
-
-
                   ]
                 ]
               ]
             ]
-
           ])
-
-
-
 end
 
 let main _ =
