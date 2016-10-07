@@ -330,14 +330,14 @@ module View = struct
                     br ();
                     (action_button (Action.Move (Action.Child 3)) "move child 3 (3)" 51);
                     br ();
-                    (action_button (Action.Move (Action.Parent)) "move parent (w)" 119);
+                    (action_button (Action.Move (Action.Parent)) "move parent (p)" 112);
                     (* br (); *)
                   ]
                 ];
                 div ~a:[a_class ["panel";"panel-default"]] [
                   div ~a:[a_class ["panel-title"]] [pcdata "Deletion"];
                   div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Del) "del (s)" 1);
+                    (action_button (Action.Del) "del (x)" 120);
                   ]
                 ]
               ];
@@ -345,17 +345,17 @@ module View = struct
                 div ~a:[a_class ["panel";"panel-default"]] [
                   div ~a:[a_class ["panel-title"]] [pcdata "Types"];
                   div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Construct Action.SArrow) "construct arrow (j)" 1);
+                    (action_button (Action.Construct Action.SArrow) "construct arrow (>)" 62);
                     br ();
-                    (action_button (Action.Construct Action.SNum) "construct num (k)" 1);
+                    (action_button (Action.Construct Action.SNum) "construct num (n)" 110);
                     br ();
-                    (action_button (Action.Construct Action.SSum) "construct sum (?)" 1);
+                    (action_button (Action.Construct Action.SSum) "construct sum (s)" 115);
                     br ();  ]
                 ];
                 div ~a:[a_class ["panel";"panel-default"]] [
                   div ~a:[a_class ["panel-title"]] [pcdata "Finishing"];
                   div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Finish) "finish (.)" 1)
+                    (action_button (Action.Finish) "finish (.)" 46)
                   ]
                 ]
               ]
@@ -364,7 +364,7 @@ module View = struct
                 div ~a:[a_class ["panel";"panel-default"]] [
                   div ~a:[a_class ["panel-title"]] [pcdata "Constructs"];
                   div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Construct Action.SAsc) "construct asc (l)" 1);
+                    (action_button (Action.Construct Action.SAsc) "construct asc (:)" 58);
                     br ();
                     (action_input_button
                        (fun v -> Action.Construct (Action.SVar v))
@@ -382,23 +382,23 @@ module View = struct
                             | '\\' -> Dom_html.stopPropagation evt; focus_on_id "lam_input";
                             | _ -> () );
                            Lwt.return @@ rf ((React.S.value rs))));
-                    (action_button (Action.Construct Action.SAp) "construct ap (m)" 1);
+                    (action_button (Action.Construct Action.SAp) "construct ap ( ( )" 40);
                     br ();
-                    (action_button (Action.Construct Action.SArg) "construct arg (,)" 1);
+                    (action_button (Action.Construct Action.SArg) "construct arg ( ) )" 41);
                     br ();
                     (action_input_button
                        (fun n -> Action.Construct (Action.SLit n))
                        (fun s -> try Some (int_of_string s) with Failure _ -> None)
                        "construct lit" "lit_input" (fun evt ->
                            (match  char_of_int evt##.keyCode with
-                            | 'l' -> Dom_html.stopPropagation evt;focus_on_id "lit_input";
+                            | '#' -> Dom_html.stopPropagation evt;focus_on_id "lit_input";
                             | _ -> () );
                            Lwt.return @@ rf ((React.S.value rs))));
-                    (action_button (Action.Construct Action.SPlus) "construct plus (;)" 1);
+                    (action_button (Action.Construct Action.SPlus) "construct plus (+)" 43);
                     br ();
-                    (action_button (Action.Construct (Action.SInj HExp.L)) "construct Inj L (?)" 1);
+                    (action_button (Action.Construct (Action.SInj HExp.L)) "construct Inj L (l)" 108);
                     br ();
-                    (action_button (Action.Construct (Action.SInj HExp.R)) "construct Inj R (?)" 1);
+                    (action_button (Action.Construct (Action.SInj HExp.R)) "construct Inj R (r)" 114);
                     br ();
                     (action_input_input_button
                        (fun (v1,v2) -> Action.Construct (Action.SCase (v1,v2)))
