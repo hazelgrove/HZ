@@ -250,14 +250,21 @@ module View = struct
                          );
                        R.filter_attrib
                          (a_disabled ())
-                         (S.l2 (fun s m ->
-                              match conv s with
+                         (S.l3 (fun s1 s2 m ->
+                              match conv s1 with
                                 Some arg ->
-                                begin try
-                                    let _ = Action.performSyn Ctx.empty (action (arg,arg)) m in false
-                                  with Action.InvalidAction -> true
-                                     | HExp.IllTyped -> true   end
-                              | _ -> true) i_rs rs)
+                                begin
+                                  match conv s2 with
+                                    Some arg2 ->
+                                    begin
+                                      try
+                                        let _ = Action.performSyn Ctx.empty (action (arg,arg2)) m in
+                                        false
+                                      with Action.InvalidAction -> true
+                                         | HExp.IllTyped -> true   end
+                                  | _ -> true
+                                end
+                              | _ -> true) i_rs i_rs_2 rs)
                       ] [pcdata btn_label]
           ]
         ]) in
@@ -317,13 +324,13 @@ module View = struct
                 div ~a:[a_class ["panel";"panel-default"]] [
                   div ~a:[a_class ["panel-title"]] [pcdata "Movement"];
                   div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Move (Action.Child 1)) "move child 1 (a)" 13);
+                    (action_button (Action.Move (Action.Child 1)) "move child 1 (1)" 49);
                     br ();
-                    (action_button (Action.Move (Action.Child 2)) "move child 2 (d)" 1);
+                    (action_button (Action.Move (Action.Child 2)) "move child 2 (2)" 50);
                     br ();
-                    (action_button (Action.Move (Action.Child 3)) "move child 3 (?)" 1);
+                    (action_button (Action.Move (Action.Child 3)) "move child 3 (3)" 51);
                     br ();
-                    (action_button (Action.Move (Action.Parent)) "move parent" 119);
+                    (action_button (Action.Move (Action.Parent)) "move parent (w)" 119);
                     (* br (); *)
                   ]
                 ];
