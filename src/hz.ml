@@ -122,22 +122,36 @@ exception No_value
 let opt_get opt = match opt with Some x -> x | _ -> raise No_value
 
 module Ev = Lwt_js_events
+
+let blur_div id =
+  let e = Dom_html.getElementById(id) in
+  Js.Opt.case (Dom_html.CoerceTo.input e)
+    (fun e -> ()) (fun e -> e##blur)
+
+
+
 let bind_event ev elem handler =
   let handler evt _ = handler evt in
   Ev.(async @@ (fun () -> ev elem handler))
 
 (* create an input and a reactive signal tracking its
  * string value *)
-let r_input attrs =
+let r_input attrs id =
   let rs, rf = S.create "" in
+  (* let key_handler evt =
+     Dom_html.stopPropagation evt
+     (* if evt##.keyCode = 13 then (Firebug.console##log(Js.string "Enter")) else (Dom_html.stopPropagation evt); *)
+     (* if evt##.keyCode = 27 then (Firebug.console##log(Js.string "esc");  blur_div id; true) else (Dom_html.stopPropagation evt; true) *)
+     in *)
   let key_handler evt =
-    if evt##.keyCode = 13 then (
-      (* Firebug.console##log(Js.string "test"); *)
-      false
-    ) else (Dom_html.stopPropagation evt; true)
+    if evt##.keyCode = 13 then (false) else (Dom_html.stopPropagation evt; true)
   in
 
-  let i_elt = Html5.(input ~a:[attrs; a_class ["form-control"]; a_onkeypress key_handler] () ) in
+  let esc_Handler evt =
+    if evt##.keyCode = 27 then (blur_div id; false) else (Dom_html.stopPropagation evt; true)
+  in
+
+  let i_elt = Html5.(input ~a:[attrs; a_class ["form-control"]; a_onkeypress key_handler; a_onkeyup esc_Handler] () ;  ) in
   let i_dom = To_dom.of_input i_elt in
   let _ = bind_event Ev.inputs i_dom (fun _ ->
       Lwt.return @@
@@ -146,22 +160,6 @@ let r_input attrs =
 
 
 module View = struct
-
-  let keyActions (event) =
-    match  char_of_int event##.keyCode with
-    | 'w' -> Action.performSyn Ctx.empty (Action.Move (Action.Parent))
-    | 'a' -> Action.performSyn Ctx.empty (Action.Move (Action.Child 1))
-    | 'd' -> Action.performSyn Ctx.empty (Action.Move (Action.Child 2))
-    | 's' -> Action.performSyn Ctx.empty (Action.Del)
-    | 'j' -> Action.performSyn Ctx.empty (Action.Construct Action.SArrow)
-    | 'k' -> Action.performSyn Ctx.empty (Action.Construct Action.SNum)
-    |  'l' -> Action.performSyn Ctx.empty (Action.Construct Action.SAsc)
-    |  'm' -> Action.performSyn Ctx.empty  (Action.Construct Action.SAp)
-    | ',' -> Action.performSyn Ctx.empty (Action.Construct Action.SArg)
-    |  ';' -> Action.performSyn Ctx.empty (Action.Construct Action.SPlus)
-    |  '.' -> Action.performSyn Ctx.empty (Action.Finish)
-    | _ -> raise NotImplemented
-  (* |  -> Action.performSyn Ctx.empty *)
 
   let focus_on_id id =
     let e = Dom_html.getElementById(id) in
@@ -182,13 +180,13 @@ module View = struct
 
     (* helper function for constructing simple action buttons *)
     let action_button action btn_label hot_key=
-      bind_event Ev.keypresses Dom_html.document (fun evt ->
+      (* bind_event Ev.keypresses Dom_html.document (fun evt ->
           Lwt.return @@ rf (
             Firebug.console##log(evt##.keyCode);
             Firebug.console##log(Js.string "hot_key");
             Firebug.console##log(hot_key);
             (if evt##.keyCode == hot_key then Action.performSyn Ctx.empty action else raise NotImplemented)
-              (React.S.value rs) ) );
+              (React.S.value rs) ) ); *)
       Html5.(button ~a:[a_class ["btn";"btn-outline-primary"];
                         a_onclick (fun _ ->
                             rf (
@@ -207,8 +205,8 @@ module View = struct
      * goes from a string to an arg option where arg is
      * the action argument. *)
     let action_input_input_button action conv btn_label input_id match_function =
-      let i_rs, i_elt, i_dom = r_input (Html.a_id (input_id^ "_1")) in
-      let i_rs_2, i_elt_2, i_dom = r_input (Html.a_id (input_id^ "_2")) in
+      let i_rs, i_elt, i_dom = r_input (Html.a_id (input_id^ "_1")) input_id in
+      let i_rs_2, i_elt_2, i_dom = r_input (Html.a_id (input_id^ "_2")) input_id in
       bind_event Ev.keypresses Dom_html.document match_function;
       bind_event Ev.keypresses i_dom (fun e ->
           begin match  e##.keyCode with
@@ -273,23 +271,22 @@ module View = struct
      * goes from a string to an arg option where arg is
      * the action argument. *)
     let action_input_button action conv btn_label input_id match_function =
-      let i_rs, i_elt, i_dom = r_input (Html.a_id input_id) in
+      let i_rs, i_elt, i_dom = r_input (Html.a_id input_id) input_id in
       bind_event Ev.keypresses Dom_html.document match_function;
-      bind_event Ev.keypresses i_dom (fun e ->
+      bind_event Ev.keyups i_dom (fun e ->
           begin match  e##.keyCode with
             | _ -> begin
                 let e = Dom_html.getElementById(btn_label) in
                 Js.Opt.case (Dom_html.CoerceTo.input e)
                   (fun e -> ()) (fun e -> e##click)
               end
-            (* | _ ->  *)
-            (* raise NotImplemented *)
           end
         ; Lwt.return @@ ());
+
       Html5.(div  ~a:[a_class ["input-group"]] [
           i_elt;
           span ~a:[a_class ["input-group-btn"]] [
-            button ~a:[Html.a_class ["btn";"btn-default"];  a_id btn_label;
+            button ~a:[Html.a_class ["btn";"btn-default"];  a_id input_id;
                        a_onclick (fun _ ->
                            let arg = opt_get (conv (React.S.value i_rs)) in
                            rf (
@@ -369,18 +366,23 @@ module View = struct
                     (action_input_button
                        (fun v -> Action.Construct (Action.SVar v))
                        (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                       "construct var" "var_input" (fun evt ->
+                       "construct var (v)" "var_input" (fun evt ->
                            (match  char_of_int evt##.keyCode with
                             | 'v' ->focus_on_id "var_input";Dom_html.stopPropagation evt;
                             | _ -> () );
+                           (* | 'v' -> Firebug.console##log(Js.string "VVVV"); focus_on_id "var_input" ; Dom_html.stopPropagation evt
+                              (* Dom_html.stopPropagation evt; *)
+                              | _ -> () ); *)
                            Lwt.return @@ rf ((React.S.value rs))));
                     (action_input_button
                        (fun v -> Action.Construct (Action.SLam v))
                        (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                       "construct lam" "lam_input" (fun evt ->
+                       "construct lam (\\)" "lam_input" (fun evt ->
                            (match  char_of_int evt##.keyCode with
                             | '\\' -> Dom_html.stopPropagation evt; focus_on_id "lam_input";
                             | _ -> () );
+                           (* | '\\' -> Dom_html.stopPropagation evt; focus_on_id "lam_input";
+                              | _ -> () ); *)
                            Lwt.return @@ rf ((React.S.value rs))));
                     (action_button (Action.Construct Action.SAp) "construct ap ( ( )" 40);
                     br ();
@@ -389,7 +391,7 @@ module View = struct
                     (action_input_button
                        (fun n -> Action.Construct (Action.SLit n))
                        (fun s -> try Some (int_of_string s) with Failure _ -> None)
-                       "construct lit" "lit_input" (fun evt ->
+                       "construct lit (l)" "lit_input" (fun evt ->
                            (match  char_of_int evt##.keyCode with
                             | '#' -> Dom_html.stopPropagation evt;focus_on_id "lit_input";
                             | _ -> () );
@@ -403,9 +405,9 @@ module View = struct
                     (action_input_input_button
                        (fun (v1,v2) -> Action.Construct (Action.SCase (v1,v2)))
                        (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                       "construct case" "case_input" (fun evt ->
+                       "construct case (c)" "case_input" (fun evt ->
                            (match  char_of_int evt##.keyCode with
-                            | '\\' -> Dom_html.stopPropagation evt; focus_on_id "lam_input";
+                            | 'c' -> Dom_html.stopPropagation evt; focus_on_id "case_input";
                             | _ -> () );
                            Lwt.return @@ rf ((React.S.value rs))));
                   ]
@@ -424,8 +426,5 @@ let main _ =
   let m = Model.empty in
   let rs, rf = React.S.create m in
   Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view (rs, rf))) ;
-  (* bind_event Ev.keypresses doc (fun evt ->
-      Lwt.return @@ rf (View.keyActions evt (React.S.value rs) ) ); *)
-  (* Lwt.return @@ rf (Action.performSyn Ctx.empty (Action.Move (Action.Parent)) (React.S.value rs)) *)
   Lwt.return ()
 let _ = Lwt_js_events.onload () >>= main
