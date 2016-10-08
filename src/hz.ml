@@ -373,9 +373,9 @@ module View = struct
                        "construct lit (t)" "lit_input" 84);
                     (action_button (Action.Construct Action.SPlus) "construct plus (+)" 43);
                     br ();
-                    (action_button (Action.Construct (Action.SInj HExp.L)) "construct Inj L (l)" 108);
+                    (action_button (Action.Construct (Action.SInj HExp.L)) "construct inj L (l)" 108);
                     br ();
-                    (action_button (Action.Construct (Action.SInj HExp.R)) "construct Inj R (r)" 114);
+                    (action_button (Action.Construct (Action.SInj HExp.R)) "construct inj R (r)" 114);
                     br ();
                     (action_input_input_button
                        (fun (v1,v2) -> Action.Construct (Action.SCase (v1,v2)))
