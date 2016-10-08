@@ -121,6 +121,14 @@ button:disabled {
 	content:"|)";
 }
 
+.lNZ:before{
+	content:"(|";
+}
+
+.rNZ:before{
+	content:"|)";
+}
+
 .case:before{
 	content:"case";
 }
