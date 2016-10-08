@@ -58,7 +58,7 @@ button:disabled {
 
 /*CSS content*/
 .EmptyHole:before {
-	content: "(||)";
+	content: "⦇⦈";
 }
 
 .asc:before {
@@ -98,7 +98,8 @@ button:disabled {
 }
 
 .Hole:before{
-	content: "(||)";
+	/*content: "(||)";*/
+	 content: "⦇⦈";
 }
 
 .lambda:before{
@@ -114,19 +115,19 @@ button:disabled {
 }
 
 .lNE:before{
-	content:"(|";
+	content:"⦇";
 }
 
 .rNE:before{
-	content:"|)";
+	content:"⦈";
 }
 
 .lNZ:before{
-	content:"(|";
+	content:"⦇";
 }
 
 .rNZ:before{
-	content:"|)";
+	content:"⦈";
 }
 
 .case:before{
