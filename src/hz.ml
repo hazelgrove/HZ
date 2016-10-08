@@ -370,7 +370,7 @@ module View = struct
                     (action_input_button
                        (fun n -> Action.Construct (Action.SLit n))
                        (fun s -> try Some (int_of_string s) with Failure _ -> None)
-                       "construct lit (t)" "lit_input" 84);
+                       "construct lit (#)" "lit_input" 51);
                     (action_button (Action.Construct Action.SPlus) "construct plus (+)" 43);
                     br ();
                     (action_button (Action.Construct (Action.SInj HExp.L)) "construct inj L (l)" 108);
