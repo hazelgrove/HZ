@@ -132,6 +132,8 @@ let r_input attrs id =
   in
 
   let esc_Handler evt =
+    Firebug.console##log(Js.string "esc_Handler");
+    Firebug.console##log(evt);
     if evt##.keyCode = 27 then (blur_div id; false) else (Dom_html.stopPropagation evt; true)
   in
 
@@ -199,36 +201,29 @@ module View = struct
      * the action argument. *)
     let action_input_input_button action conv btn_label input_id key_code =
       let button_id = input_id ^"_button" in
-      let i_rs, i_elt, i_dom = r_input (Html.a_id (input_id^ "_1")) input_id in
-      let i_rs_2, i_elt_2, i_dom2 = r_input (Html.a_id (input_id^ "_2")) input_id in
+      let input_id_1 = (input_id^ "_1") in
+      let input_id_2 = (input_id^ "_2") in
+      let i_rs, i_elt, i_dom = r_input (Html.a_id input_id_1) input_id_1 in
+      let i_rs_2, i_elt_2, i_dom2 = r_input (Html.a_id input_id_2) input_id_2 in
       (* bind_event Ev.keypresses Dom_html.document match_function; *)
       bind_event Ev.keyups Dom_html.document (fun evt ->
-          if evt##.keyCode = key_code then (focus_on_id input_id);
+          if evt##.keyCode = key_code then (focus_on_id input_id_1);
           Lwt.return @@  rf ((React.S.value rs))) ;
       bind_event Ev.keypresses i_dom (fun evt ->
           begin
-            if evt##.keyCode = 13 then (click_button button_id; blur_div input_id) else ()
+            if evt##.keyCode = 13 then (click_button button_id; blur_div input_id_1) else ()
           end;
           Lwt.return @@ ());
       bind_event Ev.keypresses i_dom2 (fun evt ->
           begin
-            if evt##.keyCode = 13 then (click_button button_id; blur_div input_id) else ()
+            if evt##.keyCode = 13 then (click_button button_id; blur_div input_id_2) else ()
           end;
           Lwt.return @@ ());
-      (* bind_event Ev.keypresses i_dom (fun e ->
-          begin match  e##.keyCode with
-            | _ -> begin
-                let e = Dom_html.getElementById(button_id) in
-                Js.Opt.case (Dom_html.CoerceTo.input e)
-                  (fun e -> ()) (fun e -> e##click)
-              end
-          end
-         ; Lwt.return @@ ()); *)
       Html5.(div  ~a:[a_class ["input-group"]] [
           i_elt;
           i_elt_2;
           span ~a:[a_class ["input-group-btn"]] [
-            button ~a:[Html.a_class ["btn";"btn-default"];  a_id btn_label;
+            button ~a:[Html.a_class ["btn";"btn-default"];  a_id button_id;
                        a_onclick (fun _ ->
                            let arg_1 = opt_get (conv (React.S.value i_rs)) in
                            let arg_2 = opt_get (conv (React.S.value i_rs_2)) in
