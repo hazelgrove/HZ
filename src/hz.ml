@@ -277,15 +277,7 @@ module View = struct
       bind_event Ev.keypresses i_dom (fun evt ->
           begin
             if evt##.keyCode = 13 then
-              (click_button button_id)
-              (* TODO: add click method *)
-              (* (begin
-                 Firebug.console##log(evt);
-                 let elem = Dom_html.getElementById("lam_input_button") in
-                 Js.Opt.case (Dom_html.CoerceTo.input elem)
-                  (fun e -> (Firebug.console##log(Js.string  "lam_input_button: ERROR"))) (fun e -> e##click)
-                 end;
-                 Firebug.console##log(Js.string "ENTER")) *)
+              (click_button button_id; blur_div input_id)
             else ()
           end
           ;
