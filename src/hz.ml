@@ -302,7 +302,12 @@ module View = struct
 
     Html5.(
       div [ div  ~a:[a_class ["jumbotron"]]
-              [ div  ~a:[a_class ["display-3"]] [pcdata "HZ"];
+              [ div  ~a:[a_class ["headerTextAndLogo"]] [
+                    div  ~a:[a_class ["display-3"]] [pcdata "HZ"];
+                    img ~a:[a_id "logo"] ~alt:("Logo") ~src:(Xml.uri_of_string ("imgs/hazel-logo.png")) ()
+
+                  ];
+
                 div  ~a:[a_class ["subtext"]] [pcdata "(a reference implementation of Hazelnut)"];
                 div ~a:[a_class ["Model"]] [zexp_view]];
             div ~a:[a_class ["row";"marketing"]] [

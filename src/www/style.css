@@ -1,4 +1,24 @@
 
+.display-3{
+	height: 72px;
+	font-size: 60px;
+	width: 80%;
+    float: left;
+}
+
+.subtext{
+	width: 66%;
+}
+#logo{
+	height: 75px;
+	float:right;
+}
+.jumbotron{
+	padding-top: 11px;
+    margin-top: 24px;
+    padding-bottom: 69px;
+}
+
 .Model {
 	font-size: xx-large;
 	padding-bottom: 20px;
