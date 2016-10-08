@@ -163,7 +163,7 @@ module HExp = struct
     | Plus (e1, e2) (* 33f *) -> (complete e1) && (complete e2)
     | Inj (_, e) (* (omitted from paper) *) -> complete e
     | Case (e, (x, e1), (y, e2)) (* (omitted from paper) *) ->
-        (complete e) && (complete e1) && (complete e2)
+      (complete e) && (complete e1) && (complete e2)
     | EmptyHole -> false
     | NonEmptyHole _ -> false
 end

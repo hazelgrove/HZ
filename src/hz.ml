@@ -353,7 +353,7 @@ module View = struct
               ;
               div ~a:[a_class ["col-lg-6"; "col-md-6"; "col-sm-6"]] [
                 div ~a:[a_class ["panel";"panel-default"]] [
-                  div ~a:[a_class ["panel-title"]] [pcdata "Constructs"];
+                  div ~a:[a_class ["panel-title"]] [pcdata "Construction"];
                   div ~a:[a_class ["panel-body"]] [
                     (action_button (Action.Construct Action.SAsc) "construct asc (:)" 58);
                     br ();
