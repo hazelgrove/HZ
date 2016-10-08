@@ -367,8 +367,6 @@ module View = struct
                        "construct lam (\\)" "lam_input" 220);
                     (action_button (Action.Construct Action.SAp) "construct ap ( ( )" 40);
                     br ();
-                    (* (action_button (Action.Construct Action.SArg) "construct arg ( ) )" 41);
-                       br (); *)
                     (action_input_button
                        (fun n -> Action.Construct (Action.SLit n))
                        (fun s -> try Some (int_of_string s) with Failure _ -> None)
