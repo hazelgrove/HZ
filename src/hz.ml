@@ -191,9 +191,9 @@ module View = struct
     let action_button action btn_label hot_key=
       bind_event Ev.keypresses Dom_html.document (fun evt ->
           Lwt.return @@ rf (
-            (* Firebug.console##log(evt##.keyCode);
-               Firebug.console##log(Js.string "hot_key");
-               Firebug.console##log(hot_key);  *)
+            (* Firebug.console##log(evt); *)
+            (*   Firebug.console##log(Js.string "hot_key");
+                 Firebug.console##log(hot_key); *)
             (if evt##.keyCode == hot_key then Action.performSyn Ctx.empty action else (raise NotImplemented))
               (* if evt##.keyCode == hot_key then Action.performSyn Ctx.empty action; (); *)
               (* if evt##.keyCode == hot_key then (
@@ -217,19 +217,33 @@ module View = struct
     (* actions that take an input. the conversion function
      * goes from a string to an arg option where arg is
      * the action argument. *)
-    let action_input_input_button action conv btn_label input_id match_function =
+    let action_input_input_button action conv btn_label input_id key_code =
+      let button_id = input_id ^"_button" in
       let i_rs, i_elt, i_dom = r_input (Html.a_id (input_id^ "_1")) input_id in
-      let i_rs_2, i_elt_2, i_dom = r_input (Html.a_id (input_id^ "_2")) input_id in
-      bind_event Ev.keypresses Dom_html.document match_function;
-      bind_event Ev.keypresses i_dom (fun e ->
+      let i_rs_2, i_elt_2, i_dom2 = r_input (Html.a_id (input_id^ "_2")) input_id in
+      (* bind_event Ev.keypresses Dom_html.document match_function; *)
+      bind_event Ev.keyups Dom_html.document (fun evt ->
+          if evt##.keyCode = key_code then (focus_on_id input_id);
+          Lwt.return @@  rf ((React.S.value rs))) ;
+      bind_event Ev.keypresses i_dom (fun evt ->
+          begin
+            if evt##.keyCode = 13 then (click_button button_id; blur_div input_id) else ()
+          end;
+          Lwt.return @@ ());
+      bind_event Ev.keypresses i_dom2 (fun evt ->
+          begin
+            if evt##.keyCode = 13 then (click_button button_id; blur_div input_id) else ()
+          end;
+          Lwt.return @@ ());
+      (* bind_event Ev.keypresses i_dom (fun e ->
           begin match  e##.keyCode with
             | _ -> begin
-                let e = Dom_html.getElementById(btn_label) in
+                let e = Dom_html.getElementById(button_id) in
                 Js.Opt.case (Dom_html.CoerceTo.input e)
                   (fun e -> ()) (fun e -> e##click)
               end
           end
-        ; Lwt.return @@ ());
+         ; Lwt.return @@ ()); *)
       Html5.(div  ~a:[a_class ["input-group"]] [
           i_elt;
           i_elt_2;
@@ -270,39 +284,19 @@ module View = struct
     (* actions that take an input. the conversion function
      * goes from a string to an arg option where arg is
      * the action argument. *)
-    let action_input_button action conv btn_label input_id match_function =
+    let action_input_button action conv btn_label input_id key_code =
       let button_id = input_id ^"_button" in
       let i_rs, i_elt, i_dom = r_input (Html.a_id input_id) input_id in
-      bind_event Ev.keyups Dom_html.document match_function;
+      bind_event Ev.keyups Dom_html.document (fun evt ->
+          Firebug.console##log(evt);
+          Firebug.console##log(key_code);
+          if evt##.keyCode = key_code then (focus_on_id input_id);
+          Lwt.return @@  rf ((React.S.value rs))) ;
       bind_event Ev.keypresses i_dom (fun evt ->
           begin
-            if evt##.keyCode = 13 then
-              (click_button button_id; blur_div input_id)
-            else ()
-          end
-          ;
+            if evt##.keyCode = 13 then (click_button button_id; blur_div input_id) else ()
+          end;
           Lwt.return @@ ());
-
-      (* bind_event Ev.keyups i_dom (fun e ->
-          begin
-            Firebug.console##log(Js.string "Enter");
-            Firebug.console##log(Js.string input_id);
-            Firebug.console##log(e##.keyCode);
-            match  e##.keyCode with
-            | _ -> begin
-                let e = Dom_html.getElementById("lam_input_button") in
-                Js.Opt.case (Dom_html.CoerceTo.input e)
-                  (fun e -> (Firebug.console##log(Js.string "CANNOT FIND ELEMENT");)) (fun e ->
-                      begin
-                        Firebug.console##log(Js.string "CLICK");
-                        Firebug.console##log(Js.string button_id);
-                        e##click
-                      end
-                    )
-              end
-          end
-         ; Lwt.return @@ ()); *)
-
       Html5.(div  ~a:[a_class ["input-group"]] [
           i_elt;
           span ~a:[a_class ["input-group-btn"]] [
@@ -386,26 +380,11 @@ module View = struct
                     (action_input_button
                        (fun v -> Action.Construct (Action.SVar v))
                        (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                       "construct var (v)" "var_input" (fun evt ->
-                           (match  char_of_int evt##.keyCode with
-                            | 'v' ->focus_on_id "var_input";Dom_html.stopPropagation evt;
-                            | _ -> () );
-                           (* | 'v' -> Firebug.console##log(Js.string "VVVV"); focus_on_id "var_input" ; Dom_html.stopPropagation evt
-                              (* Dom_html.stopPropagation evt; *)
-                              | _ -> () ); *)
-                           Lwt.return @@ rf ((React.S.value rs))));
+                       "construct var (v)" "var_input" 86);
                     (action_input_button
                        (fun v -> Action.Construct (Action.SLam v))
                        (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                       "construct lam (\\)" "lam_input" (fun evt ->
-                           (* Firebug.console##log(Js.string "EVT");
-                              Firebug.console##log(evt); *)
-                           Firebug.console##log(evt);
-                           if evt##.keyCode = 220 then (Firebug.console##log(Js.string "EVT");
-                                                        Firebug.console##log(evt); focus_on_id "lam_input");
-                           (* ;Dom_html.stopPropagation evt); *)
-                           (* if evt##.keyCode = 92 then (focus_on_id "lam_input"); *)
-                           Lwt.return @@ rf ((React.S.value rs))));
+                       "construct lam (\\)" "lam_input" 220);
                     (action_button (Action.Construct Action.SAp) "construct ap ( ( )" 40);
                     br ();
                     (action_button (Action.Construct Action.SArg) "construct arg ( ) )" 41);
@@ -413,11 +392,7 @@ module View = struct
                     (action_input_button
                        (fun n -> Action.Construct (Action.SLit n))
                        (fun s -> try Some (int_of_string s) with Failure _ -> None)
-                       "construct lit (l)" "lit_input" (fun evt ->
-                           (match  char_of_int evt##.keyCode with
-                            | '#' -> Dom_html.stopPropagation evt;focus_on_id "lit_input";
-                            | _ -> () );
-                           Lwt.return @@ rf ((React.S.value rs))));
+                       "construct lit (t)" "lit_input" 84);
                     (action_button (Action.Construct Action.SPlus) "construct plus (+)" 43);
                     br ();
                     (action_button (Action.Construct (Action.SInj HExp.L)) "construct Inj L (l)" 108);
@@ -427,11 +402,7 @@ module View = struct
                     (action_input_input_button
                        (fun (v1,v2) -> Action.Construct (Action.SCase (v1,v2)))
                        (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                       "construct case (c)" "case_input" (fun evt ->
-                           (match  char_of_int evt##.keyCode with
-                            | 'c' -> Dom_html.stopPropagation evt; focus_on_id "case_input";
-                            | _ -> () );
-                           Lwt.return @@ rf ((React.S.value rs))));
+                       "construct case (c)" "case_input" 67);
                   ]
                 ]
               ]
