@@ -55,3 +55,80 @@ button:disabled {
 }
 
 /*brown #975633*/
+
+/*CSS content*/
+.EmptyHole:before {
+	content: "(||)";
+}
+
+.asc:before {
+	content: ":";
+}
+
+.ascChar:before{
+	content: ":";
+}
+
+.lAsc:before{
+	content: "⊳";
+}
+
+.rAsc:before{
+	content: "⊲";
+}
+
+.Num:before{
+	content: "num";
+}
+
+.leftParens:before{
+	content: "(";
+}
+
+.rightParens:before{
+	content: ")";
+}
+
+.arrow:before{
+	content: "->";
+}
+
+.plusSign:before{
+	content: "+";
+}
+
+.Hole:before{
+	content: "(||)";
+}
+
+.lambda:before{
+	content: "λ";
+}
+
+.dot::before{
+	content:".";
+}
+
+.inj:before{
+	content:"inj";
+}
+
+.lNE:before{
+	content:"(|";
+}
+
+.rNE:before{
+	content:"|)";
+}
+
+.case:before{
+	content:"case";
+}
+
+.comma:before{
+	content:",";
+}
+
+/*.var::before{
+	content:"var";
+}*/
