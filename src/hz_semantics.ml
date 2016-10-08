@@ -227,7 +227,7 @@ module Action = struct
     | SVar of Var.t
     | SLam of Var.t
     | SAp
-    | SArg
+    (* | SArg *)
     | SLit of int
     | SPlus
     | SInj of HExp.inj_side
@@ -381,11 +381,11 @@ module Action = struct
                 ZExp.CursorE HExp.EmptyHole),
                                  HTyp.Hole)
           end
-        | (Construct SArg, (ZExp.CursorE e, _)) (* 12h *) ->
-          (ZExp.LeftAp (
+        (* | (Construct SArg, (ZExp.CursorE e, _)) (* 12h *) ->
+           (ZExp.LeftAp (
               ZExp.CursorE HExp.EmptyHole,
               e),
-           HTyp.Hole)
+           HTyp.Hole) *)
         | (Construct (SLit n), (ZExp.CursorE HExp.EmptyHole, HTyp.Hole)) (* 12i *) ->
           (ZExp.CursorE (HExp.NumLit n),
            HTyp.Num)
