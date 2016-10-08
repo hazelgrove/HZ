@@ -128,7 +128,11 @@ let blur_div id =
   Js.Opt.case (Dom_html.CoerceTo.input e)
     (fun e -> ()) (fun e -> e##blur)
 
-
+let click_button id =
+  (* Firebug.console##log(Js.string id); *)
+  let e = Dom_html.getElementById(id) in
+  Js.Opt.case (Dom_html.CoerceTo.button e)
+    (fun e -> ()) (fun e -> e##click)
 
 let bind_event ev elem handler =
   let handler evt _ = handler evt in
@@ -166,6 +170,11 @@ module View = struct
     Js.Opt.case (Dom_html.CoerceTo.input e)
       (fun e -> ()) (fun e -> e##focus)
 
+  let click_on_id id =
+    let e = Dom_html.getElementById(id) in
+    Js.Opt.case (Dom_html.CoerceTo.input e)
+      (fun e -> ()) (fun e -> e##click)
+
   let clear_input id =
     let element = Dom_html.getElementById(id) in
     Js.Opt.case (Dom_html.CoerceTo.input element)
@@ -180,13 +189,17 @@ module View = struct
 
     (* helper function for constructing simple action buttons *)
     let action_button action btn_label hot_key=
-      (* bind_event Ev.keypresses Dom_html.document (fun evt ->
+      bind_event Ev.keypresses Dom_html.document (fun evt ->
           Lwt.return @@ rf (
-            Firebug.console##log(evt##.keyCode);
-            Firebug.console##log(Js.string "hot_key");
-            Firebug.console##log(hot_key);
-            (if evt##.keyCode == hot_key then Action.performSyn Ctx.empty action else raise NotImplemented)
-              (React.S.value rs) ) ); *)
+            (* Firebug.console##log(evt##.keyCode);
+               Firebug.console##log(Js.string "hot_key");
+               Firebug.console##log(hot_key);  *)
+            (if evt##.keyCode == hot_key then Action.performSyn Ctx.empty action else (raise NotImplemented))
+              (* if evt##.keyCode == hot_key then Action.performSyn Ctx.empty action; (); *)
+              (* if evt##.keyCode == hot_key then (
+                 (Action.performSyn Ctx.empty action);
+                 ()); *)
+              (React.S.value rs) ) );
       Html5.(button ~a:[a_class ["btn";"btn-outline-primary"];
                         a_onclick (fun _ ->
                             rf (
@@ -217,19 +230,6 @@ module View = struct
               end
           end
         ; Lwt.return @@ ());
-      (* <div class="well">
-         <form class="form-inline">
-         <div class="form-group">
-          <input type="password" class="form-control input-medium" id="exampleInputPassword1" placeholder="Page path">
-         			<input type="password" class="form-control input-medium" id="exampleInputPassword1" placeholder="Name">
-         </div>
-         <div class="form-group">
-          <a href="#" class="btn btn-info">View</a>
-          <a href="#" class="btn btn-primary">Edit</a>
-          <a href="#" class="btn btn-danger">Delete</a>
-         </div>
-         </form>
-         </div> *)
       Html5.(div  ~a:[a_class ["input-group"]] [
           i_elt;
           i_elt_2;
@@ -271,22 +271,50 @@ module View = struct
      * goes from a string to an arg option where arg is
      * the action argument. *)
     let action_input_button action conv btn_label input_id match_function =
+      let button_id = input_id ^"_button" in
       let i_rs, i_elt, i_dom = r_input (Html.a_id input_id) input_id in
-      bind_event Ev.keypresses Dom_html.document match_function;
-      bind_event Ev.keyups i_dom (fun e ->
-          begin match  e##.keyCode with
+      bind_event Ev.keyups Dom_html.document match_function;
+      bind_event Ev.keypresses i_dom (fun evt ->
+          begin
+            if evt##.keyCode = 13 then
+              (click_button button_id)
+              (* TODO: add click method *)
+              (* (begin
+                 Firebug.console##log(evt);
+                 let elem = Dom_html.getElementById("lam_input_button") in
+                 Js.Opt.case (Dom_html.CoerceTo.input elem)
+                  (fun e -> (Firebug.console##log(Js.string  "lam_input_button: ERROR"))) (fun e -> e##click)
+                 end;
+                 Firebug.console##log(Js.string "ENTER")) *)
+            else ()
+          end
+          ;
+          Lwt.return @@ ());
+
+      (* bind_event Ev.keyups i_dom (fun e ->
+          begin
+            Firebug.console##log(Js.string "Enter");
+            Firebug.console##log(Js.string input_id);
+            Firebug.console##log(e##.keyCode);
+            match  e##.keyCode with
             | _ -> begin
-                let e = Dom_html.getElementById(btn_label) in
+                let e = Dom_html.getElementById("lam_input_button") in
                 Js.Opt.case (Dom_html.CoerceTo.input e)
-                  (fun e -> ()) (fun e -> e##click)
+                  (fun e -> (Firebug.console##log(Js.string "CANNOT FIND ELEMENT");)) (fun e ->
+                      begin
+                        Firebug.console##log(Js.string "CLICK");
+                        Firebug.console##log(Js.string button_id);
+                        e##click
+                      end
+                    )
               end
           end
-        ; Lwt.return @@ ());
+         ; Lwt.return @@ ()); *)
 
       Html5.(div  ~a:[a_class ["input-group"]] [
           i_elt;
           span ~a:[a_class ["input-group-btn"]] [
-            button ~a:[Html.a_class ["btn";"btn-default"];  a_id input_id;
+            button ~a:[Html.a_class ["btn";"btn-default"];  a_id (button_id);
                        a_onclick (fun _ ->
                            let arg = opt_get (conv (React.S.value i_rs)) in
                            rf (
@@ -378,11 +406,13 @@ module View = struct
                        (fun v -> Action.Construct (Action.SLam v))
                        (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
                        "construct lam (\\)" "lam_input" (fun evt ->
-                           (match  char_of_int evt##.keyCode with
-                            | '\\' -> Dom_html.stopPropagation evt; focus_on_id "lam_input";
-                            | _ -> () );
-                           (* | '\\' -> Dom_html.stopPropagation evt; focus_on_id "lam_input";
-                              | _ -> () ); *)
+                           (* Firebug.console##log(Js.string "EVT");
+                              Firebug.console##log(evt); *)
+                           Firebug.console##log(evt);
+                           if evt##.keyCode = 220 then (Firebug.console##log(Js.string "EVT");
+                                                        Firebug.console##log(evt); focus_on_id "lam_input");
+                           (* ;Dom_html.stopPropagation evt); *)
+                           (* if evt##.keyCode = 92 then (focus_on_id "lam_input"); *)
                            Lwt.return @@ rf ((React.S.value rs))));
                     (action_button (Action.Construct Action.SAp) "construct ap ( ( )" 40);
                     br ();
