@@ -288,8 +288,8 @@ module View = struct
       let button_id = input_id ^"_button" in
       let i_rs, i_elt, i_dom = r_input (Html.a_id input_id) input_id in
       bind_event Ev.keyups Dom_html.document (fun evt ->
-          Firebug.console##log(evt);
-          Firebug.console##log(key_code);
+          (* Firebug.console##log(evt);
+             Firebug.console##log(key_code); *)
           if evt##.keyCode = key_code then (focus_on_id input_id);
           Lwt.return @@  rf ((React.S.value rs))) ;
       bind_event Ev.keypresses i_dom (fun evt ->
