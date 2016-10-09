@@ -132,8 +132,8 @@ let r_input attrs id =
   in
 
   let esc_Handler evt =
-    Firebug.console##log(Js.string "esc_Handler");
-    Firebug.console##log(evt);
+    (* Firebug.console##log(Js.string "esc_Handler");
+       Firebug.console##log(evt); *)
     if evt##.keyCode = 27 then (blur_div id; false) else (Dom_html.stopPropagation evt; true)
   in
 
@@ -172,16 +172,7 @@ module View = struct
     (* helper function for constructing simple action buttons *)
     let action_button action btn_label hot_key=
       bind_event Ev.keypresses Dom_html.document (fun evt ->
-          Lwt.return @@ rf (
-            (* Firebug.console##log(evt); *)
-            (*   Firebug.console##log(Js.string "hot_key");
-                 Firebug.console##log(hot_key); *)
-            (if evt##.keyCode == hot_key then Action.performSyn Ctx.empty action else (raise NotImplemented))
-              (* if evt##.keyCode == hot_key then Action.performSyn Ctx.empty action; (); *)
-              (* if evt##.keyCode == hot_key then (
-                 (Action.performSyn Ctx.empty action);
-                 ()); *)
-              (React.S.value rs) ) );
+          Lwt.return @@  if evt##.keyCode == hot_key then rf (Action.performSyn Ctx.empty action (React.S.value rs)) else () );
       Html5.(button ~a:[a_class ["btn";"btn-outline-primary"];
                         a_onclick (fun _ ->
                             rf (
@@ -196,7 +187,7 @@ module View = struct
                                   | HExp.IllTyped -> true ) rs)
                        ] [pcdata btn_label]) in
 
-    (* actions that take an input. the conversion function
+    (* actions that takes two inputs. the conversion function
      * goes from a string to an arg option where arg is
      * the action argument. *)
     let action_input_input_button action conv btn_label input_id key_code =
@@ -232,7 +223,8 @@ module View = struct
                                Ctx.empty
                                (action (arg_1,arg_2))
                                (React.S.value rs));
-                           clear_input input_id;
+                           clear_input input_id_1;
+                           clear_input input_id_2;
                            true
                          );
                        R.filter_attrib
@@ -283,6 +275,7 @@ module View = struct
                                Ctx.empty
                                (action arg)
                                (React.S.value rs));
+                           Firebug.console##log(i_rs);
                            clear_input input_id;
                            true
                          );
