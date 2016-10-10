@@ -108,7 +108,7 @@ button:disabled {
 }
 
 .arrow:before{
-	content: "->";
+	content: "→";
 }
 
 .plusSign:before{
