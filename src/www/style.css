@@ -3,7 +3,7 @@
 	height: 72px;
 	font-size: 60px;
 	width: 80%;
-    float: left;
+	float: left;
 }
 
 .subtext{
@@ -15,8 +15,8 @@
 }
 .jumbotron{
 	padding-top: 11px;
-    margin-top: 24px;
-    padding-bottom: 69px;
+	margin-top: 24px;
+	padding-bottom: 69px;
 }
 
 .Model {
@@ -34,11 +34,9 @@
 }
 
 button:disabled {
-	/*border: 3px solid red !important;*/
-	/*background-color:gray;*/
 	background-color: #9d9d9d;
-    color: #27160d;
-		border-color:#27160d;
+	color: #27160d;
+	border-color:#27160d;
 }
 
 .HZElem{
@@ -62,16 +60,16 @@ button:disabled {
 
 
 .btn-outline-primary {
-    color: #975633;
-    background-image: none;
-    background-color: transparent;
-    border-color: #975633;
-		margin-bottom: 10px;
-		margin-right:20px;
+	color: #975633;
+	background-image: none;
+	background-color: transparent;
+	border-color: #975633;
+	margin-bottom: 10px;
+	margin-right:20px;
 	}
 
 .input-group{
-		margin-bottom: 10px;
+	margin-bottom: 10px;
 }
 
 /*brown #975633*/
@@ -118,7 +116,6 @@ button:disabled {
 }
 
 .Hole:before{
-	/*content: "(||)";*/
 	 content: "⦇⦈";
 }
 
@@ -158,6 +155,3 @@ button:disabled {
 	content:",";
 }
 
-/*.var::before{
-	content:"var";
-}*/
