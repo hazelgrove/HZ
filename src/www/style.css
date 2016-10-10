@@ -94,7 +94,7 @@ button:disabled {
 
 /*CSS content*/
 .EmptyHole:before {
-	content: "⦇⦈";
+	content: "⦇⦈"; /* http://www.fileformat.info/info/unicode/char/2988/index.htm */
 }
 
 .ascChar:before{
