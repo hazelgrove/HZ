@@ -84,12 +84,13 @@ end
 
 (* generates the action palette *)
 module ActionPalette = struct
-  module KC = JSUtil.KeyCombo
-  module KCs = JSUtil.KeyCombos
-
   let make_palette ((rs, rf) : Model.rp) =
     let doAction action =
       rf (Action.performSyn Ctx.empty action (React.S.value rs)) in
+
+
+    let module KC = JSUtil.KeyCombo in 
+    let module KCs = JSUtil.KeyCombos in 
 
     (* helper function for constructing simple action buttons *)
     let action_button action btn_label key_combo =
@@ -251,25 +252,78 @@ module ActionPalette = struct
           i_elt_1;
           i_elt_2;
         ]) in
-    let module KCs = JSUtil.KeyCombos in 
+
+    (* movement *)
+    let moveChild1 = action_button (Action.Move (Action.Child 1)) "move child 1" KCs.number_1 in 
+    let moveChild2 = action_button (Action.Move (Action.Child 2)) "move child 2" KCs.number_2 in 
+    let moveChild3 = action_button (Action.Move (Action.Child 3)) "move child 3" KCs.number_3 in 
+    let moveParent = action_button (Action.Move (Action.Parent)) "move parent" KCs.p in 
+
+    (* deletion *)
+    let delete = action_button (Action.Del) "del" KCs.x in 
+
+    (* type construction *)
+    let constructArrow = action_button (Action.Construct Action.SArrow) "construct arrow" KCs.greaterThan in 
+    let constructNum = action_button (Action.Construct Action.SNum) "construct num" KCs.n in 
+    let constructSum = action_button (Action.Construct Action.SSum) "construct sum" KCs.s in 
+
+    (* finishing *)
+    let finish = action_button (Action.Finish) "finish" KCs.dot in 
+
+    (* expression construction *)
+    let constructAsc = action_button (Action.Construct Action.SAsc) "construct asc" KCs.colon in 
+    let constructVar = action_input_button
+        (fun v -> Action.Construct (Action.SVar v))
+        (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+        "construct var" "var_input" KCs.v "Enter var + press Enter" in 
+    let constructLam = action_input_button
+        (fun v -> Action.Construct (Action.SLam v))
+        (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+        "construct lam" "lam_input" KCs.backslash "Enter var + press Enter" in 
+    let constructAp = action_button (Action.Construct Action.SAp) "construct ap" KCs.openParens in 
+    let constructLit = action_input_button
+        (fun n -> Action.Construct (Action.SLit n))
+        (fun s ->
+           try
+             let i = int_of_string s in
+             if i < 0 then None else Some i
+           with Failure _ -> None)
+        "construct lit" "lit_input" KCs.pound "Enter num + press Enter" in 
+    let constructPlus = action_button (Action.Construct Action.SPlus) "construct plus" KCs.plus in 
+    let constructInjL = action_button (Action.Construct (Action.SInj HExp.L)) "construct inj L" KCs.l in 
+    let constructInjR = action_button (Action.Construct (Action.SInj HExp.R)) "construct inj R" KCs.r in 
+    let constructCase = action_input_input_button
+        (fun (v1,v2) -> Action.Construct (Action.SCase (v1,v2)))
+        (fun (s1, s2) ->
+           let s1_empty = String.compare s1 "" in
+           let s2_empty = String.compare s2 "" in
+           match s1_empty, s2_empty with
+           | 0, _ -> None
+           | _, 0 -> None
+           | _ -> Some (s1, s2))
+        "construct case" "case_input" KCs.c 
+        "Enter var + press Tab"
+        "Enter var + press Enter" in 
+
+    (* put it all together into the action palette *)
     Html5.(div ~a:[a_class ["row";"marketing"]] [
         div ~a:[a_class ["col-lg-3"; "col-md-3"; "col-sm-3"]] [
           div ~a:[a_class ["panel";"panel-default"]] [
             div ~a:[a_class ["panel-title"]] [pcdata "Movement"];
             div ~a:[a_class ["panel-body"]] [
-              (action_button (Action.Move (Action.Child 1)) "move child 1" KCs.number_1);
+              (moveChild1);
               br ();
-              (action_button (Action.Move (Action.Child 2)) "move child 2" KCs.number_2);
+              (moveChild2);
               br ();
-              (action_button (Action.Move (Action.Child 3)) "move child 3" KCs.number_3);
+              (moveChild3);
               br ();
-              (action_button (Action.Move (Action.Parent)) "move parent" KCs.p);
+              (moveParent);
             ]
           ];
           div ~a:[a_class ["panel";"panel-default"]] [
             div ~a:[a_class ["panel-title"]] [pcdata "Deletion"];
             div ~a:[a_class ["panel-body"]] [
-              (action_button (Action.Del) "del" KCs.x);
+              (delete);
             ]
           ]
         ];
@@ -277,17 +331,17 @@ module ActionPalette = struct
           div ~a:[a_class ["panel";"panel-default"]] [
             div ~a:[a_class ["panel-title"]] [pcdata "Type Construction"];
             div ~a:[a_class ["panel-body"]] [
-              (action_button (Action.Construct Action.SArrow) "construct arrow" KCs.greaterThan);
+              (constructArrow);
               br ();
-              (action_button (Action.Construct Action.SNum) "construct num" KCs.n);
+              (constructNum);
               br ();
-              (action_button (Action.Construct Action.SSum) "construct sum" KCs.s);
-              br ();  ]
+              (constructSum);
+              br ();]
           ];
           div ~a:[a_class ["panel";"panel-default"]] [
             div ~a:[a_class ["panel-title"]] [pcdata "Finishing"];
             div ~a:[a_class ["panel-body"]] [
-              (action_button (Action.Finish) "finish" KCs.dot)
+              (finish)
             ]
           ]
         ]
@@ -296,44 +350,20 @@ module ActionPalette = struct
           div ~a:[a_class ["panel";"panel-default"]] [
             div ~a:[a_class ["panel-title"]] [pcdata "Expression Construction"];
             div ~a:[a_class ["panel-body"]] [
-              (action_button (Action.Construct Action.SAsc) "construct asc" KCs.colon);
+              (constructAsc);
               br ();
-              (action_input_button
-                 (fun v -> Action.Construct (Action.SVar v))
-                 (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                 "construct var" "var_input" KCs.v "Enter var + press Enter");
-              (action_input_button
-                 (fun v -> Action.Construct (Action.SLam v))
-                 (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                 "construct lam" "lam_input" KCs.backslash "Enter var + press Enter");
-              (action_button (Action.Construct Action.SAp) "construct ap" KCs.openParens);
+              (constructVar);
+              (constructLam);
+              (constructAp);
               br ();
-              (action_input_button
-                 (fun n -> Action.Construct (Action.SLit n))
-                 (fun s ->
-                    try
-                      let i = int_of_string s in
-                      if i < 0 then None else Some i
-                    with Failure _ -> None)
-                 "construct lit" "lit_input" KCs.pound "Enter num + press Enter");
-              (action_button (Action.Construct Action.SPlus) "construct plus" KCs.plus);
+              (constructLit);
+              (constructPlus);
               br ();
-              (action_button (Action.Construct (Action.SInj HExp.L)) "construct inj L" KCs.l);
+              (constructInjL);
               br ();
-              (action_button (Action.Construct (Action.SInj HExp.R)) "construct inj R" KCs.r);
+              (constructInjR);
               br ();
-              (action_input_input_button
-                 (fun (v1,v2) -> Action.Construct (Action.SCase (v1,v2)))
-                 (fun (s1, s2) ->
-                    let s1_empty = String.compare s1 "" in
-                    let s2_empty = String.compare s2 "" in
-                    match s1_empty, s2_empty with
-                    | 0, _ -> None
-                    | _, 0 -> None
-                    | _ -> Some (s1, s2))
-                 "construct case" "case_input" KCs.c 
-                 "Enter var + press Tab"
-                 "Enter var + press Enter");
+              (constructCase);
             ]
           ]
         ]
