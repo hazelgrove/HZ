@@ -5,18 +5,14 @@ open Hz_model
 open Hz_model.Model
 
 open React;;
-open Lwt.Infix;;
 
-exception NotImplemented
+module Ev = Dom_html.Event
 
+(* generates divs from terms *)
 module HTMLView = struct
   open Html
 
   let hzdiv str contents =  Html.(div ~a:[a_class ["HZElem";str]] contents)
-  let hotdog = hzdiv "hotdog" []
-  let ascChar = hzdiv "asc" []
-  let lAscChar =  hzdiv "lAsc" []
-  let rAscChar =  hzdiv "rAsc" []
 
   let rec of_htype (htype : HTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match htype with
@@ -28,7 +24,7 @@ module HTMLView = struct
   let rec of_hexp (hexp : HExp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match hexp with
     | HExp.Lam (var,exp) -> hzdiv "Lam" [(div ~a:[a_class ["HZElem";"lambda"]] []); hzdiv "hexp" [pcdata var]; (div ~a:[a_class ["HZElem";"dot"]] []); hzdiv "hexp" [of_hexp exp]]
-    | HExp.Asc (hexp,htype) -> hzdiv "Asc" [hzdiv "hexp" [of_hexp hexp]; ascChar; hzdiv "hexp" [of_htype htype]]
+    | HExp.Asc (hexp,htype) -> hzdiv "Asc" [hzdiv "hexp" [of_hexp hexp]; hzdiv "asc" []; hzdiv "hexp" [of_htype htype]]
     | HExp.Var str -> hzdiv "Var" [pcdata str]
     | HExp.Ap (e1, e2) -> hzdiv "Ap" [of_hexp e1; hzdiv "leftParens" []; of_hexp e2; hzdiv "rightParens" []]
     | HExp.NumLit num -> hzdiv "NumLit" [pcdata (string_of_int num)]
@@ -50,7 +46,10 @@ module HTMLView = struct
         hzdiv "dot" [];
         hzdiv "exp2" [of_hexp exp2];
         hzdiv "rightParens" []
-      ]  (* case(e ̇, x.e ̇1, y.eˆ2) *)
+      ]
+
+  let lAscChar =  hzdiv "lAsc" []
+  let rAscChar =  hzdiv "rAsc" []
 
   let rec of_ztype (ztype : ZTyp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match ztype with
@@ -94,89 +93,53 @@ module HTMLView = struct
         hzdiv "exp1" [of_hexp exp1]; hzdiv "comma" [];
         hzdiv "var2" [pcdata var2]; hzdiv "dot" []; hzdiv "exp2" [of_zexp exp2]; hzdiv "rightParens" []
       ]
-
 end
 
-(* TODO: put common utils somewhere sensible *)
-exception No_value
-let opt_get opt = match opt with Some x -> x | _ -> raise No_value
+module Util = struct
+  exception No_value
+  let opt_get opt = match opt with Some x -> x | _ -> raise No_value
+end
 
-module Ev = Lwt_js_events
+module JSUtil = struct
+  let listen_to ev elem f = 
+    Dom_html.addEventListener
+      elem
+      ev
+      (Dom_html.handler f)
+      Js._false
 
-let blur_div id =
-  let e = Dom_html.getElementById(id) in
-  Js.Opt.case (Dom_html.CoerceTo.input e)
-    (fun e -> ()) (fun e -> e##blur)
+  let listen_to_t ev elem f = 
+    listen_to ev elem (fun evt -> 
+        f evt; Js._true)
 
-let click_button id =
-  (* Firebug.console##log(Js.string id); *)
-  let e = Dom_html.getElementById(id) in
-  Js.Opt.case (Dom_html.CoerceTo.button e)
-    (fun e -> ()) (fun e -> e##click)
+  (* create an input and a reactive signal tracking its
+   * string value *)
+  let r_input id =
+    let rs, rf = S.create "" in
+    let i_elt = Html5.(input ~a:[a_id id; a_class ["form-control"]] ();  ) in
+    let i_dom = To_dom.of_input i_elt in
+    let _ = listen_to_t Ev.input i_dom (fun _ -> 
+        rf (Js.to_string (i_dom##.value))) in 
+    ((rs, rf), i_elt, i_dom)
+end
 
-let bind_event ev elem handler =
-  let handler evt _ = handler evt in
-  Ev.(async @@ (fun () -> ev elem handler))
-
-(* create an input and a reactive signal tracking its
- * string value *)
-let r_input attrs id =
-  let rs, rf = S.create "" in
-  (* let key_handler evt =
-     Dom_html.stopPropagation evt
-     (* if evt##.keyCode = 13 then (Firebug.console##log(Js.string "Enter")) else (Dom_html.stopPropagation evt); *)
-     (* if evt##.keyCode = 27 then (Firebug.console##log(Js.string "esc");  blur_div id; true) else (Dom_html.stopPropagation evt; true) *)
-     in *)
-  let key_handler evt =
-    if evt##.keyCode = 13 then (false) else (Dom_html.stopPropagation evt; true)
-  in
-
-  let esc_Handler evt =
-    (* Firebug.console##log(Js.string "esc_Handler");
-       Firebug.console##log(evt); *)
-    if evt##.keyCode = 27 then (blur_div id; false) else (Dom_html.stopPropagation evt; true)
-  in
-
-  let i_elt = Html5.(input ~a:[attrs; a_class ["form-control"]; a_onkeypress key_handler; a_onkeyup esc_Handler] ();  ) in
-  let i_dom = To_dom.of_input i_elt in
-  let _ = bind_event Ev.inputs i_dom (fun _ ->
-      Lwt.return @@
-      (rf (Js.to_string (i_dom##.value)))) in
-  (rs, i_elt, i_dom)
-
-
-module View = struct
-
-  let focus_on_id id =
-    let e = Dom_html.getElementById(id) in
-    Js.Opt.case (Dom_html.CoerceTo.input e)
-      (fun e -> ()) (fun e -> e##focus)
-
-  let click_on_id id =
-    let e = Dom_html.getElementById(id) in
-    Js.Opt.case (Dom_html.CoerceTo.input e)
-      (fun e -> ()) (fun e -> e##click)
-
-  let clear_input id =
-    let element = Dom_html.getElementById(id) in
-    Js.Opt.case (Dom_html.CoerceTo.input element)
-      (fun e -> ())
-      (fun e -> e##.value := (Js.string "") )
-
-  let view ((rs, rf) : Model.rp) =
-    (* zexp view *)
-    let zexp_view_rs = React.S.map (fun (zexp, _) ->
-        [HTMLView.of_zexp zexp]) rs in
-    let zexp_view = Html5.(R.Html5.div (ReactiveData.RList.from_signal zexp_view_rs)) in
+(* generates the action palette *)
+module ActionPalette = struct
+  let make_palette ((rs, rf) : Model.rp) = 
+    let doAction action = 
+      rf (Action.performSyn Ctx.empty action (React.S.value rs)) in 
 
     (* helper function for constructing simple action buttons *)
-    let action_button action btn_label hot_key=
-      bind_event Ev.keypresses Dom_html.document (fun evt ->
-          Lwt.return @@  if evt##.keyCode == hot_key then rf (Action.performSyn Ctx.empty action (React.S.value rs)) else () );
+    let action_button action btn_label key_code =
+      let _ = JSUtil.listen_to_t Ev.keypress Dom_html.document (fun evt -> 
+          if evt##.keyCode = key_code then 
+            try 
+              doAction action 
+            with Action.InvalidAction -> () 
+          else ()) in 
       Html5.(button ~a:[a_class ["btn";"btn-outline-primary"];
                         a_onclick (fun _ ->
-                            rf (
-                              Action.performSyn Ctx.empty action (React.S.value rs));
+                            doAction action; 
                             true);
                         R.filter_attrib
                           (a_disabled ())
@@ -184,205 +147,247 @@ module View = struct
                                try
                                  let _ = Action.performSyn Ctx.empty action m in false
                                with Action.InvalidAction -> true
-                                  | HExp.IllTyped -> true ) rs)
-                       ] [pcdata btn_label]) in
-
-    (* actions that takes two inputs. the conversion function
-     * goes from a string to an arg option where arg is
-     * the action argument. *)
-    let action_input_input_button action conv btn_label input_id key_code =
-      let button_id = input_id ^"_button" in
-      let input_id_1 = (input_id^ "_1") in
-      let input_id_2 = (input_id^ "_2") in
-      let i_rs, i_elt, i_dom = r_input (Html.a_id input_id_1) input_id_1 in
-      let i_rs_2, i_elt_2, i_dom2 = r_input (Html.a_id input_id_2) input_id_2 in
-      (* bind_event Ev.keypresses Dom_html.document match_function; *)
-      bind_event Ev.keyups Dom_html.document (fun evt ->
-          if evt##.keyCode = key_code then (focus_on_id input_id_1);
-          Lwt.return @@  rf ((React.S.value rs))) ;
-      bind_event Ev.keypresses i_dom (fun evt ->
-          begin
-            if evt##.keyCode = 13 then (click_button button_id; blur_div input_id_1) else ()
-          end;
-          Lwt.return @@ ());
-      bind_event Ev.keypresses i_dom2 (fun evt ->
-          begin
-            if evt##.keyCode = 13 then (click_button button_id; blur_div input_id_2) else ()
-          end;
-          Lwt.return @@ ());
-      Html5.(div  ~a:[a_class ["input-group"]] [
-          i_elt;
-          i_elt_2;
-          span ~a:[a_class ["input-group-btn"]] [
-            button ~a:[Html.a_class ["btn";"btn-default"];  a_id button_id;
-                       a_onclick (fun _ ->
-                           let arg_1 = opt_get (conv (React.S.value i_rs)) in
-                           let arg_2 = opt_get (conv (React.S.value i_rs_2)) in
-                           rf (
-                             Action.performSyn
-                               Ctx.empty
-                               (action (arg_1,arg_2))
-                               (React.S.value rs));
-                           clear_input input_id_1;
-                           clear_input input_id_2;
-                           true
-                         );
-                       R.filter_attrib
-                         (a_disabled ())
-                         (S.l3 (fun s1 s2 m ->
-                              match conv s1 with
-                                Some arg ->
-                                begin
-                                  match conv s2 with
-                                    Some arg2 ->
-                                    begin
-                                      try
-                                        let _ = Action.performSyn Ctx.empty (action (arg,arg2)) m in
-                                        false
-                                      with Action.InvalidAction -> true
-                                         | HExp.IllTyped -> true   end
-                                  | _ -> true
-                                end
-                              | _ -> true) i_rs i_rs_2 rs)
-                      ] [pcdata btn_label]
-          ]
-        ]) in
+                             ) rs)
+                       ] [pcdata btn_label]) in 
 
     (* actions that take an input. the conversion function
      * goes from a string to an arg option where arg is
      * the action argument. *)
     let action_input_button action conv btn_label input_id key_code =
-      let button_id = input_id ^"_button" in
-      let i_rs, i_elt, i_dom = r_input (Html.a_id input_id) input_id in
-      bind_event Ev.keyups Dom_html.document (fun evt ->
-          (* Firebug.console##log(evt);
-             Firebug.console##log(key_code); *)
-          if evt##.keyCode = key_code then (focus_on_id input_id);
-          Lwt.return @@  rf ((React.S.value rs))) ;
-      bind_event Ev.keypresses i_dom (fun evt ->
-          begin
-            if evt##.keyCode = 13 then (click_button button_id; blur_div input_id) else ()
-          end;
-          Lwt.return @@ ());
-      Html5.(div  ~a:[a_class ["input-group"]] [
+      (* create reactive input box *)
+      let (i_rs, i_rf), i_elt, i_dom = JSUtil.r_input input_id in
+      let clear_input () = 
+        i_dom##.value := (Js.string "");
+        i_rf "" in 
+      let button_elt = Html5.(button ~a:[
+          a_class ["btn"; "btn-default"]; 
+          a_id (input_id ^ "_button");
+          a_onclick (fun _ ->
+              let arg = Util.opt_get (conv (React.S.value i_rs)) in
+              doAction (action arg);
+              clear_input (); 
+              true
+            );
+          R.filter_attrib
+            (a_disabled ())
+            (S.l2 (fun s m ->
+                 match conv s with
+                   Some arg ->
+                   begin try
+                       let _ = Action.performSyn Ctx.empty (action arg) m in false
+                     with Action.InvalidAction -> true
+                   end
+                 | _ -> true) i_rs rs)
+        ] [pcdata btn_label]) in 
+      let button_dom = To_dom.of_button button_elt in 
+      let _ = JSUtil.listen_to Ev.keypress Dom_html.document (fun evt -> 
+          let evt_key = evt##.keyCode in 
+          (* let _ = Firebug.console##log evt_key in *)
+          (* let _ = Firebug.console##log key_code in *) 
+          if evt_key = key_code then 
+            begin 
+              i_dom##focus; 
+              Dom_html.stopPropagation evt;
+              Js._false
+            end
+          else 
+            Js._true
+        ) in 
+      let _ = JSUtil.listen_to Ev.keypress i_dom (fun evt ->
+          let evt_key = evt##.keyCode in 
+          match evt_key with 
+          | 13 -> begin
+              button_dom##click; 
+              i_dom##blur; 
+              Js._false
+            end 
+          | 27 -> begin 
+              i_dom##blur; 
+              Js._false
+            end
+          | _ -> Dom_html.stopPropagation evt; Js._true
+        ) in 
+      Html5.(div ~a:[a_class ["input-group"]] [
           i_elt;
           span ~a:[a_class ["input-group-btn"]] [
-            button ~a:[Html.a_class ["btn";"btn-default"];  a_id (button_id);
-                       a_onclick (fun _ ->
-                           let arg = opt_get (conv (React.S.value i_rs)) in
-                           rf (
-                             Action.performSyn
-                               Ctx.empty
-                               (action arg)
-                               (React.S.value rs));
-                           Firebug.console##log(i_rs);
-                           clear_input input_id;
-                           true
-                         );
-                       R.filter_attrib
-                         (a_disabled ())
-                         (S.l2 (fun s m ->
-                              match conv s with
-                                Some arg ->
-                                begin try
-                                    let _ = Action.performSyn Ctx.empty (action arg) m in false
-                                  with Action.InvalidAction -> true
-                                     | HExp.IllTyped -> true   end
-                              | _ -> true) i_rs rs)
-                      ] [pcdata btn_label]
+            button_elt]
+        ]) in 
+
+    (* actions that takes two inputs. the conversion function
+     * goes from a pair of strings to an arg option where arg is
+     * the action argument. *)
+    let action_input_input_button action conv btn_label input_id key_code =
+      let input_id_1 = (input_id ^ "_1") in
+      let input_id_2 = (input_id ^ "_2") in
+      let (i_rs_1, i_rf_1), i_elt_1, i_dom_1 = JSUtil.r_input input_id_1 in
+      let (i_rs_2, i_rf_2), i_elt_2, i_dom_2 = JSUtil.r_input input_id_2 in
+      let clear_input () = 
+        i_dom_1##.value := (Js.string ""); i_rf_1 "";  
+        i_dom_2##.value := (Js.string ""); i_rf_2 "" in 
+      let button_elt = Html5.(button ~a:[
+          a_class ["btn"; "btn-default"]; 
+          a_id (input_id ^ "_button");
+          a_onclick (fun _ ->
+              let i1 = React.S.value i_rs_1 in 
+              let i2 = React.S.value i_rs_2 in 
+              let arg = Util.opt_get (conv (i1, i2)) in
+              doAction (action arg);
+              clear_input (); 
+              true
+            );
+          R.filter_attrib
+            (a_disabled ())
+            (S.l3 (fun s1 s2 m ->
+                 match conv (s1, s2) with
+                   Some arg ->
+                   begin try
+                       let _ = Action.performSyn Ctx.empty (action arg) m in false
+                     with Action.InvalidAction -> true
+                   end
+                 | _ -> true) i_rs_1 i_rs_2 rs)
+        ] [pcdata btn_label]) in 
+      let button_dom = To_dom.of_button button_elt in 
+      let _ = JSUtil.listen_to Ev.keypress Dom_html.document (fun evt -> 
+          let evt_key = evt##.keyCode in 
+          if evt_key = key_code then 
+            begin 
+              i_dom_1##focus; 
+              Dom_html.stopPropagation evt;
+              Js._false
+            end
+          else 
+            Js._true
+        ) in 
+      let i_keypress_listener i_dom = JSUtil.listen_to Ev.keypress i_dom (fun evt ->
+          let evt_key = evt##.keyCode in 
+          match evt_key with 
+          | 13 -> begin
+              button_dom##click; 
+              i_dom##blur; 
+              Js._false
+            end 
+          | 27 -> begin 
+              i_dom##blur; 
+              Js._false
+            end
+          | _ -> Dom_html.stopPropagation evt; Js._true
+        ) in 
+      let _ = i_keypress_listener i_dom_1 in 
+      let _ = i_keypress_listener i_dom_2 in 
+      Html5.(div ~a:[a_class ["input-group"]] [
+          i_elt_1;
+          i_elt_2; 
+          span ~a:[a_class ["input-group-btn"]] [
+            button_elt]
+        ]) in 
+
+    Html5.(div ~a:[a_class ["row";"marketing"]] [
+        div ~a:[a_class ["col-lg-3"; "col-md-3"; "col-sm-3"]] [
+          div ~a:[a_class ["panel";"panel-default"]] [
+            div ~a:[a_class ["panel-title"]] [pcdata "Movement"];
+            div ~a:[a_class ["panel-body"]] [
+              (action_button (Action.Move (Action.Child 1)) "move child 1 (1)" 49);
+              br ();
+              (action_button (Action.Move (Action.Child 2)) "move child 2 (2)" 50);
+              br ();
+              (action_button (Action.Move (Action.Child 3)) "move child 3 (3)" 51);
+              br ();
+              (action_button (Action.Move (Action.Parent)) "move parent (p)" 112);
+              (* br (); *)
+            ]
+          ];
+          div ~a:[a_class ["panel";"panel-default"]] [
+            div ~a:[a_class ["panel-title"]] [pcdata "Deletion"];
+            div ~a:[a_class ["panel-body"]] [
+              (action_button (Action.Del) "del (x)" 120);
+            ]
           ]
-        ]) in
+        ];
+        div ~a:[a_class ["col-lg-3"; "col-md-3"; "col-sm-3"]] [
+          div ~a:[a_class ["panel";"panel-default"]] [
+            div ~a:[a_class ["panel-title"]] [pcdata "Types"];
+            div ~a:[a_class ["panel-body"]] [
+              (action_button (Action.Construct Action.SArrow) "construct arrow (>)" 62);
+              br ();
+              (action_button (Action.Construct Action.SNum) "construct num (n)" 110);
+              br ();
+              (action_button (Action.Construct Action.SSum) "construct sum (s)" 115);
+              br ();  ]
+          ];
+          div ~a:[a_class ["panel";"panel-default"]] [
+            div ~a:[a_class ["panel-title"]] [pcdata "Finishing"];
+            div ~a:[a_class ["panel-body"]] [
+              (action_button (Action.Finish) "finish (.)" 46)
+            ]
+          ]
+        ]
+        ;
+        div ~a:[a_class ["col-lg-6"; "col-md-6"; "col-sm-6"]] [
+          div ~a:[a_class ["panel";"panel-default"]] [
+            div ~a:[a_class ["panel-title"]] [pcdata "Construction"];
+            div ~a:[a_class ["panel-body"]] [
+              (action_button (Action.Construct Action.SAsc) "construct asc (:)" 58);
+              br ();
+              (action_input_button 
+                 (fun v -> Action.Construct (Action.SVar v))
+                 (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+                 "construct var (v)" "var_input" 118);
+              (action_input_button 
+                 (fun v -> Action.Construct (Action.SLam v))
+                 (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
+                 "construct lam (\\)" "lam_input" 92);
+              (action_button (Action.Construct Action.SAp) "construct ap ( ( )" 40);
+              br ();
+              (action_input_button  
+                 (fun n -> Action.Construct (Action.SLit n))
+                 (fun s -> try Some (int_of_string s) with Failure _ -> None)
+                 "construct lit (#)" "lit_input" 35);
+              (action_button (Action.Construct Action.SPlus) "construct plus (+)" 43);
+              br ();
+              (action_button (Action.Construct (Action.SInj HExp.L)) "construct inj L (l)" 108);
+              br ();
+              (action_button (Action.Construct (Action.SInj HExp.R)) "construct inj R (r)" 114);
+              br ();
+              (action_input_input_button  
+                 (fun (v1,v2) -> Action.Construct (Action.SCase (v1,v2)))
+                 (fun (s1, s2) -> 
+                    let s1_empty = String.compare s1 "" in 
+                    let s2_empty = String.compare s2 "" in 
+                    match s1_empty, s2_empty with 
+                    | 0, _ -> None 
+                    | _, 0 -> None 
+                    | _ -> Some (s1, s2))
+                 "construct case (c)" "case_input" 99);
+            ]
+          ]
+        ]
+      ])
+end
+
+(* generates the view *)
+module View = struct
+  let view ((rs, rf) : Model.rp) =
+    (* zexp view *)
+    let zexp_view_rs = React.S.map (fun (zexp, _) ->
+        [HTMLView.of_zexp zexp]) rs in
+    let zexp_view = Html5.(R.Html5.div (ReactiveData.RList.from_signal zexp_view_rs)) in
 
     Html5.(
-      div [ div  ~a:[a_class ["jumbotron"]]
-              [ div  ~a:[a_class ["headerTextAndLogo"]] [
-                    div  ~a:[a_class ["display-3"]] [pcdata "HZ"];
+      div [ div ~a:[a_class ["jumbotron"]]
+              [ div ~a:[a_class ["headerTextAndLogo"]] [
+                    div ~a:[a_class ["display-3"]] [pcdata "HZ"];
                     img ~a:[a_id "logo"] ~alt:("Logo") ~src:(Xml.uri_of_string ("imgs/hazel-logo.png")) ()
-
                   ];
-
-                div  ~a:[a_class ["subtext"]] [pcdata "(a reference implementation of Hazelnut)"];
+                div ~a:[a_class ["subtext"]] [pcdata "(a reference implementation of Hazelnut)"];
                 div ~a:[a_class ["Model"]] [zexp_view]];
-            div ~a:[a_class ["row";"marketing"]] [
-              div ~a:[a_class ["col-lg-3"; "col-md-3"; "col-sm-3"]] [
-                div ~a:[a_class ["panel";"panel-default"]] [
-                  div ~a:[a_class ["panel-title"]] [pcdata "Movement"];
-                  div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Move (Action.Child 1)) "move child 1 (1)" 49);
-                    br ();
-                    (action_button (Action.Move (Action.Child 2)) "move child 2 (2)" 50);
-                    br ();
-                    (action_button (Action.Move (Action.Child 3)) "move child 3 (3)" 51);
-                    br ();
-                    (action_button (Action.Move (Action.Parent)) "move parent (p)" 112);
-                    (* br (); *)
-                  ]
-                ];
-                div ~a:[a_class ["panel";"panel-default"]] [
-                  div ~a:[a_class ["panel-title"]] [pcdata "Deletion"];
-                  div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Del) "del (x)" 120);
-                  ]
-                ]
-              ];
-              div ~a:[a_class ["col-lg-3"; "col-md-3"; "col-sm-3"]] [
-                div ~a:[a_class ["panel";"panel-default"]] [
-                  div ~a:[a_class ["panel-title"]] [pcdata "Types"];
-                  div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Construct Action.SArrow) "construct arrow (>)" 62);
-                    br ();
-                    (action_button (Action.Construct Action.SNum) "construct num (n)" 110);
-                    br ();
-                    (action_button (Action.Construct Action.SSum) "construct sum (s)" 115);
-                    br ();  ]
-                ];
-                div ~a:[a_class ["panel";"panel-default"]] [
-                  div ~a:[a_class ["panel-title"]] [pcdata "Finishing"];
-                  div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Finish) "finish (.)" 46)
-                  ]
-                ]
-              ]
-              ;
-              div ~a:[a_class ["col-lg-6"; "col-md-6"; "col-sm-6"]] [
-                div ~a:[a_class ["panel";"panel-default"]] [
-                  div ~a:[a_class ["panel-title"]] [pcdata "Construction"];
-                  div ~a:[a_class ["panel-body"]] [
-                    (action_button (Action.Construct Action.SAsc) "construct asc (:)" 58);
-                    br ();
-                    (action_input_button
-                       (fun v -> Action.Construct (Action.SVar v))
-                       (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                       "construct var (v)" "var_input" 86);
-                    (action_input_button
-                       (fun v -> Action.Construct (Action.SLam v))
-                       (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                       "construct lam (\\)" "lam_input" 220);
-                    (action_button (Action.Construct Action.SAp) "construct ap ( ( )" 40);
-                    br ();
-                    (action_input_button
-                       (fun n -> Action.Construct (Action.SLit n))
-                       (fun s -> try Some (int_of_string s) with Failure _ -> None)
-                       "construct lit (#)" "lit_input" 51);
-                    (action_button (Action.Construct Action.SPlus) "construct plus (+)" 43);
-                    br ();
-                    (action_button (Action.Construct (Action.SInj HExp.L)) "construct inj L (l)" 108);
-                    br ();
-                    (action_button (Action.Construct (Action.SInj HExp.R)) "construct inj R (r)" 114);
-                    br ();
-                    (action_input_input_button
-                       (fun (v1,v2) -> Action.Construct (Action.SCase (v1,v2)))
-                       (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                       "construct case (c)" "case_input" 67);
-                  ]
-                ]
-              ]
-            ]
+            ActionPalette.make_palette (rs, rf)
           ])
 end
 
+
+let doc = Dom_html.document  
+
 let main _ =
-  let doc = Dom_html.document in
   let parent =
     Js.Opt.get (doc##getElementById(Js.string "container"))
       (fun () -> assert false)
@@ -390,5 +395,11 @@ let main _ =
   let m = Model.empty in
   let rs, rf = React.S.create m in
   Dom.appendChild parent (Tyxml_js.To_dom.of_div (View.view (rs, rf))) ;
-  Lwt.return ()
-let _ = Lwt_js_events.onload () >>= main
+  Js._true
+
+let _ = Dom_html.addEventListener
+    doc
+    Dom_html.Event.domContentLoaded 
+    (Dom_html.handler main)
+    Js._true
+
