@@ -310,7 +310,7 @@ module AppView = struct
     (* zexp view *)
     let zexp_view_rs = React.S.map (fun (zexp, _) ->
         [HTMLView.of_zexp zexp]) rs in
-    let zexp_view = Html5.(R.Html5.div (ReactiveData.RList.from_signal zexp_view_rs)) in
+    let zexp_view = (R.Html5.div (ReactiveData.RList.from_signal zexp_view_rs)) in
 
     Tyxml_js.To_dom.of_div Html5.(
         div [
