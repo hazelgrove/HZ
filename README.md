@@ -74,53 +74,19 @@ You can execute build.sh to compile hz.ml.
 
 It consists of two steps:
 
-1. Compile the `hz.ml` file to OCaml bytecode with the `ocamlbuild` command:
-
-  ```sh
-  > ocamlbuild -use-ocamlfind \
-  -pkgs lwt.ppx,js_of_ocaml,js_of_ocaml.ppx,js_of_ocaml.tyxml,tyxml,react,reactiveData \
-  hz.byte ;
-  ```
-
-2. Build the Javascript file from the `hz.byte` file with the `js_of_ocaml` command:
-
-  ```sh
-  > js_of_ocaml +weak.js --opt 3 -o www/js/hz.js hz.byte
-  ```
-
-  The command options are:
-  - `+weak.js` to include the necessary `weak` package.
-  - `-o hello.js` to set output file name.
-
-  You can include `--opt 3` to optimize more heavily.
+1. Compile the `hz.ml` file to OCaml bytecode with the `ocamlbuild` command.
+2. Build the Javascript file from the `hz.byte` file with the `js_of_ocaml` command.
 
 ## Results
-You can now open hz.html in a browser to see it working.
-
-## Support
-
-Js_of_ocaml is part of the [Ocsigen project](http://ocsigen.org/).
-
-- [Mailing list](https://sympa.inria.fr/sympa/subscribe/ocsigen)
-- IRC : #ocsigen on irc.freenode.net
-
-## Resources
-
-- [Website](http://ocsigen.org/js_of_ocaml/)
-- [GitHub](https://github.com/ocsigen/js_of_ocaml)
-- [Try Js_of_ocaml](http://try.ocamlpro.com/js_of_ocaml/)
-- 
-## Credit
-
-This README is based on the readme.md file for the [TodoMVC example](https://github.com/slegrand45/examples_ocsigen/tree/master/jsoo/todomvc-react) by [Stéphane Legrand](https://github.com/slegrand45).
+You can now open hz.html in a browser to see HZ in action.
 
 # Implementation Details
 
-The file `hz_semantics.ml` implements the syntax and semantics from the paper in a pure functional style, independent of any details of the view. NOTE: We use positive ocaml integers for the Hazelnut `num` type. 
+The file `hz_semantics.ml` implements the syntax and semantics from the paper in a pure functional style, independent of any details of the user interface. NOTE: We use positive OCaml integers for the Hazelnut `num` type. 
 
 The file `hz_model.ml` gives the signature of the reactive signal that models edit states, which consist of a Z-expression paired with an H-type.
 
-The file `hz_view.ml` transforms terms to HTML trees.
+The file `hz_view.ml` transforms Z-expressions to HTML trees. These are styled by the `style.css` file in the `www` directory.
 
-The file `hz.ml` (which should be read roughly from the bottom up) is the top-level file. It sets up the reactive signals  and constructs the action palette, which controls updates to the model and therefore the view. 
+The file `hz.ml` (which should be read roughly from the bottom up) is the top-level file. It sets up the reactive signals  and constructs the UI. The main logic of interest has to do with the action palette, which controls updates to the model and therefore the view. 
 
