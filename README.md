@@ -3,14 +3,14 @@
 > HZ is a reference implementation of Hazelnut, a bidirectionally typed structure editor calculus (see POPL 2017 draft)
 
 # Running HZ
-You can run HZ using the pre-built files by opening /src/www/hz.html in a browser
+You can run HZ without installing any dependencies by opening /src/www/hz.html in a browser.
 
 # Building HZ
 You can build HZ using the following instructions.
 
-## Installing js_of_ocaml and tyxml
+## Installing OCaml and dependencies
 
-An easy way is to use [opam](https://opam.ocaml.org/). After having installed `opam`, follow these steps:
+An easy way to install both OCaml and the necessary libraries is to install [opam](https://opam.ocaml.org/). After having installed `opam` using the instructions on their website, follow these steps:
 
   - If you are using `opam` for the first time, you have to initialize it:
 
@@ -33,10 +33,12 @@ An easy way is to use [opam](https://opam.ocaml.org/). After having installed `o
     --     -- 4.02.0  Official 4.02.0 release
     --     -- 4.02.1  Official 4.02.1 release
     --     -- 4.02.2  Official 4.02.2 release
+    --     -- 4.02.3  Official 4.02.3 release
+    --     -- 4.03.0  Official 4.03.0 release
     system  C system  System compiler (4.02.1)
     ```
 
-    The `C` marks the current compiler. Here version 4.02.1 is installed. We can see that a more recent version is available (4.02.2). So we will install it with `opam switch 4.02.2`. This won't remove the system compiler as `opam` will install the files in your `.opam` directory.
+    The `C` marks the current compiler. Here version 4.02.1 is installed. We can see that a more recent version is available (4.03.0). So we will install it with `opam switch 4.03.0`. This won't remove the system compiler as `opam` will install the files in your `.opam` directory.
 
     The following command switches out the current compiler with the newly installed one and sets up your path to use it permanently.
 
@@ -90,13 +92,10 @@ It consists of two steps:
   - `+weak.js` to include the necessary `weak` package.
   - `-o hello.js` to set output file name.
 
-  You can add `--opt 3` to optimize more heavily.
+  You can include `--opt 3` to optimize more heavily.
 
 ## Results
 You can now open hz.html in a browser to see it working.
-
-
-
 
 ## Support
 
@@ -104,8 +103,6 @@ Js_of_ocaml is part of the [Ocsigen project](http://ocsigen.org/).
 
 - [Mailing list](https://sympa.inria.fr/sympa/subscribe/ocsigen)
 - IRC : #ocsigen on irc.freenode.net
-
-
 
 ## Resources
 
@@ -115,5 +112,15 @@ Js_of_ocaml is part of the [Ocsigen project](http://ocsigen.org/).
 - 
 ## Credit
 
-Based on the readme.md file for the [TodoMVC example](https://github.com/slegrand45/examples_ocsigen/tree/master/jsoo/todomvc-react) by [Stéphane Legrand](https://github.com/slegrand45).
+This README is based on the readme.md file for the [TodoMVC example](https://github.com/slegrand45/examples_ocsigen/tree/master/jsoo/todomvc-react) by [Stéphane Legrand](https://github.com/slegrand45).
+
+# Implementation Details
+
+The file `hz_semantics.ml` implements the syntax and semantics from the paper in a pure functional style, independent of any details of the view. NOTE: We use positive ocaml integers for the Hazelnut `num` type. 
+
+The file `hz_model.ml` gives the signature of the reactive signal that models edit states, which consist of a Z-expression paired with an H-type.
+
+The file `hz_view.ml` transforms terms to HTML trees.
+
+The file `hz.ml` (which should be read roughly from the bottom up) is the top-level file. It sets up the reactive signals  and constructs the action palette, which controls updates to the model and therefore the view. 
 

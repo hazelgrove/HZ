@@ -1,5 +1,4 @@
 open Hz_semantics
-open Lwt.Infix
 
 module Model = struct
   type t = ZExp.t * HTyp.t
