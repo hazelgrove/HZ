@@ -114,9 +114,9 @@ module JSUtil = struct
 
   (* create an input and a reactive signal tracking its
    * string value *)
-  let r_input id =
+  let r_input id placeholder_str=
     let rs, rf = S.create "" in
-    let i_elt = Html5.(input ~a:[a_id id; a_class ["form-control"]; a_placeholder "Enter var + press Enter"]  ();  ) in
+    let i_elt = Html5.(input ~a:[a_id id; a_class ["form-control"]; a_placeholder placeholder_str]  ();  ) in
     let i_dom = To_dom.of_input i_elt in
     let _ = listen_to_t Ev.input i_dom (fun _ ->
         rf (Js.to_string (i_dom##.value))) in
@@ -153,9 +153,9 @@ module ActionPalette = struct
     (* actions that take an input. the conversion function
      * goes from a string to an arg option where arg is
      * the action argument. *)
-    let action_input_button action conv btn_label input_id key_code =
+    let action_input_button action conv btn_label input_id key_code placeholder_str=
       (* create reactive input box *)
-      let (i_rs, i_rf), i_elt, i_dom = JSUtil.r_input input_id in
+      let (i_rs, i_rf), i_elt, i_dom = JSUtil.r_input input_id placeholder_str in
       let clear_input () =
         i_dom##.value := (Js.string "");
         i_rf "" in
@@ -215,11 +215,11 @@ module ActionPalette = struct
     (* actions that takes two inputs. the conversion function
      * goes from a pair of strings to an arg option where arg is
      * the action argument. *)
-    let action_input_input_button action conv btn_label input_id key_code =
+    let action_input_input_button action conv btn_label input_id key_code placeholder_str=
       let input_id_1 = (input_id ^ "_1") in
       let input_id_2 = (input_id ^ "_2") in
-      let (i_rs_1, i_rf_1), i_elt_1, i_dom_1 = JSUtil.r_input input_id_1 in
-      let (i_rs_2, i_rf_2), i_elt_2, i_dom_2 = JSUtil.r_input input_id_2 in
+      let (i_rs_1, i_rf_1), i_elt_1, i_dom_1 = JSUtil.r_input input_id_1 placeholder_str in
+      let (i_rs_2, i_rf_2), i_elt_2, i_dom_2 = JSUtil.r_input input_id_2 placeholder_str in
       let clear_input () =
         i_dom_1##.value := (Js.string ""); i_rf_1 "";
         i_dom_2##.value := (Js.string ""); i_rf_2 "" in
@@ -285,7 +285,7 @@ module ActionPalette = struct
           div ~a:[a_class ["panel";"panel-default"]] [
             div ~a:[a_class ["panel-title"]] [pcdata "Movement"];
             div ~a:[a_class ["panel-body"]] [
-              (action_button (Action.Move (Action.Child 1)) "<b>move child 1 </b> (1)" 49);
+              (action_button (Action.Move (Action.Child 1)) "move child 1 (1)" 49);
               br ();
               (action_button (Action.Move (Action.Child 2)) "move child 2 (2)" 50);
               br ();
@@ -325,27 +325,27 @@ module ActionPalette = struct
           div ~a:[a_class ["panel";"panel-default"]] [
             div ~a:[a_class ["panel-title"]] [pcdata "Expression Construction"];
             div ~a:[a_class ["panel-body"]] [
-              (action_button (Action.Construct Action.SAsc) "construct asc (:)" 58);
+              (action_button (Action.Construct Action.SAsc) "construct ASCription (:)" 58);
               br ();
               (action_input_button
                  (fun v -> Action.Construct (Action.SVar v))
                  (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                 "construct var (v)" "var_input" 118);
+                 "construct VARiable (v)" "var_input" 118 "Enter var + press Enter");
               (action_input_button
                  (fun v -> Action.Construct (Action.SLam v))
                  (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                 "construct lam (\\)" "lam_input" 92);
-              (action_button (Action.Construct Action.SAp) "construct ap ( ( )" 40);
+                 "construct LAMbda (\\)" "lam_input" 92 "Enter var + press Enter");
+              (action_button (Action.Construct Action.SAp) "construct APplication ( ( )" 40);
               br ();
               (action_input_button
                  (fun n -> Action.Construct (Action.SLit n))
                  (fun s -> try Some (int_of_string s) with Failure _ -> None)
-                 "construct lit (#)" "lit_input" 35);
-              (action_button (Action.Construct Action.SPlus) "construct plus (+)" 43);
+                 "construct LITteral (#)" "lit_input" 35 "Enter num + press Enter");
+              (action_button (Action.Construct Action.SPlus) "construct PLUS (+)" 43);
               br ();
-              (action_button (Action.Construct (Action.SInj HExp.L)) "construct inj L (l)" 108);
+              (action_button (Action.Construct (Action.SInj HExp.L)) "construct INJ L (l)" 108);
               br ();
-              (action_button (Action.Construct (Action.SInj HExp.R)) "construct inj R (r)" 114);
+              (action_button (Action.Construct (Action.SInj HExp.R)) "construct INJ R (r)" 114);
               br ();
               (action_input_input_button
                  (fun (v1,v2) -> Action.Construct (Action.SCase (v1,v2)))
@@ -356,7 +356,7 @@ module ActionPalette = struct
                     | 0, _ -> None
                     | _, 0 -> None
                     | _ -> Some (s1, s2))
-                 "construct case (c)" "case_input" 99);
+                 "construct CASE (c)" "case_input" 99 "Enter var + press Enter");
             ]
           ]
         ]
