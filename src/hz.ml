@@ -339,7 +339,11 @@ module ActionPalette = struct
               br ();
               (action_input_button
                  (fun n -> Action.Construct (Action.SLit n))
-                 (fun s -> try Some (int_of_string s) with Failure _ -> None)
+                 (fun s ->
+                    try
+                      let i = int_of_string s in
+                      if i < 0 then None else Some i
+                    with Failure _ -> None)
                  "construct lit [#]" "lit_input" 35 "Enter num + press Enter");
               (action_button (Action.Construct Action.SPlus) "construct plus [+]" 43);
               br ();
