@@ -85,14 +85,16 @@ end
 (* generates the action palette *)
 module ActionPalette = struct
   let make_palette ((rs, rf) : Model.rp) =
+    (* start by defining a bunch of helpers *)
+
+    (* performs the top-level action and updates the signal *)
     let doAction action =
       rf (Action.performSyn Ctx.empty action (React.S.value rs)) in
-
 
     let module KC = JSUtil.KeyCombo in 
     let module KCs = JSUtil.KeyCombos in 
 
-    (* helper function for constructing simple action buttons *)
+    (* helper function for constructing action buttons with no textbox *)
     let action_button action btn_label key_combo =
       let _ = JSUtil.listen_to_t Ev.keypress Dom_html.document (fun evt ->
           if evt##.keyCode = (KC.keyCode key_combo) then
@@ -115,8 +117,8 @@ module ActionPalette = struct
                pcdata (btn_label ^ " [" ^ (KC.to_string key_combo) ^ "]")]) in
 
     (* actions that take an input. the conversion function
-     * goes from a string (the input value) to an arg option where arg is
-     * the action argument. *)
+     * goes from a string (the input value) to an arg option 
+     * where arg is the action argument. *)
     let action_input_button action conv btn_label input_id key_combo placeholder_str = 
       (* create reactive input box *)
       let (i_rs, i_rf), i_elt, i_dom = JSUtil.r_input input_id placeholder_str in
@@ -132,19 +134,20 @@ module ActionPalette = struct
               clear_input ();
               true
             );
-          R.filter_attrib
+          R.filter_attrib (* filters out the disabled attribute *)
             (a_disabled ())
-            (S.l2 (fun s m ->
+            (S.l2 (fun s m -> (* S.l2 creates a signal from two signals *)
                  match conv s with
                    Some arg ->
                    begin try
                        let _ = Action.performSyn Ctx.empty (action arg) m in false
-                     with Action.InvalidAction -> true
+                     with Action.InvalidAction -> true (* filter disbled attr out if invalid action *)
                    end
                  | _ -> true) i_rs rs)
         ] [
           pcdata (btn_label ^ " [" ^ (KC.to_string key_combo) ^ "]")]) in
       let button_dom = To_dom.of_button button_elt in
+      (* listen for the key combo at the document level *)
       let _ = JSUtil.listen_to Ev.keypress Dom_html.document (fun evt ->
           let evt_key = evt##.keyCode in
           (* let _ = Firebug.console##log evt_key in *)
@@ -157,6 +160,7 @@ module ActionPalette = struct
           else
             Js._true
         ) in
+      (* respond to enter and esc inside the input box *)
       let _ = JSUtil.listen_to Ev.keyup i_dom (fun evt ->
           let evt_key = evt##.keyCode in
           if evt_key = (KC.keyCode KCs.enter) then 
@@ -170,7 +174,7 @@ module ActionPalette = struct
               i_dom##blur;
               Js._false
             end
-          else 
+          else (* stop propagation of keys when focus is in input box *)
             begin
               Dom_html.stopPropagation evt; Js._true
             end
@@ -184,6 +188,8 @@ module ActionPalette = struct
      * goes from a pair of strings to an arg option where arg is
      * the action argument. *)
     let action_input_input_button action conv btn_label input_id key_combo placeholder_str_1 placeholder_str_2 =
+      (* analagous to action_input_button, but with two input boxes. 
+       * could define an n-ary version of this, but this is probably more clear for now *)
       let input_id_1 = (input_id ^ "_1") in
       let input_id_2 = (input_id ^ "_2") in
       let (i_rs_1, i_rf_1), i_elt_1, i_dom_1 = JSUtil.r_input input_id_1 placeholder_str_1 in
@@ -253,6 +259,7 @@ module ActionPalette = struct
           i_elt_2;
         ]) in
 
+    (* now construct the action palette entries*)
     (* movement *)
     let moveChild1 = action_button (Action.Move (Action.Child 1)) "move child 1" KCs.number_1 in 
     let moveChild2 = action_button (Action.Move (Action.Child 2)) "move child 2" KCs.number_2 in 
@@ -305,7 +312,7 @@ module ActionPalette = struct
         "Enter var + press Tab"
         "Enter var + press Enter" in 
 
-    (* put it all together into the action palette *)
+    (* finally, put it all together into the action palette *)
     Html5.(div ~a:[a_class ["row";"marketing"]] [
         div ~a:[a_class ["col-lg-3"; "col-md-3"; "col-sm-3"]] [
           div ~a:[a_class ["panel";"panel-default"]] [

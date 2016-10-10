@@ -1,4 +1,4 @@
-(* generates divs from terms *)
+(* generates divs from terms. styled exclusively using CSS (www/style.css) *)
 module HTMLView = struct
   module Html = Tyxml_js.Html
   open Html
