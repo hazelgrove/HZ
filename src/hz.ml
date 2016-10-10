@@ -81,6 +81,9 @@ module JSUtil = struct
     let c = _kc "c" 99 
     let qmark = _kc "?" 63
   end
+
+  let get_keyCode (evt : Dom_html.keyboardEvent Js.t) = 
+    Js.Optdef.get (evt##.which) (fun () -> assert false)
 end
 
 (* generates the action palette *)
@@ -98,7 +101,7 @@ module ActionPalette = struct
     (* helper function for constructing action buttons with no textbox *)
     let action_button action btn_label key_combo =
       let _ = JSUtil.listen_to_t Ev.keypress Dom_html.document (fun evt ->
-          if evt##.keyCode = (KC.keyCode key_combo) then
+          if JSUtil.get_keyCode evt = (KC.keyCode key_combo) then
             try
               doAction action
             with Action.InvalidAction -> ()
@@ -150,7 +153,7 @@ module ActionPalette = struct
       let button_dom = To_dom.of_button button_elt in
       (* listen for the key combo at the document level *)
       let _ = JSUtil.listen_to Ev.keypress Dom_html.document (fun evt ->
-          let evt_key = evt##.keyCode in
+          let evt_key = JSUtil.get_keyCode evt in
           (* let _ = Firebug.console##log evt_key in *)
           if evt_key = KC.keyCode key_combo then
             begin
@@ -163,7 +166,7 @@ module ActionPalette = struct
         ) in
       (* respond to enter and esc inside the input box *)
       let _ = JSUtil.listen_to Ev.keyup i_dom (fun evt ->
-          let evt_key = evt##.keyCode in
+          let evt_key = JSUtil.get_keyCode evt in
           if evt_key = (KC.keyCode KCs.enter) then 
             begin
               button_dom##click;
@@ -222,7 +225,7 @@ module ActionPalette = struct
           pcdata (btn_label ^ " [" ^ (KC.to_string key_combo) ^ "]")]) in
       let button_dom = To_dom.of_button button_elt in
       let _ = JSUtil.listen_to Ev.keypress Dom_html.document (fun evt ->
-          let evt_key = evt##.keyCode in
+          let evt_key = JSUtil.get_keyCode evt in
           if evt_key = (KC.keyCode key_combo) then
             begin
               Firebug.console##log "in c";  
@@ -234,7 +237,7 @@ module ActionPalette = struct
             Js._true
         ) in
       let i_keyup_listener i_dom = JSUtil.listen_to Ev.keyup i_dom (fun evt ->
-          let evt_key = evt##.keyCode in
+          let evt_key = JSUtil.get_keyCode evt in
           if evt_key = (KC.keyCode KCs.enter) then 
             begin
               button_dom##click;
