@@ -1,4 +1,3 @@
-
 .display-3{
 	height: 72px;
 	font-size: 60px;
@@ -7,22 +6,41 @@
 }
 
 .subtext{
-	width: 66%;
+	width: 100%;
 }
-#logo{
-	height: 75px;
-	float:right;
+
+.logoDiv {
+	width: 20%;
+	min-height: 75px;
+	float: right;
+	text-align: right;
 }
+
+#logo {
+	height: 75px
+}
+
 .jumbotron{
 	padding-top: 11px;
 	margin-top: 24px;
 	padding-bottom: 69px;
 }
 
-.Model {
+.ModelExp {
 	font-size: xx-large;
 	padding-bottom: 20px;
 	width:100%;
+	min-height: 1em;
+}
+
+.ModelType {
+  font-size: large;
+	width:100%
+}
+
+.typeLbl {
+	font-weight: bold;
+	font-size: 12pt;
 }
 
 #numLabel {

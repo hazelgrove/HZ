@@ -175,11 +175,10 @@ module ActionPalette = struct
               i_dom##blur;
               Js._false
             end
-          else (* stop propagation of keys when focus is in input box *)
-            begin
-              Dom_html.stopPropagation evt; Js._true
-            end
-        ) in
+          else Js._true) in 
+      (* stop propagation of keys when focus is in input box *)
+      let _ = JSUtil.listen_to Ev.keypress i_dom (fun evt ->
+          Dom_html.stopPropagation evt; Js._true) in
       Html5.(div ~a:[a_class ["input-group"]] [
           span ~a:[a_class ["input-group-btn"]] [
             button_elt];i_elt;
@@ -226,6 +225,7 @@ module ActionPalette = struct
           let evt_key = evt##.keyCode in
           if evt_key = (KC.keyCode key_combo) then
             begin
+              Firebug.console##log "in c";  
               i_dom_1##focus;
               Dom_html.stopPropagation evt;
               Js._false
@@ -253,6 +253,11 @@ module ActionPalette = struct
         ) in
       let _ = i_keyup_listener i_dom_1 in
       let _ = i_keyup_listener i_dom_2 in
+      let i_keypress_listener i_dom = 
+        JSUtil.listen_to Ev.keypress i_dom (fun evt ->
+            Dom_html.stopPropagation evt; Js._true) in
+      let _ = i_keypress_listener i_dom_1 in 
+      let _ = i_keypress_listener i_dom_2 in 
       Html5.(div ~a:[a_class ["input-group"]] [
           span ~a:[a_class ["input-group-btn"]] [
             button_elt];
@@ -384,21 +389,31 @@ end
 module AppView = struct
   let view ((rs, rf) : Model.rp) =
     (* zexp view *)
-    let zexp_view_rs = React.S.map (fun (zexp, _) ->
+    let zexp_rs = React.S.map (fun (zexp, _) ->
         [HTMLView.of_zexp zexp]) rs in
-    let zexp_view = (R.Html5.div (ReactiveData.RList.from_signal zexp_view_rs)) in
+    let zexp_view = (R.Html5.div (ReactiveData.RList.from_signal zexp_rs)) in
+
+    (* htype view *)
+    let htype_rs = React.S.map (fun (_, htype) -> 
+        [HTMLView.of_htype htype]) rs in 
+    let htype_view = (R.Html5.div (ReactiveData.RList.from_signal htype_rs)) in 
 
     Tyxml_js.To_dom.of_div Html5.(
         div [
           div ~a:[a_class ["jumbotron"]] [
             div ~a:[a_class ["headerTextAndLogo"]] [
               div ~a:[a_class ["display-3"]] [pcdata "HZ"];
-              img ~a:[a_id "logo"] ~alt:("Logo") ~src:(Xml.uri_of_string ("imgs/hazel-logo.png")) ()
-            ];
+              div ~a:[a_class ["logoDiv"]] [
+                img ~a:[a_id "logo"] ~alt:("Logo") ~src:(Xml.uri_of_string ("imgs/hazel-logo.png")) ()
+              ]
+            ]; 
             div ~a:[a_class ["subtext"]] [
               pcdata "(a reference implementation of "; 
               a ~a:[a_href "https://arxiv.org/abs/1607.04180"] [pcdata "Hazelnut"]; pcdata ")"];
-            div ~a:[a_class ["Model"]] [zexp_view]];
+            div ~a:[a_class ["ModelExp"]] [zexp_view]; br ();
+            div ~a:[a_class ["subtext"; "ModelType"]] [
+              div ~a:[a_class ["typeLbl"]] [pcdata "Synthesizes H-type: "];
+              htype_view]];
           ActionPalette.make_palette (rs, rf);
           div ~a:[a_class ["container"]; a_id "footerContainer"] [
             p [
