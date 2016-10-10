@@ -313,17 +313,30 @@ module AppView = struct
     let zexp_view = Html5.(R.Html5.div (ReactiveData.RList.from_signal zexp_view_rs)) in
 
     Tyxml_js.To_dom.of_div Html5.(
-      div [ div ~a:[a_class ["jumbotron"]]
-              [ div ~a:[a_class ["headerTextAndLogo"]] [
-                    div ~a:[a_class ["display-3"]] [pcdata "HZ"];
-                    img ~a:[a_id "logo"] ~alt:("Logo") ~src:(Xml.uri_of_string ("imgs/hazel-logo.png")) ()
-                  ];
-                div ~a:[a_class ["subtext"]] [
-                  pcdata "(a reference implementation of "; 
-                  a ~a:[a_href "https://arxiv.org/abs/1607.04180"] [pcdata "Hazelnut"]; pcdata ")"];
-                div ~a:[a_class ["Model"]] [zexp_view]];
-            ActionPalette.make_palette (rs, rf)
-          ])
+        div [
+          div ~a:[a_class ["jumbotron"]] [
+            div ~a:[a_class ["headerTextAndLogo"]] [
+              div ~a:[a_class ["display-3"]] [pcdata "HZ"];
+              img ~a:[a_id "logo"] ~alt:("Logo") ~src:(Xml.uri_of_string ("imgs/hazel-logo.png")) ()
+            ];
+            div ~a:[a_class ["subtext"]] [
+              pcdata "(a reference implementation of "; 
+              a ~a:[a_href "https://arxiv.org/abs/1607.04180"] [pcdata "Hazelnut"]; pcdata ")"];
+            div ~a:[a_class ["Model"]] [zexp_view]];
+          ActionPalette.make_palette (rs, rf);
+          div ~a:[a_class ["container"]; a_id "footerContainer"] [
+            p [
+              pcdata "Source (OCaml): "; 
+              a ~a:[a_href "https://github.com/hazelgrove/HZ"] [
+                pcdata "https://github.com/hazelgrove/HZ"
+              ]];
+            p [
+              pcdata "Mechanization (Agda): "; 
+              a ~a:[a_href "https://github.com/hazelgrove/agda-popl17"] [
+                pcdata "https://github.com/hazelgrove/agda-popl17"
+              ]]
+          ]
+        ])
 end
 
 (* execution starts here *)
@@ -331,7 +344,7 @@ let _ = JSUtil.listen_to_t
     Dom_html.Event.domContentLoaded
     Dom_html.document
     (fun _ -> 
-      let rs, rf = React.S.create (Model.empty) in
-      let parent = JSUtil.getElementByIdForce "container" in 
-      Dom.appendChild parent (AppView.view (rs, rf)))
+       let rs, rf = React.S.create (Model.empty) in
+       let parent = JSUtil.getElementByIdForce "container" in 
+       Dom.appendChild parent (AppView.view (rs, rf)))
 
