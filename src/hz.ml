@@ -79,6 +79,7 @@ module JSUtil = struct
     let l = _kc "l" 108 
     let r = _kc "r" 114 
     let c = _kc "c" 99 
+    let qmark = _kc "?" 63
   end
 end
 
@@ -311,6 +312,7 @@ module ActionPalette = struct
         "construct case" "case_input" KCs.c 
         "Enter var + press Tab"
         "Enter var + press Enter" in 
+    let constructNEHole = action_button (Action.Construct Action.SNEHole) "construct neHole" KCs.qmark in 
 
     (* finally, put it all together into the action palette *)
     Html5.(div ~a:[a_class ["row";"marketing"]] [
@@ -371,6 +373,7 @@ module ActionPalette = struct
               (constructInjR);
               br ();
               (constructCase);
+              (constructNEHole)
             ]
           ]
         ]

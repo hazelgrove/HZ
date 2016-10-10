@@ -79,19 +79,15 @@ button:disabled {
 	content: "⦇⦈";
 }
 
-.asc:before {
-	content: ":";
-}
-
 .ascChar:before{
 	content: ":";
 }
 
-.lAsc:before{
+.lCursor:before{
 	content: "⊳";
 }
 
-.rAsc:before{
+.rCursor:before{
 	content: "⊲";
 }
 
@@ -127,8 +123,12 @@ button:disabled {
 	content:".";
 }
 
-.inj:before{
-	content:"inj";
+.injL:before{
+	content:"injL";
+}
+
+.injR:before{
+	content:"injR";
 }
 
 .lNE:before{
@@ -136,14 +136,6 @@ button:disabled {
 }
 
 .rNE:before{
-	content:"⦈";
-}
-
-.lNZ:before{
-	content:"⦇";
-}
-
-.rNZ:before{
 	content:"⦈";
 }
 
