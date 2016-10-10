@@ -1,6 +1,6 @@
 # HZ
 
-> HZ is a reference implementation of Hazelnut, a bidirectionally typed structure editor calculus (see POPL 2017 draft)
+HZ is a reference implementation of Hazelnut, a bidirectionally typed structure editor calculus.
 
 # Running HZ
 You can run HZ without installing any dependencies by opening /src/www/hz.html in a browser.
@@ -8,7 +8,7 @@ You can run HZ without installing any dependencies by opening /src/www/hz.html i
 # Building HZ
 You can build HZ using the following instructions.
 
-## Installing OCaml and dependencies
+## Prerequisites
 
 An easy way to install both OCaml and the necessary libraries is to install [opam](https://opam.ocaml.org/). After having installed `opam` using the instructions on their website, follow these steps:
 
@@ -48,20 +48,20 @@ An easy way to install both OCaml and the necessary libraries is to install [opa
     ```
 
   - We can now install Js_of_ocaml and tyxml, including optional dependencies.
-  NOTE: Currently HZ only works with TyXML 4.0, which is NOT backwards compatible with TyXML 3.X
+  NOTE: HZ requires TyXML 4.0, which is NOT backwards compatible with TyXML 3.X.
  
     ```sh
     > opam install js_of_ocaml tyxml deriving ppx_deriving reactiveData ocp-indent
     ```
 
-  - To make sure you have the latest version, ask `opam` to upgrade the packages if needed:
+  - To make sure you have the latest versions of everything, ask `opam` to upgrade the packages if needed:
 
     ```sh
     > opam update
     > opam upgrade
     ```
 
-  Congratulations, you now have all the required packages! We can now build the application.
+  You now have all the required packages. We can now build the application.
 
 ## Compilation
 

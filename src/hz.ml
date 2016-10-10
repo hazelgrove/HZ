@@ -4,7 +4,7 @@ open Hz_model
 open Hz_model.Model
 open Hz_view
 
-open React;;
+open React
 
 module Ev = Dom_html.Event
 
@@ -14,6 +14,11 @@ module Util = struct
 end
 
 module JSUtil = struct
+  let getElementByIdForce id = 
+    let doc = Dom_html.document in  
+    Js.Opt.get (doc##getElementById(Js.string id))
+      (fun () -> assert false)
+
   let listen_to ev elem f =
     Dom_html.addEventListener
       elem
@@ -62,7 +67,6 @@ module ActionPalette = struct
     let keycode_r = 114 in
     let keycode_c = 99 in
 
-
     (* helper function for constructing simple action buttons *)
     let action_button action btn_label key_code =
       let _ = JSUtil.listen_to_t Ev.keypress Dom_html.document (fun evt ->
@@ -85,7 +89,7 @@ module ActionPalette = struct
                        ] [pcdata btn_label]) in
 
     (* actions that take an input. the conversion function
-     * goes from a string to an arg option where arg is
+     * goes from a string (the input value) to an arg option where arg is
      * the action argument. *)
     let action_input_button action conv btn_label input_id key_code placeholder_str=
       (* create reactive input box *)
@@ -146,7 +150,7 @@ module ActionPalette = struct
             button_elt];i_elt;
         ]) in
 
-    (* actions that takes two inputs. the conversion function
+    (* actions that take two inputs. the conversion function
      * goes from a pair of strings to an arg option where arg is
      * the action argument. *)
     let action_input_input_button action conv btn_label input_id key_code placeholder_str=
@@ -226,7 +230,6 @@ module ActionPalette = struct
               (action_button (Action.Move (Action.Child 3)) "move child 3 [3]" 51);
               br ();
               (action_button (Action.Move (Action.Parent)) "move parent [p]" 112);
-              (* br (); *)
             ]
           ];
           div ~a:[a_class ["panel";"panel-default"]] [
@@ -309,33 +312,26 @@ module AppView = struct
         [HTMLView.of_zexp zexp]) rs in
     let zexp_view = Html5.(R.Html5.div (ReactiveData.RList.from_signal zexp_view_rs)) in
 
-    Html5.(
+    Tyxml_js.To_dom.of_div Html5.(
       div [ div ~a:[a_class ["jumbotron"]]
               [ div ~a:[a_class ["headerTextAndLogo"]] [
                     div ~a:[a_class ["display-3"]] [pcdata "HZ"];
                     img ~a:[a_id "logo"] ~alt:("Logo") ~src:(Xml.uri_of_string ("imgs/hazel-logo.png")) ()
                   ];
-                div ~a:[a_class ["subtext"]] [pcdata "(a reference implementation of "; a ~a:[a_href "https://arxiv.org/abs/1607.04180"] [pcdata "Hazelnut"]; pcdata ")"];
+                div ~a:[a_class ["subtext"]] [
+                  pcdata "(a reference implementation of "; 
+                  a ~a:[a_href "https://arxiv.org/abs/1607.04180"] [pcdata "Hazelnut"]; pcdata ")"];
                 div ~a:[a_class ["Model"]] [zexp_view]];
             ActionPalette.make_palette (rs, rf)
           ])
 end
 
-
-let doc = Dom_html.document
-
-let main _ =
-  let parent =
-    Js.Opt.get (doc##getElementById(Js.string "container"))
-      (fun () -> assert false)
-  in
-  let m = Model.empty in
-  let rs, rf = React.S.create m in
-  Dom.appendChild parent (Tyxml_js.To_dom.of_div (AppView.view (rs, rf))) ;
-  Js._true
-
-let _ = Dom_html.addEventListener
-    doc
+(* execution starts here *)
+let _ = JSUtil.listen_to_t 
     Dom_html.Event.domContentLoaded
-    (Dom_html.handler main)
-    Js._true
+    Dom_html.document
+    (fun _ -> 
+      let rs, rf = React.S.create (Model.empty) in
+      let parent = JSUtil.getElementByIdForce "container" in 
+      Dom.appendChild parent (AppView.view (rs, rf)))
+
