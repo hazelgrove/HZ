@@ -27,10 +27,13 @@
 }
 
 .ModelExp {
+	padding: 10px;
 	font-size: xx-large;
-	padding-bottom: 20px;
+	margin-top: 20px;
+	background-color: white;
 	width:100%;
-	min-height: 1em;
+	border: 2px solid #999;
+	display: table;
 }
 
 .ModelType {
@@ -95,19 +98,23 @@ button:disabled {
 /*CSS content*/
 .EmptyHole:before {
 	content: "⦇⦈"; /* http://www.fileformat.info/info/unicode/char/2988/index.htm */
+	color: #a040a0;
 }
 
 .ascChar:before{
 	content: ":";
 }
 
+/* 
 .lCursor:before{
 	content: "⊳";
+	color: green;
 }
 
 .rCursor:before{
 	content: "⊲";
-}
+	color: green;
+}*/
 
 .Num:before{
 	content: "num";
@@ -131,6 +138,7 @@ button:disabled {
 
 .Hole:before{
 	 content: "⦇⦈";
+	 color: #a040a0;
 }
 
 .lambda:before{
@@ -151,10 +159,12 @@ button:disabled {
 
 .lNE:before{
 	content:"⦇";
+	color: #a040a0;
 }
 
 .rNE:before{
 	content:"⦈";
+	color: #a040a0;
 }
 
 .case:before{
@@ -163,5 +173,15 @@ button:disabled {
 
 .comma:before{
 	content:",";
+}
+
+.CursorT {
+	background-color: #e5ffe5;
+	border-bottom: 1px solid green;
+}
+
+.CursorE {
+	background-color: #e5ffe5;
+	border-bottom: 1px solid green;
 }
 
