@@ -128,6 +128,27 @@ module ActionPalette = struct
     let doAction action =
       rf (Action.performSyn Ctx.empty action (React.S.value rs)) in
 
+      let keycode_1 = 49 in
+      let keycode_2 = 50 in
+      let keycode_enter = 13 in
+      let keycode_esc = 27 in
+      let keycode_p = 112 in
+      let keycode_x = 120 in
+      let keycode_greaterThan = 62 in
+      let keycode_n = 110 in
+      let keycode_s = 115 in
+      let keycode_dot = 46 in
+      let keycode_colon = 58 in
+      let keycode_v = 118 in
+      let keycode_backslash = 92 in
+      let keycode_openParens = 40 in
+      let keycode_hashtag = 35 in
+      let keycode_plus = 43 in
+      let keycode_l = 108 in
+      let keycode_r = 114 in
+      let keycode_c = 99 in
+      
+
     (* helper function for constructing simple action buttons *)
     let action_button action btn_label key_code =
       let _ = JSUtil.listen_to_t Ev.keypress Dom_html.document (fun evt ->
