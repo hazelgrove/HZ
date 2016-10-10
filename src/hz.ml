@@ -284,20 +284,20 @@ module ActionPalette = struct
           div ~a:[a_class ["panel";"panel-default"]] [
             div ~a:[a_class ["panel-title"]] [pcdata "Movement"];
             div ~a:[a_class ["panel-body"]] [
-              (action_button (Action.Move (Action.Child 1)) "move child 1 (1)" 49);
+              (action_button (Action.Move (Action.Child 1)) "move child 1 [1]" 49);
               br ();
-              (action_button (Action.Move (Action.Child 2)) "move child 2 (2)" 50);
+              (action_button (Action.Move (Action.Child 2)) "move child 2 [2]" 50);
               br ();
-              (action_button (Action.Move (Action.Child 3)) "move child 3 (3)" 51);
+              (action_button (Action.Move (Action.Child 3)) "move child 3 [3]" 51);
               br ();
-              (action_button (Action.Move (Action.Parent)) "move parent (p)" 112);
+              (action_button (Action.Move (Action.Parent)) "move parent [p]" 112);
               (* br (); *)
             ]
           ];
           div ~a:[a_class ["panel";"panel-default"]] [
             div ~a:[a_class ["panel-title"]] [pcdata "Deletion"];
             div ~a:[a_class ["panel-body"]] [
-              (action_button (Action.Del) "del (x)" 120);
+              (action_button (Action.Del) "del [x]" 120);
             ]
           ]
         ];
@@ -305,17 +305,17 @@ module ActionPalette = struct
           div ~a:[a_class ["panel";"panel-default"]] [
             div ~a:[a_class ["panel-title"]] [pcdata "Type Construction"];
             div ~a:[a_class ["panel-body"]] [
-              (action_button (Action.Construct Action.SArrow) "construct arrow (>)" 62);
+              (action_button (Action.Construct Action.SArrow) "construct arrow [>]" 62);
               br ();
-              (action_button (Action.Construct Action.SNum) "construct num (n)" 110);
+              (action_button (Action.Construct Action.SNum) "construct num [n]" 110);
               br ();
-              (action_button (Action.Construct Action.SSum) "construct sum (s)" 115);
+              (action_button (Action.Construct Action.SSum) "construct sum [s]" 115);
               br ();  ]
           ];
           div ~a:[a_class ["panel";"panel-default"]] [
             div ~a:[a_class ["panel-title"]] [pcdata "Finishing"];
             div ~a:[a_class ["panel-body"]] [
-              (action_button (Action.Finish) "finish (.)" 46)
+              (action_button (Action.Finish) "finish [.]" 46)
             ]
           ]
         ]
@@ -324,31 +324,31 @@ module ActionPalette = struct
           div ~a:[a_class ["panel";"panel-default"]] [
             div ~a:[a_class ["panel-title"]] [pcdata "Expression Construction"];
             div ~a:[a_class ["panel-body"]] [
-              (action_button (Action.Construct Action.SAsc) "construct ASCription (:)" 58);
+              (action_button (Action.Construct Action.SAsc) "construct asc [:]" 58);
               br ();
               (action_input_button
                  (fun v -> Action.Construct (Action.SVar v))
                  (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                 "construct VARiable (v)" "var_input" 118 "Enter var + press Enter");
+                 "construct var [v]" "var_input" 118 "Enter var + press Enter");
               (action_input_button
                  (fun v -> Action.Construct (Action.SLam v))
                  (fun s -> match String.compare s "" with 0 -> None | _ -> Some s)
-                 "construct LAMbda (\\)" "lam_input" 92 "Enter var + press Enter");
-              (action_button (Action.Construct Action.SAp) "construct APplication ( ( )" 40);
+                 "construct lam [\\]" "lam_input" 92 "Enter var + press Enter");
+              (action_button (Action.Construct Action.SAp) "construct ap [(]" 40);
               br ();
               (action_input_button
                  (fun n -> Action.Construct (Action.SLit n))
-                 (fun s -> 
-                    try 
-                      let i = int_of_string s in 
-                      if i < 0 then None else Some i 
+                 (fun s ->
+                    try
+                      let i = int_of_string s in
+                      if i < 0 then None else Some i
                     with Failure _ -> None)
-                 "construct LITteral (#)" "lit_input" 35 "Enter num + press Enter");
-              (action_button (Action.Construct Action.SPlus) "construct PLUS (+)" 43);
+                 "construct lit [#]" "lit_input" 35 "Enter num + press Enter");
+              (action_button (Action.Construct Action.SPlus) "construct plus [+]" 43);
               br ();
-              (action_button (Action.Construct (Action.SInj HExp.L)) "construct INJ L (l)" 108);
+              (action_button (Action.Construct (Action.SInj HExp.L)) "construct inj L [l]" 108);
               br ();
-              (action_button (Action.Construct (Action.SInj HExp.R)) "construct INJ R (r)" 114);
+              (action_button (Action.Construct (Action.SInj HExp.R)) "construct inj R [r]" 114);
               br ();
               (action_input_input_button
                  (fun (v1,v2) -> Action.Construct (Action.SCase (v1,v2)))
@@ -359,7 +359,7 @@ module ActionPalette = struct
                     | 0, _ -> None
                     | _, 0 -> None
                     | _ -> Some (s1, s2))
-                 "construct CASE (c)" "case_input" 99 "Enter var + press Enter");
+                 "construct case [c]" "case_input" 99 "Enter var + press Enter");
             ]
           ]
         ]
@@ -380,7 +380,7 @@ module View = struct
                     div ~a:[a_class ["display-3"]] [pcdata "HZ"];
                     img ~a:[a_id "logo"] ~alt:("Logo") ~src:(Xml.uri_of_string ("imgs/hazel-logo.png")) ()
                   ];
-                div ~a:[a_class ["subtext"]] [pcdata "(a reference implementation of Hazelnut)"];
+                div ~a:[a_class ["subtext"]] [pcdata "(a reference implementation of "; a ~a:[a_href "https://arxiv.org/abs/1607.04180"] [pcdata "Hazelnut"]; pcdata ")"];
                 div ~a:[a_class ["Model"]] [zexp_view]];
             ActionPalette.make_palette (rs, rf)
           ])
