@@ -1,4 +1,3 @@
-open Hz_controller
 open Tyxml_js
 open Hz_semantics
 open Hz_model
