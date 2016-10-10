@@ -350,6 +350,14 @@ module Action = struct
       end
     | _ -> raise InvalidAction
 
+  let hsyn ctx e = try
+      HExp.syn ctx e 
+    with HExp.IllTyped -> raise InvalidAction
+
+  let hana ctx e ty = try
+      HExp.ana ctx e ty 
+    with HExp.IllTyped -> raise InvalidAction
+
   let rec performSyn ctx a (ze, ty) =
     try
       (performEMove a ze, ty) (* 8a *)
@@ -414,7 +422,7 @@ module Action = struct
           (ZExp.NonEmptyHoleZ (ZExp.CursorE e'), HTyp.Hole)
         (* Finish *)
         | (Finish, (ZExp.CursorE (HExp.NonEmptyHole e), HTyp.Hole)) (* 17a *) ->
-          let ty' = HExp.syn ctx e in
+          let ty' = hsyn ctx e in
           (ZExp.CursorE e, ty')
         (* Zipper Cases *)
         | (a, (ZExp.LeftAsc (ze, ty), _)) (* 19b *) ->
@@ -423,24 +431,24 @@ module Action = struct
           let zty' = performTyp a zty in
           let ty' = ZTyp.erase zty' in
           begin try
-              let _ = HExp.ana ctx e ty' in
+              let _ = hana ctx e ty' in
               (ZExp.RightAsc (e, zty'), ty')
             with
             | HExp.IllTyped -> raise InvalidAction
           end
         | (_, (ZExp.LeftAp (ze1, e2), _)) (* 19d *) ->
           let e1 = ZExp.erase ze1 in
-          let ty2 = HExp.syn ctx e1 in
+          let ty2 = hsyn ctx e1 in
           let (ze1', ty3) = performSyn ctx a (ze1, ty2) in
           begin match HTyp.matched_arrow ty3 with
             | Some (ty4, ty5) ->
-              let _ = HExp.ana ctx e2 ty4 in
+              let _ = hana ctx e2 ty4 in
               (ZExp.LeftAp (ze1', e2),
                ty5)
             | None -> raise InvalidAction
           end
         | (_, (ZExp.RightAp (e1, ze2), _)) (* 19e *) ->
-          let ty2 = HExp.syn ctx e1 in
+          let ty2 = hsyn ctx e1 in
           begin match HTyp.matched_arrow ty2 with
             | Some (ty3, ty4) ->
               let ze2' = performAna ctx a ze2 ty3 in
@@ -458,7 +466,7 @@ module Action = struct
            HTyp.Num)
         | (_, (ZExp.NonEmptyHoleZ ze1, _)) (* 19h *) ->
           let e1 = ZExp.erase ze1 in
-          let ty1 = HExp.syn ctx e1 in
+          let ty1 = hsyn ctx e1 in
           let (ze1', _) = performSyn ctx a (ze1, ty1) in
           (ZExp.NonEmptyHoleZ ze1', HTyp.Hole)
         | _ -> raise InvalidAction
@@ -514,7 +522,7 @@ module Action = struct
         (y, HExp.EmptyHole))
     (* Finishing *)
     | (Finish, ZExp.CursorE (HExp.NonEmptyHole e), _) (* 17b *) ->
-      let _ = HExp.ana ctx e ty in
+      let _ = hana ctx e ty in
       ZExp.CursorE e
     (* Zipper Cases *)
     | (_, ZExp.LamZ (x, ze'), ty) (* 19a *) ->
@@ -534,19 +542,19 @@ module Action = struct
       end
     | (_, ZExp.CaseZ1 (ze, (x, e1), (y, e2)), ty) (* 25e *) ->
       let e0 = ZExp.erase ze in
-      let ty0 = HExp.syn ctx e0 in
+      let ty0 = hsyn ctx e0 in
       let (ze', ty0') = performSyn ctx a (ze, ty0) in
       begin match HTyp.matched_sum ty0' with
         | Some (ty1, ty2) ->
           let ctx1 = Ctx.extend ctx (x, ty1) in
-          let () = HExp.ana ctx1 e1 ty in
+          let () = hana ctx1 e1 ty in
           let ctx2 = Ctx.extend ctx (y, ty2) in
-          let () = HExp.ana ctx2 e2 ty in
+          let () = hana ctx2 e2 ty in
           ZExp.CaseZ1 (ze', (x, e1), (y, e2))
         | None -> raise InvalidAction
       end
     | (_, ZExp.CaseZ2 (e0, (x, ze1), (y, e2)), ty) (* 25f *) ->
-      let ty0 = HExp.syn ctx e0 in
+      let ty0 = hsyn ctx e0 in
       begin match HTyp.matched_sum ty0 with
         | Some (ty1, ty2) ->
           let ctx1 = Ctx.extend ctx (x, ty1) in
@@ -555,7 +563,7 @@ module Action = struct
         | None -> raise InvalidAction
       end
     | (_, ZExp.CaseZ3 (e0, (x, e1), (y, ze2)), ty) (* 25g *) ->
-      let ty0 = HExp.syn ctx e0 in
+      let ty0 = hsyn ctx e0 in
       begin match HTyp.matched_sum ty0 with
         | Some (ty1, ty2) ->
           let ctx2 = Ctx.extend ctx (y, ty2) in
@@ -566,7 +574,7 @@ module Action = struct
     (* Subsumption *)
     | _ (* 6 *) ->
       let e = ZExp.erase ze in
-      let ty1 = HExp.syn ctx e in
+      let ty1 = hsyn ctx e in
       let (ze', ty1') = performSyn ctx a (ze, ty1) in
       if HTyp.consistent ty ty1' then
         ze'
