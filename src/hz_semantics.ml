@@ -115,7 +115,8 @@ module HExp = struct
           ty1_right
         | _ -> raise IllTyped
       end
-    | NumLit _ (* 3d *) -> HTyp.Num
+    | NumLit i (* 3d *) -> 
+      if i < 0 then raise IllTyped else HTyp.Num
     | Plus (e1, e2) (* 3e *) ->
       let _ = ana ctx e1 HTyp.Num in
       let _ = ana ctx e2 HTyp.Num in
@@ -391,8 +392,9 @@ module Action = struct
                                  HTyp.Hole)
           end
         | (Construct (SLit n), (ZExp.CursorE HExp.EmptyHole, HTyp.Hole)) (* 14j *) ->
-          (ZExp.CursorE (HExp.NumLit n),
-           HTyp.Num)
+          if n < 0 then raise InvalidAction else 
+            (ZExp.CursorE (HExp.NumLit n),
+             HTyp.Num)
         | (Construct SPlus, (ZExp.CursorE e, _)) ->
           if HTyp.consistent ty HTyp.Num (* 14l *) then
             (ZExp.RightPlus (e, ZExp.CursorE HExp.EmptyHole),
@@ -505,7 +507,8 @@ module Action = struct
             ))
       end
     | (Construct SLit n, ZExp.CursorE HExp.EmptyHole, ty) when HTyp.inconsistent ty HTyp.Num (* 14k *) ->
-      ZExp.NonEmptyHoleZ (ZExp.CursorE (HExp.NumLit n))
+      if n < 0 then raise InvalidAction else 
+        ZExp.NonEmptyHoleZ (ZExp.CursorE (HExp.NumLit n))
     | (Construct (SInj side), ZExp.CursorE HExp.EmptyHole, ty) ->
       begin match HTyp.matched_sum ty with
         | Some _ (* 25a *) -> ZExp.InjZ (side, ze)
