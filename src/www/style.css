@@ -122,10 +122,12 @@ button:disabled {
 
 .leftParens:before{
 	content: "(";
+	color: #999;
 }
 
 .rightParens:before{
 	content: ")";
+	color: #999;
 }
 
 .arrow:before{
@@ -184,4 +186,5 @@ button:disabled {
 	background-color: #e5ffe5;
 	border-bottom: 1px solid green;
 }
+
 
