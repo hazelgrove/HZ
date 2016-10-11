@@ -35,9 +35,11 @@ module HTMLView = struct
         hzdiv "dot" [];
         hzdiv "lambdaBody" [of_hexp exp]]
     | HExp.Asc (hexp,htype) -> hzdiv "Asc" [
+        hzdiv "leftParens" []; 
         hzdiv "ascExp" [of_hexp hexp]; 
         hzdiv "ascChar" []; 
-        hzdiv "ascType" [of_htype htype]]
+        hzdiv "ascType" [of_htype htype];
+        hzdiv "rightParens" []]
     | HExp.Var var -> hzdiv "Var" [pcdata var]
     | HExp.Ap (e1, e2) -> hzdiv "Ap" [
         hzdiv "apLeft" [of_hexp e1]; 
@@ -111,13 +113,17 @@ module HTMLView = struct
   let rec of_zexp (zexp : ZExp.t ) :  [> Html_types.div ] Tyxml_js.Html.elt  =
     match zexp with
     | ZExp.RightAsc (e, asc) -> hzdiv "RightAsc" [
+        hzdiv "leftParens" [];
         hzdiv "ascExp" [of_hexp e]; 
         hzdiv "ascChar" []; 
-        hzdiv "ascType" [of_ztype asc]]
+        hzdiv "ascType" [of_ztype asc];
+        hzdiv "rightParens" []]
     | ZExp.LeftAsc (e, asc) -> hzdiv "LeftAsc" [
+        hzdiv "leftParens" [];
         hzdiv "ascExp" [of_zexp e]; 
         hzdiv "ascChar" []; 
-        hzdiv "ascType" [of_htype asc]]
+        hzdiv "ascType" [of_htype asc];
+        hzdiv "rightParens" []]
     | ZExp.CursorE hexp -> hzdiv "CursorE" [
         hzdiv "lCursor" []; 
         hzdiv "bCursor" [of_hexp hexp]; 
