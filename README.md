@@ -2,10 +2,7 @@
 
 HZ is a reference implementation of Hazelnut, a bidirectionally typed
 structure editor calculus. A release of this repo was submitted to POPL
-2017 for artifact evaluation. This artifact passed evaluation with high
-marks. The
-[reviews](https://github.com/hazelgrove/hazelnut-popl17/blob/master/hazelnut-popl17-aec-reviews.txt)
-from the AEC can be found on the repo for the paper text.
+2017 for artifact evaluation.
 
 # Running HZ
 You can run HZ without installing any dependencies by opening /src/www/hz.html in a browser.
