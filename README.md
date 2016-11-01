@@ -1,6 +1,11 @@
 # HZ
 
-HZ is a reference implementation of Hazelnut, a bidirectionally typed structure editor calculus.
+HZ is a reference implementation of Hazelnut, a bidirectionally typed
+structure editor calculus. A release of this repo was submitted to POPL
+2017 for artifact evaluation. This artifact passed evaluation with high
+marks. The
+[reviews](https://github.com/hazelgrove/hazelnut-popl17/blob/master/hazelnut-popl17-aec-reviews.txt)
+from the AEC can be found on the repo for the paper text.
 
 # Running HZ
 You can run HZ without installing any dependencies by opening /src/www/hz.html in a browser.
@@ -49,7 +54,7 @@ An easy way to install both OCaml and the necessary libraries is to install [opa
 
   - We can now install Js_of_ocaml and tyxml, including optional dependencies.
   NOTE: HZ requires TyXML 4.0, which is NOT backwards compatible with TyXML 3.X.
- 
+
     ```sh
     > opam install js_of_ocaml tyxml deriving ppx_deriving reactiveData ocp-indent
     ```
@@ -82,11 +87,10 @@ You can now open hz.html in a browser to see HZ in action.
 
 # Implementation Details
 
-The file `hz_semantics.ml` implements the syntax and semantics from the paper in a pure functional style, independent of any details of the user interface. NOTE: We use positive OCaml integers for the Hazelnut `num` type. 
+The file `hz_semantics.ml` implements the syntax and semantics from the paper in a pure functional style, independent of any details of the user interface. NOTE: We use positive OCaml integers for the Hazelnut `num` type.
 
 The file `hz_model.ml` gives the signature of the reactive signal that models edit states, which consist of a Z-expression paired with an H-type.
 
 The file `hz_view.ml` transforms Z-expressions to HTML trees. These are styled by the `style.css` file in the `www` directory.
 
-The file `hz.ml` (which should be read roughly from the bottom up) is the top-level file. It sets up the reactive signals  and constructs the UI. The main logic of interest has to do with the action palette, which controls updates to the model and therefore the view. 
-
+The file `hz.ml` (which should be read roughly from the bottom up) is the top-level file. It sets up the reactive signals  and constructs the UI. The main logic of interest has to do with the action palette, which controls updates to the model and therefore the view.
