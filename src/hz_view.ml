@@ -30,16 +30,16 @@ module HTMLView = struct
   let rec of_hexp (hexp : HExp.t ) : [> Html_types.div ] Tyxml_js.Html.elt  =
     match hexp with
     | HExp.Lam (var,exp) -> hzdiv "Lam" [
+        hzdiv "leftParens" []; 
         hzdiv "lambda" []; 
         hzdiv "lambdaVar" [pcdata var]; 
         hzdiv "dot" [];
-        hzdiv "lambdaBody" [of_hexp exp]]
+        hzdiv "lambdaBody" [of_hexp exp];
+        hzdiv "rightParens" []]
     | HExp.Asc (hexp,htype) -> hzdiv "Asc" [
-        hzdiv "leftParens" []; 
         hzdiv "ascExp" [of_hexp hexp]; 
         hzdiv "ascChar" []; 
-        hzdiv "ascType" [of_htype htype];
-        hzdiv "rightParens" []]
+        hzdiv "ascType" [of_htype htype]]
     | HExp.Var var -> hzdiv "Var" [pcdata var]
     | HExp.Ap (e1, e2) -> hzdiv "Ap" [
         hzdiv "apLeft" [of_hexp e1]; 
@@ -113,26 +113,24 @@ module HTMLView = struct
   let rec of_zexp (zexp : ZExp.t ) :  [> Html_types.div ] Tyxml_js.Html.elt  =
     match zexp with
     | ZExp.RightAsc (e, asc) -> hzdiv "RightAsc" [
-        hzdiv "leftParens" [];
         hzdiv "ascExp" [of_hexp e]; 
         hzdiv "ascChar" []; 
-        hzdiv "ascType" [of_ztype asc];
-        hzdiv "rightParens" []]
+        hzdiv "ascType" [of_ztype asc]]
     | ZExp.LeftAsc (e, asc) -> hzdiv "LeftAsc" [
-        hzdiv "leftParens" [];
         hzdiv "ascExp" [of_zexp e]; 
         hzdiv "ascChar" []; 
-        hzdiv "ascType" [of_htype asc];
-        hzdiv "rightParens" []]
+        hzdiv "ascType" [of_htype asc]]
     | ZExp.CursorE hexp -> hzdiv "CursorE" [
         hzdiv "lCursor" []; 
         hzdiv "bCursor" [of_hexp hexp]; 
         hzdiv "rCursor" []]
     | ZExp.LamZ (var,exp) -> hzdiv "LamZ" [
+        hzdiv "leftParens" [];
         hzdiv "lambda" [];
         hzdiv "lambdaVar" [pcdata var];
         hzdiv "dot" [];
-        hzdiv "lambdaBody" [of_zexp exp]]
+        hzdiv "lambdaBody" [of_zexp exp];
+        hzdiv "rightParens" []]
     | ZExp.LeftAp (e1,e2) -> hzdiv "LeftAp" [
         hzdiv "apLeft" [of_zexp e1]; 
         hzdiv "leftParens" []; 
