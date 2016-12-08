@@ -5,7 +5,7 @@ structure editor calculus. A release of this repo was submitted to POPL
 2017 for artifact evaluation.
 
 # Running HZ
-You can run HZ without installing any dependencies by opening /src/www/hz.html in a browser.
+You can run HZ without installing any dependencies by opening /src/www/hz.html in a browser. We also have a hosted version available at https://hazelgrove.github.io/implementation/hz.html.
 
 # Building HZ
 You can build HZ using the following instructions.
