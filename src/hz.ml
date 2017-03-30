@@ -425,10 +425,11 @@ module AppView = struct
                 pcdata "https://github.com/hazelgrove/HZ"
               ]];
             p [
-              pcdata "Mechanization (Agda): "; 
-              a ~a:[a_href "https://github.com/hazelgrove/agda-popl17"] [
-                pcdata "https://github.com/hazelgrove/agda-popl17"
-              ]]
+              pcdata "A project of "; 
+              a ~a:[a_href "http://hazelgrove.org"] [
+                pcdata "Hazel Grove"
+              ];
+              pcdata "."]
           ]
         ])
 end
