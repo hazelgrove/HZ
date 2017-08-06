@@ -61,6 +61,10 @@ module JSUtil = struct
 
     let enter = _kc "Enter" 13
     let esc = _kc "Esc" 27
+    let larr = _kc "<-" 37
+    let uparr = _kc "[up]" 38
+    let downarr = _kc "[down]" 40
+    let rarr = _kc "->" 39
     let h = _kc "h" 104
     let j = _kc "j" 106
     let k = _kc "k" 107
@@ -98,6 +102,15 @@ module ActionPalette = struct
 
     let module KC = JSUtil.KeyCombo in
     let module KCs = JSUtil.KeyCombos in
+
+    (* helper function for constructing key listeners *)
+    let keyup_action action key_code =
+      JSUtil.listen_to_t Ev.keydown Dom_html.document (fun evt ->
+          if JSUtil.get_keyCode evt = KC.keyCode key_code then
+            try
+              doAction action
+            with Action.InvalidAction -> ()
+          else ()) in
 
     (* helper function for constructing action buttons with no textbox *)
     let action_button action btn_label key_combo =
@@ -275,6 +288,10 @@ module ActionPalette = struct
     let moveLeft = action_button (Action.Move Action.Left) "move left" KCs.h in
     let moveRight = action_button (Action.Move Action.Right) "move right" KCs.l in
     let moveParent = action_button (Action.Move (Action.Parent)) "move parent" KCs.k in
+    let _ = keyup_action (Action.Move Action.Down) KCs.downarr in
+    let _ = keyup_action (Action.Move Action.Left) KCs.larr in
+    let _ = keyup_action (Action.Move Action.Right) KCs.rarr in
+    let _ = keyup_action (Action.Move (Action.Parent)) KCs.uparr in
 
     (* deletion *)
     let delete = action_button (Action.Del) "del" KCs.x in
