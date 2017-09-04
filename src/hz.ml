@@ -324,6 +324,7 @@ module ActionPalette = struct
 
     (* finally, put it all together into the action palette *)
     Html5.(div ~a:[a_class ["row";"marketing"]] [
+        div ~a:[a_class ["col-lg-12"]] [pcdata "(for actions with arguments, the button will only become active when a valid argument has been entered)"; br ()];
         div ~a:[a_class ["col-lg-3"; "col-md-3"; "col-sm-3"]] [
           div ~a:[a_class ["panel";"panel-default"]] [
             div ~a:[a_class ["panel-title"]] [pcdata "Movement"];
